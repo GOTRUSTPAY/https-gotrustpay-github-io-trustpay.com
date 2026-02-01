@@ -49,15 +49,9 @@
   <!-- Connexion -->
   <div class="section hidden" id="login">
     <h2>Connexion</h2>
-    <label>Statut</label>
-    <select id="loginStatus">
-      <option value="client">Client</option>
-      <option value="agent">Agent</option>
-      <option value="admin">Administrateur</option>
-    </select>
-    <input type="text" id="loginId" placeholder="Numéro ID">
+    <input type="text" id="loginId" placeholder="Nom ou ID">
     <input type="password" id="loginPassword" placeholder="Mot de passe">
-    <button onclick="login()">Se connecter</button>
+    <button onclick="loginPrompt()">Se connecter</button>
   </div>
 
   <!-- Inscription -->
@@ -81,16 +75,13 @@
       <p>Numéro de carte : <span id="clientCardNumber"></span></p>
       <p>Solde : <span id="clientBalance">0.00 USD</span></p>
     </div>
-
     <div class="menu">
       <button onclick="showClientSection('deposit')">Déposer</button>
       <button onclick="showClientSection('withdraw')">Retirer</button>
       <button onclick="showClientSection('send')">Envoyer argent</button>
       <button onclick="showClientSection('loan')">Demande de prêt</button>
     </div>
-
     <div id="clientActions">
-      <!-- Dépôt -->
       <div class="hidden" id="deposit">
         <h3>Déposer de l'argent</h3>
         <input type="number" id="depositAmount" placeholder="Montant">
@@ -103,8 +94,6 @@
         </select>
         <button onclick="deposit()">Confirmer Dépôt</button>
       </div>
-
-      <!-- Retrait -->
       <div class="hidden" id="withdraw">
         <h3>Retirer de l'argent</h3>
         <input type="number" id="withdrawAmount" placeholder="Montant">
@@ -118,8 +107,6 @@
         <input type="text" id="withdrawCode" placeholder="Code de retrait">
         <button onclick="withdraw()">Confirmer Retrait</button>
       </div>
-
-      <!-- Envoi -->
       <div class="hidden" id="send">
         <h3>Envoyer de l'argent</h3>
         <input type="number" id="sendAmount" placeholder="Montant">
@@ -134,8 +121,6 @@
         <input type="password" id="sendPassword" placeholder="Mot de passe">
         <button onclick="sendMoney()">Envoyer</button>
       </div>
-
-      <!-- Demande de prêt -->
       <div class="hidden" id="loan">
         <h3>Demande de prêt</h3>
         <input type="text" id="loanName" placeholder="Nom complet">
@@ -155,7 +140,6 @@
     <h2>Tableau de bord Admin</h2>
     <div class="menu">
       <button onclick="showAdminSection('publish')">Publier message</button>
-      <button onclick="showAdminSection('clients')">Clients / Agents</button>
       <button onclick="showAdminSection('loans')">Demandes de prêt</button>
       <button onclick="showAdminSection('withdrawals')">Demandes de retrait</button>
       <button onclick="showAdminSection('history')">Historique</button>
@@ -168,27 +152,18 @@
         <input type="file" id="adminFile">
         <button onclick="publishMessage()">Publier</button>
       </div>
-
-      <div class="hidden" id="clients">
-        <h3>Clients et Agents enregistrés</h3>
-        <div id="clientsList"></div>
-      </div>
-
       <div class="hidden" id="loans">
         <h3>Demandes de prêt</h3>
         <div id="loansList"></div>
       </div>
-
       <div class="hidden" id="withdrawals">
         <h3>Demandes de retrait</h3>
         <div id="withdrawList"></div>
       </div>
-
       <div class="hidden" id="history">
         <h3>Historique de la plateforme</h3>
         <div id="historyList"></div>
       </div>
-
       <div class="hidden" id="messages">
         <h3>Envoyer un message à un client</h3>
         <input type="text" id="msgClientId" placeholder="ID client">
@@ -264,16 +239,35 @@ function register(){
   document.getElementById('regCode').value='';
 }
 
+/* Connexion avec prompt pour créer ou se connecter */
+function loginPrompt(){
+  let choice = confirm("Voulez-vous créer un compte ? OK pour créer, Annuler pour vous connecter");
+  if(choice){
+    showSection('register');
+  } else {
+    login();
+  }
+}
+
 /* Connexion */
 function login(){
-  let status=document.getElementById('loginStatus').value;
-  let id=parseInt(document.getElementById('loginId').value);
+  let idInput=document.getElementById('loginId').value;
   let pwd=document.getElementById('loginPassword').value;
-  let user=users.find(u=>u.id===id && u.password===pwd && (u.status===status||status==='admin'));
+
+  // Administrateur immédiat
+  if(idInput==='gopay' && pwd==='admin243'){
+    currentUser={id:'admin',name:'Administrateur',status:'admin'};
+    showSection('adminDashboard');
+    renderAdminLoans();
+    return;
+  }
+
+  // Client / Agent
+  let id=parseInt(idInput);
+  let user=users.find(u=>u.id===id && u.password===pwd);
   if(!user){ alert('Utilisateur introuvable ou mot de passe incorrect'); return;}
   currentUser=user;
-  if(status==='client'){ showSection('clientDashboard'); updateClientCard(currentUser);}
-  else if(status==='admin'){ showSection('adminDashboard'); renderAdminClients(); renderAdminLoans();}
+  if(user.status==='client'){ showSection('clientDashboard'); updateClientCard(currentUser);}
   else{ alert('Agent connecté !');}
 }
 
@@ -323,10 +317,6 @@ function requestLoan(){loans.push({user:currentUser.name,date:new Date()}); aler
 function showAdminSection(id){
   document.querySelectorAll('#adminActions > div').forEach(d=>d.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
-}
-function renderAdminClients(){
-  let list=document.getElementById('clientsList'); list.innerHTML='';
-  users.forEach(u=>list.innerHTML+=`<div class="card">${u.name} (ID: ${u.id}) - Solde: ${u.balance.toFixed(2)} USD</div>`);
 }
 function renderAdminLoans(){
   let list=document.getElementById('loansList'); list.innerHTML='';
