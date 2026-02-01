@@ -90,7 +90,6 @@
     </div>
 
     <div id="clientActions">
-      <!-- Dépôt -->
       <div class="hidden" id="deposit">
         <h3>Déposer de l'argent</h3>
         <input type="number" id="depositAmount" placeholder="Montant">
@@ -104,7 +103,6 @@
         <button onclick="deposit()">Confirmer Dépôt</button>
       </div>
 
-      <!-- Retrait -->
       <div class="hidden" id="withdraw">
         <h3>Retirer de l'argent</h3>
         <input type="number" id="withdrawAmount" placeholder="Montant">
@@ -119,7 +117,6 @@
         <button onclick="withdraw()">Confirmer Retrait</button>
       </div>
 
-      <!-- Envoi -->
       <div class="hidden" id="send">
         <h3>Envoyer de l'argent</h3>
         <input type="number" id="sendAmount" placeholder="Montant">
@@ -135,7 +132,6 @@
         <button onclick="sendMoney()">Envoyer</button>
       </div>
 
-      <!-- Demande de prêt -->
       <div class="hidden" id="loan">
         <h3>Demande de prêt</h3>
         <input type="text" id="loanName" placeholder="Nom complet">
@@ -234,7 +230,6 @@
 </main>
 
 <script>
-/* Gestion de sections */
 function showSection(id){
   document.querySelectorAll('main .section').forEach(s=>s.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
@@ -243,6 +238,7 @@ function showSection(id){
 /* Données simulées */
 let users=[], loans=[], history=[];
 let currentUser=null;
+
 function generateId(){ return Math.floor(10000000 + Math.random()*90000000); }
 function generateCard(){ return Math.floor(100000000000 + Math.random()*900000000000); }
 
@@ -256,6 +252,9 @@ function register(){
   if(!name||!email||!phone||!password||!code){ alert('Remplir tous les champs'); return;}
   let user={id:generateId(),name,email,phone,password,code,balance:0,cardNumber:generateCard(),status:'client'};
   users.push(user);
+  currentUser=user; // connexion immédiate après inscription
+  updateClientCard(currentUser);
+  showSection('clientDashboard');
   alert('Compte créé ! Votre ID : '+user.id);
   document.getElementById('regName').value='';
   document.getElementById('regEmail').value='';
@@ -267,13 +266,22 @@ function register(){
 /* Connexion */
 function login(){
   let status=document.getElementById('loginStatus').value;
-  let id=parseInt(document.getElementById('loginId').value);
+  let id=document.getElementById('loginId').value.trim();
   let pwd=document.getElementById('loginPassword').value;
-  let user=users.find(u=>u.id===id && u.password===pwd && (u.status===status||status==='admin'));
+
+  // Admin fixe
+  if(status==='admin' && id==='gopay' && pwd==='admin243'){
+    currentUser={name:'Administrateur',id:'gopay',status:'admin'};
+    showSection('adminDashboard');
+    renderAdminClients();
+    renderAdminLoans();
+    return;
+  }
+
+  let user=users.find(u=>(u.id==id || (status==='admin' && u.status==='admin')) && u.password===pwd && (u.status===status));
   if(!user){ alert('Utilisateur introuvable ou mot de passe incorrect'); return;}
   currentUser=user;
   if(status==='client'){ showSection('clientDashboard'); updateClientCard(currentUser);}
-  else if(status==='admin'){ showSection('adminDashboard'); renderAdminClients(); renderAdminLoans();}
   else{ alert('Agent connecté !');}
 }
 
@@ -317,7 +325,10 @@ function sendMoney(){
   history.push({type:'envoi',user:currentUser.name,amount:amt,to:rec.name,date:new Date()});
   alert('Envoi effectué');
 }
-function requestLoan(){loans.push({user:currentUser.name,date:new Date()}); alert('Demande de prêt reçue, en cours d’analyse');}
+function requestLoan(){
+  loans.push({user:currentUser.name,date:new Date()});
+  alert('Demande de prêt reçue, en cours d’analyse');
+}
 
 /* Admin actions */
 function showAdminSection(id){
