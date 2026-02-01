@@ -32,298 +32,134 @@
   <a href="#" onclick="showSection('home')">Accueil</a>
   <a href="#" onclick="showSection('login')">Connexion</a>
   <a href="#" onclick="showSection('register')">Devenir partenaire</a>
-  <a href="#" onclick="showSection('contact')">Contact / Besoin d'aide</a>
-  <a href="#" onclick="showSection('about')">Qui sommes-nous ?</a>
-  <a href="#" onclick="showSection('services')">Nos services</a>
-  <a href="#" onclick="showSection('partners')">Nos partenaires</a>
 </nav>
 
 <main>
-  <!-- Accueil -->
-  <div class="section" id="home">
-    <h2>Bienvenue sur GoTrust Pay</h2>
-    <p>GoTrust Pay est une plateforme financière sécurisée pour la gestion de vos paiements, dépôts, retraits et prêts.</p>
-    <p>Adresse : Goma, Nord Kivu, RDC</p>
-  </div>
 
-  <!-- Connexion -->
-  <div class="section hidden" id="login">
-    <h2>Connexion</h2>
-    <input type="text" id="loginId" placeholder="Nom ou ID">
-    <input type="password" id="loginPassword" placeholder="Mot de passe">
-    <button onclick="loginPrompt()">Se connecter</button>
-  </div>
+<div class="section" id="home">
+  <h2>Bienvenue sur GoTrust Pay</h2>
+  <p>Plateforme financière sécurisée.</p>
+</div>
 
-  <!-- Inscription -->
-  <div class="section hidden" id="register">
-    <h2>Créer un compte</h2>
-    <label>Nom complet</label><input type="text" id="regName">
-    <label>Email</label><input type="email" id="regEmail">
-    <label>Téléphone</label><input type="text" id="regPhone">
-    <label>Mot de passe (8 chiffres)</label><input type="password" id="regPassword">
-    <label>Code de retrait (6 chiffres)</label><input type="text" id="regCode">
-    <button onclick="register()">S'inscrire</button>
-  </div>
+<!-- LOGIN -->
+<div class="section hidden" id="login">
+  <h2>Connexion</h2>
+  <label>Statut</label>
+  <select id="loginStatus">
+    <option value="client">Client</option>
+    <option value="admin">Administrateur</option>
+  </select>
+  <input type="text" id="loginId" placeholder="ID / Nom admin">
+  <input type="password" id="loginPassword" placeholder="Mot de passe">
+  <button onclick="login()">Se connecter</button>
+</div>
 
-  <!-- Client Dashboard -->
-  <div class="section hidden" id="clientDashboard">
-    <h2>Tableau de bord Client</h2>
-    <div class="card">
-      <h3>Carte Virtuelle</h3>
-      <div class="qr" id="clientQR"></div>
-      <p>ID : <span id="clientIdDisplay"></span></p>
-      <p>Numéro de carte : <span id="clientCardNumber"></span></p>
-      <p>Solde : <span id="clientBalance">0.00 USD</span></p>
-    </div>
-    <div class="menu">
-      <button onclick="showClientSection('deposit')">Déposer</button>
-      <button onclick="showClientSection('withdraw')">Retirer</button>
-      <button onclick="showClientSection('send')">Envoyer argent</button>
-      <button onclick="showClientSection('loan')">Demande de prêt</button>
-    </div>
-    <div id="clientActions">
-      <div class="hidden" id="deposit">
-        <h3>Déposer de l'argent</h3>
-        <input type="number" id="depositAmount" placeholder="Montant">
-        <label>Choisir service</label>
-        <select id="depositService">
-          <option value="gopay">GoPay</option>
-          <option value="airtel">Airtel Money</option>
-          <option value="orange">Orange Money</option>
-          <option value="vodacom">M-Pesa Vodacom</option>
-        </select>
-        <button onclick="deposit()">Confirmer Dépôt</button>
-      </div>
-      <div class="hidden" id="withdraw">
-        <h3>Retirer de l'argent</h3>
-        <input type="number" id="withdrawAmount" placeholder="Montant">
-        <label>Service de retrait</label>
-        <select id="withdrawService">
-          <option value="gopay">GoPay</option>
-          <option value="airtel">Airtel Money</option>
-          <option value="orange">Orange Money</option>
-          <option value="vodacom">M-Pesa Vodacom</option>
-        </select>
-        <input type="text" id="withdrawCode" placeholder="Code de retrait">
-        <button onclick="withdraw()">Confirmer Retrait</button>
-      </div>
-      <div class="hidden" id="send">
-        <h3>Envoyer de l'argent</h3>
-        <input type="number" id="sendAmount" placeholder="Montant">
-        <label>Service</label>
-        <select id="sendService">
-          <option value="gopay">GoPay</option>
-          <option value="airtel">Airtel Money</option>
-          <option value="orange">Orange Money</option>
-          <option value="vodacom">M-Pesa Vodacom</option>
-        </select>
-        <input type="text" id="sendRecipient" placeholder="Numéro ou ID destinataire">
-        <input type="password" id="sendPassword" placeholder="Mot de passe">
-        <button onclick="sendMoney()">Envoyer</button>
-      </div>
-      <div class="hidden" id="loan">
-        <h3>Demande de prêt</h3>
-        <input type="text" id="loanName" placeholder="Nom complet">
-        <input type="text" id="loanAddress" placeholder="Adresse">
-        <input type="text" id="loanContact" placeholder="Contact">
-        <input type="text" id="loanWitness1" placeholder="Témoin 1">
-        <input type="text" id="loanWitness2" placeholder="Témoin 2">
-        <input type="number" id="loanAmount" placeholder="Montant du prêt">
-        <textarea id="loanReason" placeholder="Motif"></textarea>
-        <button onclick="requestLoan()">Soumettre demande</button>
-      </div>
-    </div>
-  </div>
+<!-- REGISTER -->
+<div class="section hidden" id="register">
+  <h2>Créer un compte</h2>
+  <input type="text" id="regName" placeholder="Nom complet">
+  <input type="email" id="regEmail" placeholder="Email">
+  <input type="text" id="regPhone" placeholder="Téléphone">
+  <input type="password" id="regPassword" placeholder="Mot de passe">
+  <input type="text" id="regCode" placeholder="Code de retrait">
+  <button onclick="register()">S'inscrire</button>
+</div>
 
-  <!-- Admin Dashboard -->
-  <div class="section hidden" id="adminDashboard">
-    <h2>Tableau de bord Admin</h2>
-    <div class="menu">
-      <button onclick="showAdminSection('publish')">Publier message</button>
-      <button onclick="showAdminSection('loans')">Demandes de prêt</button>
-      <button onclick="showAdminSection('withdrawals')">Demandes de retrait</button>
-      <button onclick="showAdminSection('history')">Historique</button>
-      <button onclick="showAdminSection('messages')">Envoyer message</button>
-    </div>
-    <div id="adminActions">
-      <div class="hidden" id="publish">
-        <h3>Publier un message sur l'accueil</h3>
-        <textarea id="adminMessage" placeholder="Écrire message ici..."></textarea>
-        <input type="file" id="adminFile">
-        <button onclick="publishMessage()">Publier</button>
-      </div>
-      <div class="hidden" id="loans">
-        <h3>Demandes de prêt</h3>
-        <div id="loansList"></div>
-      </div>
-      <div class="hidden" id="withdrawals">
-        <h3>Demandes de retrait</h3>
-        <div id="withdrawList"></div>
-      </div>
-      <div class="hidden" id="history">
-        <h3>Historique de la plateforme</h3>
-        <div id="historyList"></div>
-      </div>
-      <div class="hidden" id="messages">
-        <h3>Envoyer un message à un client</h3>
-        <input type="text" id="msgClientId" placeholder="ID client">
-        <textarea id="msgContent" placeholder="Message à envoyer"></textarea>
-        <button onclick="sendAdminMessage()">Envoyer</button>
-      </div>
-    </div>
-  </div>
+<!-- CLIENT DASHBOARD -->
+<div class="section hidden" id="clientDashboard">
+  <h2>Tableau de bord Client</h2>
+  <p>ID : <span id="clientIdDisplay"></span></p>
+  <p>Carte : <span id="clientCardNumber"></span></p>
+  <p>Solde : <span id="clientBalance"></span></p>
+</div>
 
-  <!-- Contact -->
-  <div class="section hidden" id="contact">
-    <h2>Contact / Besoin d'aide</h2>
-    <p>Email : gotrustpayinfo@gmail.com</p>
-    <p>Adresse : Goma, Nord Kivu, RDC</p>
-  </div>
+<!-- ADMIN DASHBOARD -->
+<div class="section hidden" id="adminDashboard">
+  <h2>Tableau de bord Admin</h2>
+  <div id="clientsList"></div>
+</div>
 
-  <!-- Qui sommes-nous -->
-  <div class="section hidden" id="about">
-    <h2>Qui sommes-nous ?</h2>
-    <p>GoTrust Pay est une plateforme financière sécurisée pour faciliter vos transactions, dépôts, retraits et prêts.</p>
-  </div>
-
-  <!-- Services -->
-  <div class="section hidden" id="services">
-    <h2>Nos services</h2>
-    <ul>
-      <li>Gestion de comptes</li>
-      <li>Dépôt et retrait via GoPay et services locaux</li>
-      <li>Envoi d’argent</li>
-      <li>Demandes de prêt sécurisées</li>
-    </ul>
-  </div>
-
-  <!-- Partenaires -->
-  <div class="section hidden" id="partners">
-    <h2>Nos partenaires</h2>
-    <ul>
-      <li>Banque fictive ABC</li>
-      <li>Service mobile XYZ</li>
-      <li>FinancePlus</li>
-    </ul>
-  </div>
 </main>
 
 <script>
-/* Gestion de sections */
+/* Navigation */
 function showSection(id){
-  document.querySelectorAll('main .section').forEach(s=>s.classList.add('hidden'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
 }
 
-/* Données simulées */
-let users=[], loans=[], history=[];
-let currentUser=null;
+/* Données */
+let users = [];
+let currentUser = null;
+
+/* Admin FIXE */
+const ADMIN_ID = "gopay";
+const ADMIN_PASSWORD = "admin243";
+
+/* Utils */
 function generateId(){ return Math.floor(10000000 + Math.random()*90000000); }
 function generateCard(){ return Math.floor(100000000000 + Math.random()*900000000000); }
 
-/* Inscription */
+/* REGISTER → login auto */
 function register(){
-  let name=document.getElementById('regName').value;
-  let email=document.getElementById('regEmail').value;
-  let phone=document.getElementById('regPhone').value;
-  let password=document.getElementById('regPassword').value;
-  let code=document.getElementById('regCode').value;
-  if(!name||!email||!phone||!password||!code){ alert('Remplir tous les champs'); return;}
-  let user={id:generateId(),name,email,phone,password,code,balance:0,cardNumber:generateCard(),status:'client'};
+  let user = {
+    id: generateId(),
+    name: regName.value,
+    email: regEmail.value,
+    phone: regPhone.value,
+    password: regPassword.value,
+    code: regCode.value,
+    balance: 0,
+    cardNumber: generateCard(),
+    status: "client"
+  };
+
   users.push(user);
-  alert('Compte créé ! Votre ID : '+user.id);
-  document.getElementById('regName').value='';
-  document.getElementById('regEmail').value='';
-  document.getElementById('regPhone').value='';
-  document.getElementById('regPassword').value='';
-  document.getElementById('regCode').value='';
+  currentUser = user;
+
+  showSection('clientDashboard');
+  updateClientCard(user);
 }
 
-/* Connexion avec prompt pour créer ou se connecter */
-function loginPrompt(){
-  let choice = confirm("Voulez-vous créer un compte ? OK pour créer, Annuler pour vous connecter");
-  if(choice){
-    showSection('register');
-  } else {
-    login();
-  }
-}
-
-/* Connexion */
+/* LOGIN corrigé */
 function login(){
-  let idInput=document.getElementById('loginId').value;
-  let pwd=document.getElementById('loginPassword').value;
+  let status = loginStatus.value;
+  let id = loginId.value;
+  let pwd = loginPassword.value;
 
-  // Administrateur immédiat
-  if(idInput==='gopay' && pwd==='admin243'){
-    currentUser={id:'admin',name:'Administrateur',status:'admin'};
-    showSection('adminDashboard');
-    renderAdminLoans();
-    return;
+  /* ADMIN */
+  if(status === "admin"){
+    if(id === ADMIN_ID && pwd === ADMIN_PASSWORD){
+      showSection('adminDashboard');
+      renderAdminClients();
+      return;
+    } else {
+      alert("Accès admin refusé");
+      return;
+    }
   }
 
-  // Client / Agent
-  let id=parseInt(idInput);
-  let user=users.find(u=>u.id===id && u.password===pwd);
-  if(!user){ alert('Utilisateur introuvable ou mot de passe incorrect'); return;}
-  currentUser=user;
-  if(user.status==='client'){ showSection('clientDashboard'); updateClientCard(currentUser);}
-  else{ alert('Agent connecté !');}
+  /* CLIENT */
+  let user = users.find(u => u.id == id && u.password === pwd);
+  if(!user){ alert("Identifiants incorrects"); return; }
+
+  currentUser = user;
+  showSection('clientDashboard');
+  updateClientCard(user);
 }
 
-function updateClientCard(user){
-  document.getElementById('clientIdDisplay').textContent=user.id;
-  document.getElementById('clientCardNumber').textContent=user.cardNumber;
-  document.getElementById('clientBalance').textContent=user.balance.toFixed(2)+' USD';
+function updateClientCard(u){
+  clientIdDisplay.textContent = u.id;
+  clientCardNumber.textContent = u.cardNumber;
+  clientBalance.textContent = u.balance.toFixed(2)+" USD";
 }
 
-/* Client actions */
-function showClientSection(id){
-  document.querySelectorAll('#clientActions > div').forEach(d=>d.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
+function renderAdminClients(){
+  clientsList.innerHTML = "";
+  users.forEach(u=>{
+    clientsList.innerHTML += `<div class="card">${u.name} - ${u.balance} USD</div>`;
+  });
 }
-function deposit(){
-  let amt=parseFloat(document.getElementById('depositAmount').value);
-  if(isNaN(amt)||amt<=0){alert('Montant invalide');return;}
-  currentUser.balance+=amt; updateClientCard(currentUser);
-  history.push({type:'dépôt',user:currentUser.name,amount:amt,date:new Date()});
-  alert('Dépôt effectué via '+document.getElementById('depositService').value);
-}
-function withdraw(){
-  let amt=parseFloat(document.getElementById('withdrawAmount').value);
-  let code=document.getElementById('withdrawCode').value;
-  if(isNaN(amt)||amt<=0){alert('Montant invalide');return;}
-  if(code!==currentUser.code){alert('Code incorrect');return;}
-  if(currentUser.balance<amt){alert('Solde insuffisant');return;}
-  currentUser.balance-=amt; updateClientCard(currentUser);
-  history.push({type:'retrait',user:currentUser.name,amount:amt,date:new Date()});
-  alert('Retrait effectué via '+document.getElementById('withdrawService').value);
-}
-function sendMoney(){
-  let amt=parseFloat(document.getElementById('sendAmount').value);
-  let recipient=document.getElementById('sendRecipient').value;
-  let pwd=document.getElementById('sendPassword').value;
-  if(pwd!==currentUser.password){alert('Mot de passe incorrect');return;}
-  let rec=users.find(u=>u.id==recipient);
-  if(!rec){alert('Destinataire introuvable');return;}
-  if(currentUser.balance<amt){alert('Solde insuffisant');return;}
-  currentUser.balance-=amt; rec.balance+=amt; updateClientCard(currentUser);
-  history.push({type:'envoi',user:currentUser.name,amount:amt,to:rec.name,date:new Date()});
-  alert('Envoi effectué');
-}
-function requestLoan(){loans.push({user:currentUser.name,date:new Date()}); alert('Demande de prêt reçue, en cours d’analyse');}
-
-/* Admin actions */
-function showAdminSection(id){
-  document.querySelectorAll('#adminActions > div').forEach(d=>d.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-}
-function renderAdminLoans(){
-  let list=document.getElementById('loansList'); list.innerHTML='';
-  loans.forEach((l,i)=>list.innerHTML+=`<div class="card">${l.user} - ${l.date.toLocaleString()}</div>`);
-}
-function publishMessage(){alert('Message publié sur l’accueil');}
-function sendAdminMessage(){alert('Message envoyé au client ID '+document.getElementById('msgClientId').value);}
 </script>
 
 </body>
