@@ -58,6 +58,7 @@
     <input type="password" id="loginPassword" placeholder="Mot de passe">
     <button onclick="login()">Se connecter</button>
 
+    <!-- Formulaire d'inscription intégré -->
     <div id="inlineRegister" style="margin-top:20px; border-top:1px solid #ddd; padding-top:15px;">
       <h3>Créer un compte client</h3>
       <label>Nom complet</label><input type="text" id="regName">
@@ -227,27 +228,125 @@
   </div>
 </main>
 
-<!-- Scripts -->
-<script>
-/* Tous tes scripts JS de login, register, client actions, admin actions */
-</script>
-
-<!-- Firebase -->
 <script type="module">
-// Import Firebase
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  // Firebase
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
+    authDomain: "gotrustpay-e6524.firebaseapp.com",
+    projectId: "gotrustpay-e6524",
+    storageBucket: "gotrustpay-e6524.appspot.com",
+    messagingSenderId: "177034024636",
+    appId: "1:177034024636:web:da80102cc82dd7cfa2a2b9"
+  };
+  const app = initializeApp(firebaseConfig);
 
-const firebaseConfig = {
-  apiKey: "AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
-  authDomain: "gotrustpay-e6524.firebaseapp.com",
-  projectId: "gotrustpay-e6524",
-  storageBucket: "gotrustpay-e6524.appspot.com",
-  messagingSenderId: "177034024636",
-  appId: "1:177034024636:web:da80102cc82dd7cfa2a2b9"
-};
+  // Fonctions du site
+  function showSection(id){
+    document.querySelectorAll('main .section').forEach(s=>s.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+  }
 
-const app = initializeApp(firebaseConfig);
-</script>
+  let users=[], loans=[], history=[];
+  let currentUser=null;
 
-</body>
-</html>
+  function generateId(){ return Math.floor(10000000 + Math.random()*90000000); }
+  function generateCard(){ return Math.floor(100000000000 + Math.random()*900000000000); }
+
+  function register(){
+    let name=document.getElementById('regName').value;
+    let email=document.getElementById('regEmail').value;
+    let phone=document.getElementById('regPhone').value;
+    let password=document.getElementById('regPassword').value;
+    let code=document.getElementById('regCode').value;
+    
+    if(!name||!email||!phone||!password||!code){ alert('Remplir tous les champs'); return; }
+
+    let user={id:generateId(),name,email,phone,password,code,balance:0,cardNumber:generateCard(),status:'client'};
+    users.push(user);
+
+    currentUser=user;
+    updateClientCard(currentUser);
+    showSection('clientDashboard');
+
+    alert('Compte créé ! Votre ID : '+user.id);
+
+    document.getElementById('regName').value='';
+    document.getElementById('regEmail').value='';
+    document.getElementById('regPhone').value='';
+    document.getElementById('regPassword').value='';
+    document.getElementById('regCode').value='';
+  }
+
+  function login(){
+    let status=document.getElementById('loginStatus').value;
+    let id=document.getElementById('loginId').value.trim();
+    let pwd=document.getElementById('loginPassword').value;
+
+    if(status==='admin' && id==='gopay' && pwd==='admin243'){
+      currentUser={name:'Administrateur',id:'gopay',status:'admin'};
+      showSection('adminDashboard');
+      renderAdminClients();
+      renderAdminLoans();
+      return;
+    }
+
+    let user=users.find(u=>(u.id==id || (status==='admin' && u.status==='admin')) && u.password===pwd && (u.status===status));
+    if(!user){ alert('Utilisateur introuvable ou mot de passe incorrect'); return;}
+    currentUser=user;
+    if(status==='client'){ showSection('clientDashboard'); updateClientCard(currentUser);}
+    else{ alert('Agent connecté !');}
+  }
+
+  function updateClientCard(user){
+    document.getElementById('clientIdDisplay').textContent=user.id;
+    document.getElementById('clientCardNumber').textContent=user.cardNumber;
+    document.getElementById('clientBalance').textContent=user.balance.toFixed(2)+' USD';
+  }
+
+  function showClientSection(id){
+    document.querySelectorAll('#clientActions > div').forEach(d=>d.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+  }
+  function deposit(){
+    let amt=parseFloat(document.getElementById('depositAmount').value);
+    if(isNaN(amt)||amt<=0){alert('Montant invalide');return;}
+    currentUser.balance+=amt; updateClientCard(currentUser);
+    history.push({type:'dépôt',user:currentUser.name,amount:amt,date:new Date()});
+    alert('Dépôt effectué via '+document.getElementById('depositService').value);
+  }
+  function withdraw(){
+    let amt=parseFloat(document.getElementById('withdrawAmount').value);
+    let code=document.getElementById('withdrawCode').value;
+    if(isNaN(amt)||amt<=0){alert('Montant invalide');return;}
+    if(code!==currentUser.code){alert('Code incorrect');return;}
+    if(currentUser.balance<amt){alert('Solde insuffisant');return;}
+    currentUser.balance-=amt; updateClientCard(currentUser);
+    history.push({type:'retrait',user:currentUser.name,amount:amt,date:new Date()});
+    alert('Retrait effectué via '+document.getElementById('withdrawService').value);
+  }
+  function sendMoney(){
+    let amt=parseFloat(document.getElementById('sendAmount').value);
+    let recipient=document.getElementById('sendRecipient').value;
+    let pwd=document.getElementById('sendPassword').value;
+    if(pwd!==currentUser.password){alert('Mot de passe incorrect');return;}
+    let rec=users.find(u=>u.id==recipient);
+    if(!rec){alert('Destinataire introuvable');return;}
+    if(currentUser.balance<amt){alert('Solde insuffisant');return;}
+    currentUser.balance-=amt; rec.balance+=amt; updateClientCard(currentUser);
+    history.push({type:'envoi',user:currentUser.name,amount:amt,to:rec.name,date:new Date()});
+    alert('Envoi effectué');
+  }
+  function requestLoan(){loans.push({user:currentUser.name,date:new Date()}); alert('Demande de prêt reçue, en cours d’analyse');}
+
+  function showAdminSection(id){
+    document.querySelectorAll('#adminActions > div').forEach(d=>d.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+  }
+  function renderAdminClients(){
+    let list=document.getElementById('clientsList'); list.innerHTML='';
+    users.forEach(u=>list.innerHTML+=`<div class="card">${u.name} (ID: ${u.id}) - Solde: ${u.balance.toFixed(2)} USD</div>`);
+  }
+  function renderAdminLoans(){
+    let list=document.getElementById('loansList'); list.innerHTML='';
+    loans.forEach((l,i)=>list.innerHTML+=`<div
