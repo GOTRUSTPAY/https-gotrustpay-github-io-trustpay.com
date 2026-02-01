@@ -16,7 +16,7 @@
   .section { margin-bottom:40px; }
   .hidden { display:none; }
   .card { border:1px solid #ddd; padding:15px; border-radius:8px; margin-bottom:15px; background:#f9f9f9; }
-  .qr { width:100px; height:100px; background:#ccc; display:inline-block; margin-right:10px; vertical-align:middle; }
+  .qr { width:100px; height:100px; display:inline-block; margin-right:10px; vertical-align:middle; }
   label { font-weight:bold; display:block; margin-top:10px; }
   .menu { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
 </style>
@@ -38,14 +38,12 @@
 </nav>
 
 <main>
-  <!-- Accueil -->
   <div class="section" id="home">
     <h2>Bienvenue sur GoTrust Pay</h2>
-    <p>GoTrust Pay est une plateforme financière sécurisée pour la gestion de vos paiements, dépôts, retraits et prêts.</p>
+    <p>Plateforme sécurisée pour gérer vos paiements, dépôts, retraits et prêts.</p>
     <p>Adresse : Goma, Nord Kivu, RDC</p>
   </div>
 
-  <!-- Connexion + inscription client -->
   <div class="section hidden" id="login">
     <h2>Connexion</h2>
     <label>Statut</label>
@@ -58,7 +56,6 @@
     <input type="password" id="loginPassword" placeholder="Mot de passe">
     <button onclick="login()">Se connecter</button>
 
-    <!-- Formulaire d'inscription intégré -->
     <div id="inlineRegister" style="margin-top:20px; border-top:1px solid #ddd; padding-top:15px;">
       <h3>Créer un compte client</h3>
       <label>Nom complet</label><input type="text" id="regName">
@@ -70,15 +67,15 @@
     </div>
   </div>
 
-  <!-- Client Dashboard -->
   <div class="section hidden" id="clientDashboard">
     <h2>Tableau de bord Client</h2>
     <div class="card">
       <h3>Carte Virtuelle</h3>
-      <div class="qr" id="clientQR"></div>
+      <canvas class="qr" id="clientQR"></canvas>
       <p>ID : <span id="clientIdDisplay"></span></p>
       <p>Numéro de carte : <span id="clientCardNumber"></span></p>
       <p>Solde : <span id="clientBalance">0.00 USD</span></p>
+      <button onclick="downloadCard()">Télécharger carte</button>
     </div>
 
     <div class="menu">
@@ -86,6 +83,7 @@
       <button onclick="showClientSection('withdraw')">Retirer</button>
       <button onclick="showClientSection('send')">Envoyer argent</button>
       <button onclick="showClientSection('loan')">Demande de prêt</button>
+      <button onclick="showClientSection('chat')">Chat</button>
     </div>
 
     <div id="clientActions">
@@ -142,10 +140,17 @@
         <textarea id="loanReason" placeholder="Motif"></textarea>
         <button onclick="requestLoan()">Soumettre demande</button>
       </div>
+
+      <div class="hidden" id="chat">
+        <h3>Chat avec un autre utilisateur</h3>
+        <input type="text" id="chatRecipient" placeholder="ID destinataire">
+        <textarea id="chatMessage" placeholder="Écrire message..."></textarea>
+        <button onclick="sendChat()">Envoyer</button>
+        <div id="chatHistory" style="max-height:200px;overflow:auto;margin-top:10px;"></div>
+      </div>
     </div>
   </div>
 
-  <!-- Admin Dashboard -->
   <div class="section hidden" id="adminDashboard">
     <h2>Tableau de bord Admin</h2>
     <div class="menu">
@@ -193,20 +198,17 @@
     </div>
   </div>
 
-  <!-- Contact -->
   <div class="section hidden" id="contact">
     <h2>Contact / Besoin d'aide</h2>
     <p>Email : gotrustpayinfo@gmail.com</p>
     <p>Adresse : Goma, Nord Kivu, RDC</p>
   </div>
 
-  <!-- Qui sommes-nous -->
   <div class="section hidden" id="about">
     <h2>Qui sommes-nous ?</h2>
     <p>GoTrust Pay est une plateforme financière sécurisée pour faciliter vos transactions, dépôts, retraits et prêts.</p>
   </div>
 
-  <!-- Services -->
   <div class="section hidden" id="services">
     <h2>Nos services</h2>
     <ul>
@@ -217,7 +219,6 @@
     </ul>
   </div>
 
-  <!-- Partenaires -->
   <div class="section hidden" id="partners">
     <h2>Nos partenaires</h2>
     <ul>
@@ -228,125 +229,116 @@
   </div>
 </main>
 
+<!-- Firebase + QR Code -->
 <script type="module">
-  // Firebase
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-  const firebaseConfig = {
-    apiKey: "AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
-    authDomain: "gotrustpay-e6524.firebaseapp.com",
-    projectId: "gotrustpay-e6524",
-    storageBucket: "gotrustpay-e6524.appspot.com",
-    messagingSenderId: "177034024636",
-    appId: "1:177034024636:web:da80102cc82dd7cfa2a2b9"
-  };
-  const app = initializeApp(firebaseConfig);
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc, addDoc, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-firestore.js";
+import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-storage.js";
 
-  // Fonctions du site
-  function showSection(id){
-    document.querySelectorAll('main .section').forEach(s=>s.classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
-  }
+const firebaseConfig = {
+  apiKey: "AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
+  authDomain: "gotrustpay-e6524.firebaseapp.com",
+  projectId: "gotrustpay-e6524",
+  storageBucket: "gotrustpay-e6524.appspot.com",
+  messagingSenderId: "177034024636",
+  appId: "1:177034024636:web:da80102cc82dd7cfa2a2b9"
+};
 
-  let users=[], loans=[], history=[];
-  let currentUser=null;
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
-  function generateId(){ return Math.floor(10000000 + Math.random()*90000000); }
-  function generateCard(){ return Math.floor(100000000000 + Math.random()*900000000000); }
+/* QR Code simple */
+function generateQRCode(text){
+  const canvas=document.getElementById('clientQR');
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#ccc';
+  ctx.fillRect(0,0,100,100);
+  ctx.fillStyle='#000';
+  ctx.fillText(text,5,50);
+}
 
-  function register(){
-    let name=document.getElementById('regName').value;
-    let email=document.getElementById('regEmail').value;
-    let phone=document.getElementById('regPhone').value;
-    let password=document.getElementById('regPassword').value;
-    let code=document.getElementById('regCode').value;
-    
-    if(!name||!email||!phone||!password||!code){ alert('Remplir tous les champs'); return; }
+/* Télécharger carte */
+function downloadCard(){
+  const canvas = document.getElementById('clientQR');
+  const link = document.createElement('a');
+  link.download = `Carte-${currentUser.id}.png`;
+  link.href = canvas.toDataURL();
+  link.click();
+}
 
-    let user={id:generateId(),name,email,phone,password,code,balance:0,cardNumber:generateCard(),status:'client'};
-    users.push(user);
+/* Fonctions principales */
+function showSection(id){ document.querySelectorAll('main .section').forEach(s=>s.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
 
-    currentUser=user;
-    updateClientCard(currentUser);
-    showSection('clientDashboard');
+function generateId(){ return Math.floor(10000000 + Math.random()*90000000); }
+function generateCard(){ return Math.floor(100000000000 + Math.random()*900000000000); }
 
-    alert('Compte créé ! Votre ID : '+user.id);
+let currentUser=null;
 
-    document.getElementById('regName').value='';
-    document.getElementById('regEmail').value='';
-    document.getElementById('regPhone').value='';
-    document.getElementById('regPassword').value='';
-    document.getElementById('regCode').value='';
-  }
+/* Inscription */
+async function register(){
+  const name=document.getElementById('regName').value;
+  const email=document.getElementById('regEmail').value;
+  const phone=document.getElementById('regPhone').value;
+  const password=document.getElementById('regPassword').value;
+  const code=document.getElementById('regCode').value;
+  if(!name||!email||!phone||!password||!code){ alert('Remplir tous les champs'); return; }
 
-  function login(){
-    let status=document.getElementById('loginStatus').value;
-    let id=document.getElementById('loginId').value.trim();
-    let pwd=document.getElementById('loginPassword').value;
+  const id=generateId(); 
+  const cardNumber=generateCard();
+  const user={id,name,email,phone,password,code,balance:0,cardNumber,status:'client'};
 
-    if(status==='admin' && id==='gopay' && pwd==='admin243'){
-      currentUser={name:'Administrateur',id:'gopay',status:'admin'};
-      showSection('adminDashboard');
-      renderAdminClients();
-      renderAdminLoans();
-      return;
-    }
+  await setDoc(doc(db,'users',id.toString()),user);
+  currentUser=user;
+  updateClientCard(currentUser);
+  showSection('clientDashboard');
 
-    let user=users.find(u=>(u.id==id || (status==='admin' && u.status==='admin')) && u.password===pwd && (u.status===status));
-    if(!user){ alert('Utilisateur introuvable ou mot de passe incorrect'); return;}
-    currentUser=user;
-    if(status==='client'){ showSection('clientDashboard'); updateClientCard(currentUser);}
-    else{ alert('Agent connecté !');}
-  }
+  alert('Compte créé ! Votre ID : '+id);
 
-  function updateClientCard(user){
-    document.getElementById('clientIdDisplay').textContent=user.id;
-    document.getElementById('clientCardNumber').textContent=user.cardNumber;
-    document.getElementById('clientBalance').textContent=user.balance.toFixed(2)+' USD';
-  }
+  document.getElementById('regName').value='';
+  document.getElementById('regEmail').value='';
+  document.getElementById('regPhone').value='';
+  document.getElementById('regPassword').value='';
+  document.getElementById('regCode').value='';
+}
 
-  function showClientSection(id){
-    document.querySelectorAll('#clientActions > div').forEach(d=>d.classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
-  }
-  function deposit(){
-    let amt=parseFloat(document.getElementById('depositAmount').value);
-    if(isNaN(amt)||amt<=0){alert('Montant invalide');return;}
-    currentUser.balance+=amt; updateClientCard(currentUser);
-    history.push({type:'dépôt',user:currentUser.name,amount:amt,date:new Date()});
-    alert('Dépôt effectué via '+document.getElementById('depositService').value);
-  }
-  function withdraw(){
-    let amt=parseFloat(document.getElementById('withdrawAmount').value);
-    let code=document.getElementById('withdrawCode').value;
-    if(isNaN(amt)||amt<=0){alert('Montant invalide');return;}
-    if(code!==currentUser.code){alert('Code incorrect');return;}
-    if(currentUser.balance<amt){alert('Solde insuffisant');return;}
-    currentUser.balance-=amt; updateClientCard(currentUser);
-    history.push({type:'retrait',user:currentUser.name,amount:amt,date:new Date()});
-    alert('Retrait effectué via '+document.getElementById('withdrawService').value);
-  }
-  function sendMoney(){
-    let amt=parseFloat(document.getElementById('sendAmount').value);
-    let recipient=document.getElementById('sendRecipient').value;
-    let pwd=document.getElementById('sendPassword').value;
-    if(pwd!==currentUser.password){alert('Mot de passe incorrect');return;}
-    let rec=users.find(u=>u.id==recipient);
-    if(!rec){alert('Destinataire introuvable');return;}
-    if(currentUser.balance<amt){alert('Solde insuffisant');return;}
-    currentUser.balance-=amt; rec.balance+=amt; updateClientCard(currentUser);
-    history.push({type:'envoi',user:currentUser.name,amount:amt,to:rec.name,date:new Date()});
-    alert('Envoi effectué');
-  }
-  function requestLoan(){loans.push({user:currentUser.name,date:new Date()}); alert('Demande de prêt reçue, en cours d’analyse');}
+/* Connexion */
+async function login(){
+  const status=document.getElementById('loginStatus').value;
+  const id=document.getElementById('loginId').value.trim();
+  const pwd=document.getElementById('loginPassword').value;
 
-  function showAdminSection(id){
-    document.querySelectorAll('#adminActions > div').forEach(d=>d.classList.add('hidden'));
-    document.getElementById(id).classList.remove('hidden');
-  }
-  function renderAdminClients(){
-    let list=document.getElementById('clientsList'); list.innerHTML='';
-    users.forEach(u=>list.innerHTML+=`<div class="card">${u.name} (ID: ${u.id}) - Solde: ${u.balance.toFixed(2)} USD</div>`);
-  }
-  function renderAdminLoans(){
-    let list=document.getElementById('loansList'); list.innerHTML='';
-    loans.forEach((l,i)=>list.innerHTML+=`<div
+  if(status==='admin' && id==='gopay' && pwd==='admin243'){ currentUser={name:'Administrateur',id:'gopay',status:'admin'}; showSection('adminDashboard'); return; }
+
+  const docSnap = await getDoc(doc(db,'users',id));
+  if(!docSnap.exists()){ alert('Utilisateur introuvable'); return; }
+  const user=docSnap.data();
+  if(user.password!==pwd || user.status!==status){ alert('Mot de passe incorrect'); return; }
+
+  currentUser=user;
+  if(status==='client'){ showSection('clientDashboard'); updateClientCard(currentUser); listenHistory(); }
+  else{ alert('Agent connecté !'); }
+}
+
+/* Mettre à jour la carte client */
+function updateClientCard(user){
+  document.getElementById('clientIdDisplay').textContent=user.id;
+  document.getElementById('clientCardNumber').textContent=user.cardNumber;
+  document.getElementById('clientBalance').textContent=user.balance.toFixed(2)+' USD';
+  generateQRCode(`ID:${user.id} | Carte:${user.cardNumber}`);
+}
+
+/* Historique temps réel */
+function listenHistory(){
+  const q=query(collection(db,'history'),orderBy('date','desc'));
+  onSnapshot(q,(snap)=>{
+    const list=document.getElementById('historyList');
+    list.innerHTML='';
+    snap.forEach(doc=>{ const d=doc.data(); list.innerHTML+=`<div class="card">${d.type} - ${d.user} - ${d.amount||''} - ${d.to||''} - ${d.date.toDate().toLocaleString()}</div>`; });
+  });
+}
+
+</script>
+
+</body>
+</html>
