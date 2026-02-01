@@ -32,6 +32,7 @@
   <a href="#" onclick="showSection('home')">Accueil</a>
   <a href="#" onclick="showSection('login')">Connexion</a>
   <a href="#" onclick="showSection('register')">Devenir partenaire</a>
+  <a href="#" onclick="showSection('contact')">Contact</a>
 </nav>
 
 <main>
@@ -41,7 +42,6 @@
   <p>Plateforme financière sécurisée.</p>
 </div>
 
-<!-- LOGIN -->
 <div class="section hidden" id="login">
   <h2>Connexion</h2>
   <label>Statut</label>
@@ -54,7 +54,6 @@
   <button onclick="login()">Se connecter</button>
 </div>
 
-<!-- REGISTER -->
 <div class="section hidden" id="register">
   <h2>Créer un compte</h2>
   <input type="text" id="regName" placeholder="Nom complet">
@@ -65,7 +64,6 @@
   <button onclick="register()">S'inscrire</button>
 </div>
 
-<!-- CLIENT DASHBOARD -->
 <div class="section hidden" id="clientDashboard">
   <h2>Tableau de bord Client</h2>
   <p>ID : <span id="clientIdDisplay"></span></p>
@@ -73,91 +71,84 @@
   <p>Solde : <span id="clientBalance"></span></p>
 </div>
 
-<!-- ADMIN DASHBOARD -->
 <div class="section hidden" id="adminDashboard">
   <h2>Tableau de bord Admin</h2>
   <div id="clientsList"></div>
 </div>
 
+<div class="section hidden" id="contact">
+  <h2>Contact</h2>
+  <p>Email : gotrustpayinfo@gmail.com</p>
+</div>
+
 </main>
 
 <script>
-/* Navigation */
+/* Sections */
 function showSection(id){
-  document.querySelectorAll('.section').forEach(s=>s.classList.add('hidden'));
+  document.querySelectorAll('main .section').forEach(s=>s.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
 }
 
 /* Données */
-let users = [];
-let currentUser = null;
+let users=[], currentUser=null;
 
-/* Admin FIXE */
-const ADMIN_ID = "gopay";
-const ADMIN_PASSWORD = "admin243";
+/* ADMIN FIXE */
+const ADMIN_ID="gopay";
+const ADMIN_PASSWORD="admin243";
 
-/* Utils */
-function generateId(){ return Math.floor(10000000 + Math.random()*90000000); }
-function generateCard(){ return Math.floor(100000000000 + Math.random()*900000000000); }
+function generateId(){ return Math.floor(10000000+Math.random()*90000000); }
+function generateCard(){ return Math.floor(100000000000+Math.random()*900000000000); }
 
-/* REGISTER → login auto */
+/* INSCRIPTION → LOGIN AUTO */
 function register(){
-  let user = {
-    id: generateId(),
-    name: regName.value,
-    email: regEmail.value,
-    phone: regPhone.value,
-    password: regPassword.value,
-    code: regCode.value,
-    balance: 0,
-    cardNumber: generateCard(),
-    status: "client"
+  let user={
+    id:generateId(),
+    name:regName.value,
+    email:regEmail.value,
+    phone:regPhone.value,
+    password:regPassword.value,
+    code:regCode.value,
+    balance:0,
+    cardNumber:generateCard()
   };
-
   users.push(user);
-  currentUser = user;
-
-  showSection('clientDashboard');
+  currentUser=user;
   updateClientCard(user);
+  showSection('clientDashboard');
 }
 
-/* LOGIN corrigé */
+/* LOGIN CORRIGÉ */
 function login(){
-  let status = loginStatus.value;
-  let id = loginId.value;
-  let pwd = loginPassword.value;
+  let status=loginStatus.value;
+  let id=loginId.value;
+  let pwd=loginPassword.value;
 
-  /* ADMIN */
-  if(status === "admin"){
-    if(id === ADMIN_ID && pwd === ADMIN_PASSWORD){
-      showSection('adminDashboard');
+  if(status==="admin"){
+    if(id===ADMIN_ID && pwd===ADMIN_PASSWORD){
+      showSection("adminDashboard");
       renderAdminClients();
-      return;
-    } else {
-      alert("Accès admin refusé");
-      return;
-    }
+    } else alert("Accès refusé");
+    return;
   }
 
-  /* CLIENT */
-  let user = users.find(u => u.id == id && u.password === pwd);
+  let user=users.find(u=>u.id==id && u.password===pwd);
   if(!user){ alert("Identifiants incorrects"); return; }
-
-  currentUser = user;
-  showSection('clientDashboard');
+  currentUser=user;
   updateClientCard(user);
+  showSection("clientDashboard");
 }
 
 function updateClientCard(u){
-  clientIdDisplay.textContent = u.id;
-  clientCardNumber.textContent = u.cardNumber;
-  clientBalance.textContent = u.balance.toFixed(2)+" USD";
+  clientIdDisplay.textContent=u.id;
+  clientCardNumber.textContent=u.cardNumber;
+  clientBalance.textContent=u.balance.toFixed(2)+" USD";
 }
 
 function renderAdminClients(){
-  clientsList.innerHTML = "";
+  clientsList.innerHTML="";
   users.forEach(u=>{
-    clientsList.innerHTML += `<div class="card">${u.name} - ${u.balance} USD</div>`;
+    clientsList.innerHTML+=`<div class="card">${u.name} - ${u.balance} USD</div>`;
   });
 }
 </script>
