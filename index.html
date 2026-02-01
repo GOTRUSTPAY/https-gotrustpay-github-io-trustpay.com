@@ -31,7 +31,6 @@
 <nav>
   <a href="#" onclick="showSection('home')">Accueil</a>
   <a href="#" onclick="showSection('login')">Connexion</a>
-  <a href="#" onclick="showSection('register')">Devenir partenaire</a>
   <a href="#" onclick="showSection('contact')">Contact / Besoin d'aide</a>
   <a href="#" onclick="showSection('about')">Qui sommes-nous ?</a>
   <a href="#" onclick="showSection('services')">Nos services</a>
@@ -46,7 +45,7 @@
     <p>Adresse : Goma, Nord Kivu, RDC</p>
   </div>
 
-  <!-- Connexion -->
+  <!-- Connexion + inscription client -->
   <div class="section hidden" id="login">
     <h2>Connexion</h2>
     <label>Statut</label>
@@ -58,17 +57,17 @@
     <input type="text" id="loginId" placeholder="Numéro ID">
     <input type="password" id="loginPassword" placeholder="Mot de passe">
     <button onclick="login()">Se connecter</button>
-  </div>
 
-  <!-- Inscription -->
-  <div class="section hidden" id="register">
-    <h2>Créer un compte</h2>
-    <label>Nom complet</label><input type="text" id="regName">
-    <label>Email</label><input type="email" id="regEmail">
-    <label>Téléphone</label><input type="text" id="regPhone">
-    <label>Mot de passe (8 chiffres)</label><input type="password" id="regPassword">
-    <label>Code de retrait (6 chiffres)</label><input type="text" id="regCode">
-    <button onclick="register()">S'inscrire</button>
+    <!-- Formulaire d'inscription intégré -->
+    <div id="inlineRegister" style="margin-top:20px; border-top:1px solid #ddd; padding-top:15px;">
+      <h3>Créer un compte client</h3>
+      <label>Nom complet</label><input type="text" id="regName">
+      <label>Email</label><input type="email" id="regEmail">
+      <label>Téléphone</label><input type="text" id="regPhone">
+      <label>Mot de passe (8 chiffres)</label><input type="password" id="regPassword">
+      <label>Code de retrait (6 chiffres)</label><input type="text" id="regCode">
+      <button onclick="register()">S'inscrire et accéder au tableau de bord</button>
+    </div>
   </div>
 
   <!-- Client Dashboard -->
@@ -242,20 +241,25 @@ let currentUser=null;
 function generateId(){ return Math.floor(10000000 + Math.random()*90000000); }
 function generateCard(){ return Math.floor(100000000000 + Math.random()*900000000000); }
 
-/* Inscription */
+/* Inscription client depuis connexion */
 function register(){
   let name=document.getElementById('regName').value;
   let email=document.getElementById('regEmail').value;
   let phone=document.getElementById('regPhone').value;
   let password=document.getElementById('regPassword').value;
   let code=document.getElementById('regCode').value;
-  if(!name||!email||!phone||!password||!code){ alert('Remplir tous les champs'); return;}
+  
+  if(!name||!email||!phone||!password||!code){ alert('Remplir tous les champs'); return; }
+
   let user={id:generateId(),name,email,phone,password,code,balance:0,cardNumber:generateCard(),status:'client'};
   users.push(user);
-  currentUser=user; // connexion immédiate après inscription
+
+  currentUser=user; // connexion immédiate
   updateClientCard(currentUser);
   showSection('clientDashboard');
+
   alert('Compte créé ! Votre ID : '+user.id);
+
   document.getElementById('regName').value='';
   document.getElementById('regEmail').value='';
   document.getElementById('regPhone').value='';
@@ -325,10 +329,7 @@ function sendMoney(){
   history.push({type:'envoi',user:currentUser.name,amount:amt,to:rec.name,date:new Date()});
   alert('Envoi effectué');
 }
-function requestLoan(){
-  loans.push({user:currentUser.name,date:new Date()});
-  alert('Demande de prêt reçue, en cours d’analyse');
-}
+function requestLoan(){loans.push({user:currentUser.name,date:new Date()}); alert('Demande de prêt reçue, en cours d’analyse');}
 
 /* Admin actions */
 function showAdminSection(id){
