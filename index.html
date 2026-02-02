@@ -8,17 +8,22 @@
 <style>
 body{margin:0;font-family:Arial;background:#021c1b;color:#d1fae5}
 .hidden{display:none}
-header{padding:15px;background:#012b28}
-nav a{margin-right:15px;color:#5eead4;font-weight:bold;cursor:pointer}
+header{padding:15px;background:#012b28;display:flex;align-items:center;justify-content:space-between}
+header img{height:40px;border-radius:8px}
+nav a{margin-right:15px;color:#5eead4;font-weight:bold;cursor:pointer;text-decoration:none}
 main{max-width:700px;margin:auto;padding:20px}
 input,select,button{width:100%;padding:12px;margin:6px 0;border-radius:10px;border:none}
 button{background:#14b8a6;font-weight:bold;cursor:pointer}
 .panel{background:#043837;padding:20px;border-radius:16px;margin-top:20px}
-.card{background:#054f4b;padding:20px;border-radius:18px;display:flex;justify-content:space-between;flex-wrap:wrap}
+.card{background:#054f4b;padding:20px;border-radius:18px;display:flex;justify-content:space-between;flex-wrap:wrap;margin-top:20px}
 #qr{background:#fff;padding:8px;border-radius:10px;width:120px;height:120px}
 .actions{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:20px}
 @media(max-width:500px){.actions{grid-template-columns:repeat(2,1fr)}}
-.action{background:#0fb9a8;padding:20px;border-radius:16px;text-align:center;font-weight:bold}
+.action{background:#0fb9a8;padding:20px;border-radius:16px;text-align:center;font-weight:bold;cursor:pointer}
+footer{padding:20px;text-align:center;background:#012b28;color:#5eead4;margin-top:40px}
+footer a{color:#5eead4;text-decoration:none;margin:0 5px}
+.tx{background:#043837;padding:10px;border-radius:10px;margin-top:5px}
+.activity{background:#06514f;padding:10px;border-radius:10px;margin-top:5px}
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -30,12 +35,13 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
 <body>
 
 <header>
-<nav>
- <a onclick="show('home')">Accueil</a>
- <a id="loginNav" onclick="show('login')">Connexion</a>
- <a id="regNav" onclick="show('register')">Inscription</a>
- <a id="logoutNav" class="hidden" onclick="logout()">Déconnexion</a>
-</nav>
+  <img src="https://via.placeholder.com/150x40?text=GoPay+Africa" alt="GoPay Africa">
+  <nav>
+   <a onclick="show('home')">Accueil</a>
+   <a id="loginNav" onclick="show('login')">Connexion</a>
+   <a id="regNav" onclick="show('register')">Inscription</a>
+   <a id="logoutNav" class="hidden" onclick="logout()">Déconnexion</a>
+  </nav>
 </header>
 
 <main>
@@ -82,8 +88,8 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
 
 <div class="actions">
 <div class="action" onclick="openP('pay')">💳 Paiement</div>
-<div class="action" onclick="openP('cashin')">➕ Cash‑in</div>
-<div class="action" onclick="openP('cashout')">➖ Cash‑out</div>
+<div id="cashinBtn" class="action" onclick="openP('cashin')">➕ Cash‑in</div>
+<div id="cashoutBtn" class="action" onclick="openP('cashout')">➖ Cash‑out</div>
 <div class="action" onclick="openP('history')">📜 Historique</div>
 </div>
 
@@ -111,7 +117,37 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
 <div id="txs"></div>
 </div>
 
+<div id="recentActivities" class="panel hidden">
+<h3>Activité récente</h3>
+<div id="activities"></div>
+</div>
+
 </main>
+
+<footer>
+  &copy; 2026 GoPay Africa | 
+  <a onclick="show('legal')">Mentions légales</a> | 
+  <a onclick="show('about')">Qui sommes-nous</a> | 
+  <a onclick="show('partners')">Nos partenaires</a> | 
+  <a onclick="show('contact')">Nous contacter</a>
+</footer>
+
+<div id="legal" class="panel hidden">
+  <h3>Mentions légales</h3>
+  <p>GoPay Africa est une plateforme de paiement digital sécurisée, opérant conformément aux réglementations locales.</p>
+</div>
+<div id="about" class="panel hidden">
+  <h3>Qui sommes-nous</h3>
+  <p>Nous facilitons les paiements digitaux pour l’Afrique connectée. Notre mission est de rendre les transactions simples, rapides et sécurisées.</p>
+</div>
+<div id="partners" class="panel hidden">
+  <h3>Nos partenaires</h3>
+  <p>Banques locales, commerçants, services financiers et agents certifiés GoPay.</p>
+</div>
+<div id="contact" class="panel hidden">
+  <h3>Nous contacter</h3>
+  <p>Email : contact@gopay.africa<br>Téléphone : +237 699 000 000</p>
+</div>
 
 <script>
 firebase.initializeApp({
@@ -122,11 +158,11 @@ firebase.initializeApp({
 const auth=firebase.auth(),db=firebase.firestore();
 
 function show(id){
- document.querySelectorAll("main>div").forEach(x=>x.classList.add("hidden"));
+ document.querySelectorAll("main>div, #legal, #about, #partners, #contact").forEach(x=>x.classList.add("hidden"));
  document.getElementById(id).classList.remove("hidden");
 }
 function openP(id){
- ["pay","cashin","cashout","history"].forEach(x=>document.getElementById(x).classList.add("hidden"));
+ ["pay","cashin","cashout","history","recentActivities"].forEach(x=>document.getElementById(x).classList.add("hidden"));
  document.getElementById(id).classList.remove("hidden");
 }
 
@@ -146,15 +182,33 @@ function login(){auth.signInWithEmailAndPassword(lEmail.value,lPass.value)}
 function logout(){auth.signOut()}
 
 auth.onAuthStateChanged(async u=>{
- if(!u){show("home");loginNav.classList.remove("hidden");regNav.classList.remove("hidden");logoutNav.classList.add("hidden");return;}
- loginNav.classList.add("hidden");regNav.classList.add("hidden");logoutNav.classList.remove("hidden");
- const d=await db.collection("users").doc(u.uid).get(); const x=d.data();
+ if(!u){
+   show("home");
+   loginNav.classList.remove("hidden");
+   regNav.classList.remove("hidden");
+   logoutNav.classList.add("hidden");
+   return;
+ }
+ loginNav.classList.add("hidden");
+ regNav.classList.add("hidden");
+ logoutNav.classList.remove("hidden");
+ const d=await db.collection("users").doc(u.uid).get(); 
+ const x=d.data();
  show("dash");
  uName.textContent=x.name+" ("+x.role+")";
  uId.textContent=x.gid;
  uBal.textContent=x.balance.toFixed(2);
  qr.innerHTML=""; new QRCode(qr,{text:x.gid,width:120,height:120});
+
+ // afficher activités récentes publiques
  loadTx();
+ recentActivity();
+
+ // cacher Cash-in/out pour non-agents
+ if(x.role!=="agent"){
+   document.getElementById("cashinBtn").style.display="none";
+   document.getElementById("cashoutBtn").style.display="none";
+ }
 });
 
 function tx(type,amount,to){
@@ -186,6 +240,24 @@ async function loadTx(){
   const t=d.data();
   txs.innerHTML+=`<div class="tx">${t.type} : ${t.amount} USD</div>`;
  });
+}
+
+// Activité récente publique
+const names=["Alice","Bob","Charlie","David","Eve","Fabrice","Gisèle","Hugo","Iris","Jean"];
+let shown=[];
+function recentActivity(){
+ const container=document.getElementById("activities");
+ container.innerHTML="";
+ for(let i=0;i<5;i++){
+   let n;
+   do{ n=names[Math.floor(Math.random()*names.length)]; }while(shown.includes(n));
+   shown.push(n);
+   const div=document.createElement("div");
+   div.className="activity";
+   div.textContent=`${n} a effectué un paiement`;
+   container.appendChild(div);
+ }
+ document.getElementById("recentActivities").classList.remove("hidden");
 }
 </script>
 
