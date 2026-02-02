@@ -18,7 +18,7 @@ header{display:flex;justify-content:space-between;align-items:center;padding:15p
 .menu a:hover{background:#065f5b}
 main{max-width:1100px;margin:auto;padding:20px}
 .panel{background:#043837;padding:20px;border-radius:18px;margin-top:20px}
-input,button{width:100%;padding:14px;margin:8px 0;border:none;border-radius:12px}
+input,select,button{width:100%;padding:14px;margin:8px 0;border:none;border-radius:12px}
 button{background:#14b8a6;font-weight:700;cursor:pointer}
 
 /* CARD */
@@ -65,7 +65,7 @@ footer a{color:#5eead4;text-decoration:none;margin:0 6px}
 
 <div class="menu" id="menu">
 <a onclick="show('home')">Accueil</a>
-<a onclick="show('login')">Connexion</a>
+<a onclick="show('login')">Connexion / Inscription</a>
 <a onclick="logout()">Déconnexion</a>
 </div>
 
@@ -76,9 +76,21 @@ footer a{color:#5eead4;text-decoration:none;margin:0 6px}
 </div>
 
 <div id="login" class="panel hidden">
+<h3>Connexion</h3>
 <input id="lEmail" placeholder="Email">
 <input id="lPass" type="password" placeholder="Mot de passe">
 <button onclick="login()">Se connecter</button>
+<hr>
+<h3>Inscription</h3>
+<input id="rName" placeholder="Nom complet">
+<input id="rPhone" placeholder="Téléphone">
+<input id="rEmail" placeholder="Email">
+<input id="rPass" type="password" placeholder="Mot de passe">
+<select id="rRole">
+<option value="user">Utilisateur</option>
+<option value="agent">Agent GoPay</option>
+</select>
+<button onclick="register()">Créer le compte</button>
 </div>
 
 <div id="dash" class="hidden">
@@ -140,10 +152,22 @@ footer a{color:#5eead4;text-decoration:none;margin:0 6px}
 <div id="adminActivities"></div>
 </div>
 
+<div id="legal" class="panel hidden">
+<h3>Mentions légales</h3>
+<p>GoPay Africa est une plateforme sécurisée de paiement digital.</p>
+</div>
+
+<div id="privacy" class="panel hidden">
+<h3>Politique de confidentialité</h3>
+<p>Les données utilisateurs sont confidentielles et ne sont jamais partagées.</p>
+</div>
+
 </main>
 
 <footer>
-© 2026 GoPay Africa
+© 2026 GoPay Africa —
+<a onclick="show('legal')">Mentions légales</a> | 
+<a onclick="show('privacy')">Politique de confidentialité</a>
 </footer>
 
 <script>
@@ -155,12 +179,27 @@ firebase.initializeApp({
 const auth=firebase.auth(),db=firebase.firestore();
 
 function toggleMenu(){menu.style.display=menu.style.display=="block"?"none":"block"}
+
 function show(id){
  document.querySelectorAll("main>div").forEach(x=>x.classList.add("hidden"));
  document.getElementById(id).classList.remove("hidden");
  menu.style.display="none";
 }
 
+// --- INSCRIPTION ---
+function register(){
+ const name=rName.value,email=rEmail.value,phone=rPhone.value,pass=rPass.value,role=rRole.value;
+ if(!name||!email||!pass)return alert("Tous les champs obligatoires");
+ auth.createUserWithEmailAndPassword(email,pass)
+ .then(c=>{
+   db.collection("users").doc(c.user.uid).set({name,phone,role,gid:"GP-"+Math.random().toString(36).substr(2,8).toUpperCase(),balance:50,active:true});
+   alert("Compte créé !");
+   rName.value="";rEmail.value="";rPhone.value="";rPass.value="";
+ })
+ .catch(e=>alert(e.message));
+}
+
+// --- LOGIN ---
 function login(){
  auth.signInWithEmailAndPassword(lEmail.value,lPass.value)
  .then(async()=>{
@@ -170,36 +209,36 @@ function login(){
   if(!snap.exists){
     await ref.set({name:"User",balance:50,role:"user",active:true});
   }
+  const data = snap.data();
   if(auth.currentUser.email==="motivixx.media@gmail.com"){
     await ref.update({role:"admin",active:true});
-    show("admin");
-    loadUsers();
-    loadAdminActivities();
-  }else{
+    show("admin");loadUsers();loadAdminActivities();
+  } else {
     await ref.update({active:true});
-    show("dash");
-    loadUser();
+    show("dash");loadUser();
   }
  })
  .catch(()=>alert("Connexion refusée"));
 }
 
+// --- LOGOUT ---
 function logout(){
  if(auth.currentUser)db.collection("users").doc(auth.currentUser.uid).update({active:false});
  auth.signOut();show("home");
 }
 
+// --- USER DASHBOARD ---
 async function loadUser(){
  const snap=await db.collection("users").doc(auth.currentUser.uid).get();
- uName.textContent=snap.data().name;
- uBal.textContent=(snap.data().balance||0).toFixed(2);
- loadPublicActivities();
- loadTx();
+ const data = snap.data();
+ uName.textContent=data.name;
+ uBal.textContent=(data.balance||0).toFixed(2);
+ loadTx();loadPublicActivities();
 }
 
+// --- TRANSACTIONS ---
 async function pay(){
- const id=payId.value;
- const amt=parseFloat(payAmount.value);
+ const id=payId.value; const amt=parseFloat(payAmount.value);
  if(!id||amt<=0)return alert("Erreur données");
  const dest=await db.collection("users").where("gid","==",id).get();
  if(dest.empty)return alert("ID invalide");
@@ -207,8 +246,7 @@ async function pay(){
  const snap=await ref.get();
  if(amt>snap.data().balance)return alert("Solde insuffisant");
  await ref.update({balance:firebase.firestore.FieldValue.increment(-amt)});
- await db.collection("users").doc(dest.docs[0].id)
- .update({balance:firebase.firestore.FieldValue.increment(amt)});
+ await db.collection("users").doc(dest.docs[0].id).update({balance:firebase.firestore.FieldValue.increment(amt)});
  await db.collection("transactions").add({uid:auth.currentUser.uid,type:"Paiement",amount:-amt,date:new Date()});
  payId.value="";payAmount.value="";
  loadUser();
@@ -217,8 +255,7 @@ async function pay(){
 async function cashin(){
  const amt=parseFloat(cinAmount.value);
  if(amt<=0)return alert("Montant invalide");
- await db.collection("users").doc(auth.currentUser.uid)
- .update({balance:firebase.firestore.FieldValue.increment(amt)});
+ await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(amt)});
  await db.collection("transactions").add({uid:auth.currentUser.uid,type:"Cash‑in",amount:amt,date:new Date()});
  cinAmount.value="";
  loadUser();
@@ -227,8 +264,7 @@ async function cashin(){
 async function cashout(){
  const amt=parseFloat(coutAmount.value);
  if(amt<=0)return alert("Montant invalide");
- const destId=prompt("Entrer l'ID GoPay destinataire");
- if(!destId)return;
+ const destId=prompt("Entrer l'ID GoPay destinataire"); if(!destId)return;
  const dest=await db.collection("users").where("gid","==",destId).get();
  if(dest.empty)return alert("ID invalide");
  const ref=db.collection("users").doc(auth.currentUser.uid);
@@ -236,46 +272,46 @@ async function cashout(){
  if(amt>snap.data().balance)return alert("Solde insuffisant");
  if(!confirm("Confirmer le retrait de "+amt+" USD ?"))return;
  await ref.update({balance:firebase.firestore.FieldValue.increment(-amt)});
- await db.collection("users").doc(dest.docs[0].id)
- .update({balance:firebase.firestore.FieldValue.increment(amt)});
+ await db.collection("users").doc(dest.docs[0].id).update({balance:firebase.firestore.FieldValue.increment(amt)});
  await db.collection("transactions").add({uid:auth.currentUser.uid,type:"Cash‑out",amount:-amt,date:new Date()});
  coutAmount.value="";
  loadUser();
 }
 
+// --- HISTORIQUE ---
 async function loadTx(){
  txs.innerHTML="";
- const q=await db.collection("transactions")
- .where("uid","==",auth.currentUser.uid)
- .orderBy("date","desc").get();
- q.forEach(d=>{
-  const t=d.data();
-  txs.innerHTML+=`<div class="tx">${t.type} : ${t.amount} USD</div>`;
- });
+ const q=await db.collection("transactions").where("uid","==",auth.currentUser.uid).orderBy("date","desc").get();
+ q.forEach(d=>{const t=d.data();txs.innerHTML+=`<div class="tx">${t.type} : ${t.amount} USD</div>`});
 }
 
+// --- ACTIVITÉS RÉCENTES ---
 function loadPublicActivities(){
  const names=["Kevin","Sarah","Amina","Daniel","Linda"];
  const types=["Paiement","Cash‑in","Cash‑out"];
  publicActivities.innerHTML="";
  for(let i=0;i<5;i++){
-  publicActivities.innerHTML+=
-   `<div class="tx">${names[Math.floor(Math.random()*5)]} • ${types[Math.floor(Math.random()*3)]} • ${(Math.random()*500).toFixed(2)} USD</div>`;
+  publicActivities.innerHTML+=`<div class="tx">${names[Math.floor(Math.random()*5)]} • ${types[Math.floor(Math.random()*3)]} • ${(Math.random()*500).toFixed(2)} USD</div>`;
  }
 }
 
+// --- ADMIN ---
 async function loadUsers(){
  usersTable.innerHTML='<tr><th>Nom</th><th>Rôle</th><th>Solde</th><th>Actif</th></tr>';
  const q=await db.collection("users").get();
- q.forEach(d=>{
-  const u=d.data();
-  usersTable.innerHTML+=`<tr><td>${u.name}</td><td>${u.role}</td><td>${u.balance||0}</td><td>${u.active?"Oui":"Non"}</td></tr>`;
- });
+ q.forEach(d=>{const u=d.data(); usersTable.innerHTML+=`<tr><td>${u.name}</td><td>${u.role||"user"}</td><td>${u.balance||0}</td><td>${u.active?"Oui":"Non"}</td></tr>`;});
 }
 
-function loadAdminActivities(){
- adminActivities.innerHTML="<div class='tx'>Surveillance active</div>";
+async function loadAdminActivities(){
+ adminActivities.innerHTML="";
+ const q=await db.collection("transactions").orderBy("date","desc").limit(10).get();
+ q.forEach(d=>{const t=d.data();adminActivities.innerHTML+=`<div class="tx">${t.uid} → ${t.type} ${t.amount} USD</div>`;});
 }
+
+// AUTO UPDATE ACTIVITÉS
+setInterval(loadPublicActivities,5000);
+setInterval(()=>{if(!document.getElementById("admin").classList.contains("hidden")){loadUsers();loadAdminActivities();}},5000);
+
 </script>
 
 </body>
