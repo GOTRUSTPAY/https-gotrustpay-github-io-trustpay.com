@@ -51,6 +51,27 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
   border-radius:12px;
   box-shadow:0 5px 15px rgba(0,0,0,0.3);
 }
+  .recent-box{
+  height:160px;
+  overflow:hidden;
+  background:#022c2a;
+  border-radius:12px;
+  padding:10px;
+}
+
+.tx{
+  padding:8px 6px;
+  margin-bottom:6px;
+  background:rgba(20,184,166,0.15);
+  border-radius:8px;
+  font-size:0.9em;
+  animation: slideIn 0.5s ease;
+}
+
+@keyframes slideIn{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:translateY(0)}
+}
 </style>
 
 <!-- Firebase -->
@@ -274,7 +295,50 @@ async function loadNews(){
  q.forEach(d=>{
    newsList.innerHTML += `<div class="news">${d.data().text}</div>`;
  });
+}// ================= ACTIVITÉS RÉCENTES STYLE BINANCE =================
+const fakeUsers = [
+ "Alice M.","Jean K.","Patrick L.","Sophie D.","Daniel T.","Amina R.",
+ "Kevin B.","Ismael H.","Laura P.","Eric C.","Sarah N.","Michael J."
+];
+
+const operators = ["Orange Money","Airtel Money","GoPay","MoMo"];
+let shownUsers = [];
+const MAX_MEMORY = 20;
+
+function generateActivity(){
+  let available = fakeUsers.filter(n => !shownUsers.includes(n));
+  if(available.length === 0){
+    shownUsers = [];
+    available = [...fakeUsers];
+  }
+
+  const user = available[Math.floor(Math.random()*available.length)];
+  shownUsers.push(user);
+  if(shownUsers.length > MAX_MEMORY) shownUsers.shift();
+
+  const amount = (Math.random()*900 + 10).toFixed(2);
+  const op = operators[Math.floor(Math.random()*operators.length)];
+
+  return `${user} a effectué une transaction de ${amount} USD via ${op}`;
 }
+
+function pushActivity(){
+  const box = document.getElementById("recentTx");
+  if(!box) return;
+
+  const div = document.createElement("div");
+  div.className = "tx";
+  div.textContent = generateActivity();
+
+  box.prepend(div);
+
+  while(box.children.length > 6){
+    box.removeChild(box.lastChild);
+  }
+}
+
+// lancement automatique toutes les 3 secondes
+setInterval(pushActivity, 3000);
 </script>
 
 </body>
