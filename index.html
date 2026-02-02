@@ -5,21 +5,14 @@
 <title>GoTrust Pay</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-<!-- QR -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
+<!-- Styles -->
 <style>
 body{margin:0;font-family:Arial;background:linear-gradient(135deg,#021c1b,#032f2e);color:#d1fae5}
 .hidden{display:none!important}
 header{padding:15px;background:#021c1b}
 nav a{margin-right:15px;color:#99f6e4;font-weight:bold;cursor:pointer}
 main{max-width:1100px;margin:auto;padding:20px}
-input,button{width:100%;padding:12px;margin:6px 0;border-radius:10px;border:none}
+input,select,button{width:100%;padding:12px;margin:6px 0;border-radius:10px;border:none}
 button{background:#14b8a6;font-weight:bold;cursor:pointer}
 .panel{background:#043837;padding:20px;border-radius:16px;margin-top:20px}
 .card{background:#054f4b;padding:20px;border-radius:18px;display:flex;justify-content:space-between;flex-wrap:wrap;box-shadow:0 10px 25px rgba(0,0,0,.5)}
@@ -28,8 +21,16 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
 @media(max-width:700px){.actions{grid-template-columns:repeat(2,1fr)}}
 .action{background:linear-gradient(145deg,#0fb9a8,#087f73);padding:22px;border-radius:18px;text-align:center;font-weight:bold;cursor:pointer}
 .tx,.news{background:#022c2a;padding:8px;border-radius:8px;margin-bottom:6px}
-.admin{background:#7c2d12}
 </style>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<!-- QR -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 </head>
 
 <body>
@@ -37,13 +38,14 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
 <header>
 <nav>
  <a onclick="show('home')">Accueil</a>
- <a id="loginBtn" onclick="show('auth')">Connexion</a>
+ <a id="loginBtnNav" onclick="show('loginPanel')">Connexion</a>
+ <a id="registerBtnNav" onclick="show('registerPanel')">Inscription</a>
  <a id="logoutBtn" class="hidden" onclick="logout()">Déconnexion</a>
 </nav>
 </header>
 
 <main>
-<!-- Accueil avec actualités récentes -->
+<!-- Accueil -->
 <div id="home" class="panel">
  <h2>GoTrust Pay</h2>
  <p>Paiement digital sécurisé</p>
@@ -51,14 +53,22 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
  <div id="newsList"></div>
 </div>
 
-<!-- Auth -->
-<div id="auth" class="panel hidden">
- <h3>Connexion / Inscription</h3>
- <input id="name" placeholder="Nom complet">
- <input id="phone" placeholder="Téléphone">
- <input id="email" placeholder="Email">
- <input id="password" type="password" placeholder="Mot de passe">
- <button onclick="authUser()">Continuer</button>
+<!-- Login -->
+<div id="loginPanel" class="panel hidden">
+ <h3>Connexion</h3>
+ <input id="loginEmail" placeholder="Email">
+ <input id="loginPassword" type="password" placeholder="Mot de passe">
+ <button onclick="login()">Se connecter</button>
+</div>
+
+<!-- Register -->
+<div id="registerPanel" class="panel hidden">
+ <h3>Inscription</h3>
+ <input id="regName" placeholder="Nom complet">
+ <input id="regPhone" placeholder="Téléphone">
+ <input id="regEmail" placeholder="Email">
+ <input id="regPassword" type="password" placeholder="Mot de passe">
+ <button onclick="register()">S'inscrire</button>
 </div>
 
 <!-- Dashboard -->
@@ -87,11 +97,21 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
 
 <!-- Formulaires -->
 <div id="deposit" class="panel hidden">
+ <select id="depOperator">
+   <option value="Orange">Orange</option>
+   <option value="Airtel">Airtel</option>
+   <option value="GoPay">GoPay</option>
+ </select>
  <input id="depAmount" type="number" placeholder="Montant USD">
  <button onclick="deposit()">Confirmer</button>
 </div>
 
 <div id="withdraw" class="panel hidden">
+ <select id="wdOperator">
+   <option value="Orange">Orange</option>
+   <option value="Airtel">Airtel</option>
+   <option value="GoPay">GoPay</option>
+ </select>
  <input id="wdAmount" type="number" placeholder="Montant RWF">
  <button onclick="withdraw()">Confirmer</button>
 </div>
@@ -109,13 +129,14 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
 
 </main>
 
+<!-- SCRIPT placé ici, après tout le body -->
 <script>
+// Firebase init
 firebase.initializeApp({
  apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
  authDomain:"gotrustpay-e6524.firebaseapp.com",
  projectId:"gotrustpay-e6524"
 });
-
 const auth=firebase.auth(),db=firebase.firestore();
 const RATE=1300; // USD -> RWF
 
@@ -124,36 +145,37 @@ function show(id){
  document.querySelectorAll("main>div").forEach(d=>d.classList.add("hidden"));
  document.getElementById(id).classList.remove("hidden");
 }
-function logout(){auth.signOut()}
-function genCard(){return "4896 "+Math.floor(7000+Math.random()*2999)+" "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000);}
 
 // Auth
-function authUser(){
- auth.signInWithEmailAndPassword(email.value,password.value)
- .catch(()=>auth.createUserWithEmailAndPassword(email.value,password.value)
+function register(){
+ auth.createUserWithEmailAndPassword(regEmail.value,regPassword.value)
  .then(c=>db.collection("users").doc(c.user.uid).set({
-  name:name.value,phone:phone.value,
-  card:genCard(),balance:0,role:"user"
- })));
+  name:regName.value, phone:regPhone.value,
+  card:genCard(), balance:0
+ })).catch(e=>alert(e.message));
 }
+function login(){
+ auth.signInWithEmailAndPassword(loginEmail.value,loginPassword.value)
+ .catch(e=>alert(e.message));
+}
+function logout(){auth.signOut()}
 
-// On auth state change
+// Card generator
+function genCard(){return "4896 "+Math.floor(7000+Math.random()*2999)+" "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000);}
+
+// Auth state change
 auth.onAuthStateChanged(async u=>{
- if(!u){loginBtn.classList.remove("hidden");logoutBtn.classList.add("hidden");show("home");loadNews();return;}
- loginBtn.classList.add("hidden");logoutBtn.classList.remove("hidden");
+ if(!u){loginBtnNav.classList.remove("hidden");registerBtnNav.classList.remove("hidden");logoutBtn.classList.add("hidden");show("home");loadNews();return;}
+ loginBtnNav.classList.add("hidden");registerBtnNav.classList.add("hidden");logoutBtn.classList.remove("hidden");
 
- const d=await db.collection("users").doc(u.uid).get();
- const x=d.data();
-
- show("dashboard");
- cardName.textContent=x.name;
- cardNumber.textContent=x.card;
- cardId.textContent=u.uid.slice(0,8);
- balance.textContent=x.balance.toFixed(2);
-
- qr.innerHTML="";new QRCode(qr,{text:x.card,width:120,height:120});
+ const d=await db.collection("users").doc(u.uid).get(); const x=d.data();
+ show("dashboard"); cardName.textContent=x.name; cardNumber.textContent=x.card; cardId.textContent=u.uid.slice(0,8); balance.textContent=x.balance.toFixed(2);
+ qr.innerHTML=""; new QRCode(qr,{text:x.card,width:120,height:120});
 
  loadRecent();loadHistory();
+
+ // refresh activités et news toutes les 3 secondes
+ setInterval(()=>{loadRecent();loadNews();},3000);
 });
 
 // Panels
@@ -163,68 +185,40 @@ function openPanel(id){
 }
 
 // Transactions
-async function addTx(type,amount){
- await db.collection("transactions").add({uid:auth.currentUser.uid,type,amount,date:new Date()});
+async function addTx(type,amount,operator){
+ await db.collection("transactions").add({uid:auth.currentUser.uid,type,amount,operator,date:new Date()});
  loadRecent();loadHistory();
 }
 function deposit(){
- db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(+depAmount.value)});
- addTx("Dépôt",+depAmount.value);
+ const operator = depOperator.value;
+ const amount = +depAmount.value;
+ db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(amount)});
+ addTx("Dépôt", amount, operator);
 }
 async function withdraw(){
+ const operator = wdOperator.value;
+ const amountRWF = +wdAmount.value;
+ const usd = amountRWF / RATE;
  const d=await db.collection("users").doc(auth.currentUser.uid).get();
- const usd=wdAmount.value/RATE;
  if(usd>d.data().balance)return alert("Solde insuffisant");
  db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-usd)});
- addTx("Retrait",-usd);
+ addTx("Retrait", -usd, operator);
 }
 async function send(){
  const d=await db.collection("users").doc(auth.currentUser.uid).get();
  if(sendAmount.value>d.data().balance)return alert("Solde insuffisant");
  db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-sendAmount.value)});
  db.collection("users").doc(toUid.value).update({balance:firebase.firestore.FieldValue.increment(+sendAmount.value)});
- addTx("Envoi",-sendAmount.value);
+ addTx("Envoi",-sendAmount.value,"Interne");
 }
 
-// Historique et activités
-async function loadRecent(){
- recentTx.innerHTML="";
- const q=await db.collection("transactions").where("uid","==",auth.currentUser.uid).orderBy("date","desc").limit(3).get();
- q.forEach(d=>{const t=d.data();recentTx.innerHTML+=`<div class="tx">${t.type} : ${t.amount.toFixed(2)} USD</div>`;});
-}
-async function loadHistory(){
- txList.innerHTML="";
- const q=await db.collection("transactions").where("uid","==",auth.currentUser.uid).orderBy("date","desc").get();
- q.forEach(d=>{const t=d.data();txList.innerHTML+=`<div class="tx">${t.type} : ${t.amount.toFixed(2)} USD</div>`;});
-}
+// Historique & activités
+async function loadRecent(){recentTx.innerHTML=""; const q=await db.collection("transactions").where("uid","==",auth.currentUser.uid).orderBy("date","desc").limit(3).get(); q.forEach(d=>{const t=d.data(); recentTx.innerHTML+=`<div class="tx">${t.type} : ${t.amount.toFixed(2)} USD (${t.operator})</div>`;});}
+async function loadHistory(){txList.innerHTML=""; const q=await db.collection("transactions").where("uid","==",auth.currentUser.uid).orderBy("date","desc").get(); q.forEach(d=>{const t=d.data(); txList.innerHTML+=`<div class="tx">${t.type} : ${t.amount.toFixed(2)} USD (${t.operator})</div>`;});}
 
 // Actualités
-async function loadNews(){
- newsList.innerHTML="";
- const q=await db.collection("annonces").orderBy("date","desc").limit(3).get();
- q.forEach(d=>{newsList.innerHTML+=`<div class="news">${d.data().text}</div>`;});
-}
+async function loadNews(){newsList.innerHTML=""; const q=await db.collection("annonces").orderBy("date","desc").limit(3).get(); q.forEach(d=>{newsList.innerHTML+=`<div class="news">${d.data().text}</div>`;});}
 </script>
-
-<!-- Firestore Rules à copier dans Firebase Console -->
-<!--
-rules_version = '2';
-service cloud.firestore {
- match /databases/{db}/documents {
-  match /users/{uid} {
-   allow read,write: if request.auth!=null && request.auth.uid==uid;
-  }
-  match /transactions/{id} {
-   allow read,write: if request.auth!=null && request.auth.uid==resource.data.uid;
-  }
-  match /annonces/{id} {
-   allow read: if true;
-   allow write: if request.auth!=null &&
-    get(/databases/$(db)/documents/users/$(request.auth.uid)).data.role=="admin";
-  }
- }
-}
--->
 
 </body>
 </html>
