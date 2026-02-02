@@ -203,6 +203,7 @@ function register(){
   name:regName.value, phone:regPhone.value,
   card:genCard(), balance:0
  })).catch(e=>alert(e.message));
+  
 }// Génération QR code
 qr.innerHTML = "";
 new QRCode(qr, {
