@@ -6,18 +6,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{margin:0;font-family:Arial;background:linear-gradient(135deg,#021c1b,#032f2e);color:#d1fae5}
-.hidden{display:none!important}
-header{padding:15px;background:#021c1b}
-nav a{margin-right:15px;color:#99f6e4;font-weight:bold;cursor:pointer}
+body{margin:0;font-family:Arial;background:#021c1b;color:#d1fae5}
+.hidden{display:none}
+header{padding:15px;background:#012b28}
+nav a{margin-right:15px;color:#5eead4;font-weight:bold;cursor:pointer}
 main{max-width:1100px;margin:auto;padding:20px}
 input,select,button{width:100%;padding:12px;margin:6px 0;border-radius:10px;border:none}
 button{background:#14b8a6;font-weight:bold;cursor:pointer}
 .panel{background:#043837;padding:20px;border-radius:16px;margin-top:20px}
 .card{background:#054f4b;padding:20px;border-radius:18px;display:flex;justify-content:space-between;flex-wrap:wrap}
-#qr{width:120px;height:120px;background:#fff;padding:6px;border-radius:10px}
-.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
-.action{background:#0fb9a8;padding:20px;border-radius:16px;text-align:center;font-weight:bold;cursor:pointer}
+#qr{background:#fff;padding:8px;border-radius:10px}
+.actions{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:20px}
+@media(max-width:700px){.actions{grid-template-columns:repeat(2,1fr)}}
+.action{background:#0fb9a8;padding:20px;border-radius:16px;text-align:center;font-weight:bold}
 .tx{background:#022c2a;padding:8px;border-radius:8px;margin-bottom:6px}
 small{opacity:.7}
 </style>
@@ -33,9 +34,9 @@ small{opacity:.7}
 <header>
 <nav>
  <a onclick="show('home')">Accueil</a>
- <a id="loginBtn" onclick="show('login')">Connexion</a>
- <a id="registerBtn" onclick="show('register')">Inscription</a>
- <a id="logoutBtn" class="hidden" onclick="auth.signOut()">Déconnexion</a>
+ <a id="loginNav" onclick="show('login')">Connexion</a>
+ <a id="regNav" onclick="show('register')">Inscription</a>
+ <a id="logoutNav" class="hidden" onclick="logout()">Déconnexion</a>
 </nav>
 </header>
 
@@ -43,69 +44,74 @@ small{opacity:.7}
 
 <div id="home" class="panel">
 <h2>GOPAY AFRICA</h2>
-<p>Paiement digital accessible à tous</p>
-<small>Version pilote – transactions simulées</small>
+<b>Payments for a Connected Africa</b>
+<p>Paiements digitaux simples, sans carte bancaire.</p>
+<small>Version pilote – soldes et transactions simulés</small>
 </div>
 
 <div id="login" class="panel hidden">
-<input id="loginEmail" placeholder="Email">
-<input id="loginPassword" type="password" placeholder="Mot de passe">
-<button onclick="login()">Connexion</button>
+<h3>Connexion</h3>
+<input id="lEmail" placeholder="Email">
+<input id="lPass" type="password" placeholder="Mot de passe">
+<button onclick="login()">Se connecter</button>
 </div>
 
 <div id="register" class="panel hidden">
-<input id="regName" placeholder="Nom complet">
-<input id="regPhone" placeholder="Téléphone">
-<input id="regEmail" placeholder="Email">
-<input id="regPassword" type="password" placeholder="Mot de passe">
-<button onclick="register()">Créer mon compte</button>
+<h3>Inscription</h3>
+<input id="rName" placeholder="Nom complet">
+<input id="rPhone" placeholder="Téléphone">
+<input id="rEmail" placeholder="Email">
+<input id="rPass" type="password" placeholder="Mot de passe">
+<select id="rRole">
+<option value="user">Utilisateur</option>
+<option value="merchant">Commerçant</option>
+<option value="agent">Agent GoPay</option>
+</select>
+<button onclick="register()">Créer le compte</button>
 </div>
 
-<div id="dashboard" class="hidden">
+<div id="dash" class="hidden">
 
 <div class="card">
 <div>
-<h3 id="name"></h3>
-<p>ID GoPay : <b id="gid"></b></p>
-<b id="card"></b>
-<h2>Solde : <span id="bal"></span> USD</h2>
-<small>Simulation</small>
+<h3 id="uName"></h3>
+<b>ID GoPay : <span id="uId"></span></b>
+<p>Carte digitale sécurisée</p>
+<h2>Solde : <span id="uBal"></span> USD</h2>
+<small>Authentification biométrique via téléphone</small>
 </div>
 <div id="qr"></div>
 </div>
 
-<h3>Activités récentes</h3>
-<div id="recent"></div>
-
 <div class="actions">
-<div class="action" onclick="openPanel('deposit')">💰 Dépôt</div>
-<div class="action" onclick="openPanel('send')">🔁 Envoi</div>
-<div class="action" onclick="openPanel('history')">📜 Historique</div>
+<div class="action" onclick="openP('pay')">💳 Paiement</div>
+<div class="action" onclick="openP('cashin')">➕ Cash‑in</div>
+<div class="action" onclick="openP('cashout')">➖ Cash‑out</div>
+<div class="action" onclick="openP('history')">📜 Historique</div>
 </div>
 
-<div id="deposit" class="panel hidden">
-<select id="depOp">
-<option>Orange</option>
-<option>Airtel</option>
-<option>GoPay</option>
-</select>
-<input id="depAmt" type="number" placeholder="Montant USD">
-<button onclick="deposit()">Confirmer</button>
+<div id="pay" class="panel hidden">
+<h3>Paiement GoPay</h3>
+<input id="payTo" placeholder="ID GoPay destinataire">
+<input id="payAmount" type="number" placeholder="Montant USD">
+<button onclick="pay()">Payer</button>
 </div>
 
-<div id="send" class="panel hidden">
-<select id="sendOp">
-<option>Orange</option>
-<option>Airtel</option>
-<option>GoPay</option>
-</select>
-<input id="toGid" placeholder="ID GoPay destinataire">
-<input id="sendAmt" type="number" placeholder="Montant USD">
-<button onclick="send()">Envoyer</button>
+<div id="cashin" class="panel hidden">
+<h3>Cash‑in (agent)</h3>
+<input id="cinAmount" type="number" placeholder="Montant USD">
+<button onclick="cashin()">Valider</button>
+</div>
+
+<div id="cashout" class="panel hidden">
+<h3>Cash‑out (agent)</h3>
+<input id="coutAmount" type="number" placeholder="Montant USD">
+<button onclick="cashout()">Valider</button>
 </div>
 
 <div id="history" class="panel hidden">
-<div id="list"></div>
+<h3>Historique</h3>
+<div id="txs"></div>
 </div>
 
 </div>
@@ -117,96 +123,74 @@ firebase.initializeApp({
  authDomain:"gotrustpay-e6524.firebaseapp.com",
  projectId:"gotrustpay-e6524"
 });
-const auth=firebase.auth(), db=firebase.firestore();
+const auth=firebase.auth(),db=firebase.firestore();
 
 function show(id){
- document.querySelectorAll("main>div").forEach(d=>d.classList.add("hidden"));
+ document.querySelectorAll("main>div").forEach(x=>x.classList.add("hidden"));
  document.getElementById(id).classList.remove("hidden");
 }
-function openPanel(id){
- ["deposit","send","history"].forEach(x=>document.getElementById(x).classList.add("hidden"));
+function openP(id){
+ ["pay","cashin","cashout","history"].forEach(x=>document.getElementById(x).classList.add("hidden"));
  document.getElementById(id).classList.remove("hidden");
 }
 
-function genCard(){return "4896 "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000);}
-function genGoPayId(){return "GP-"+Math.floor(100000+Math.random()*900000);}
+function genId(){return "GP-"+Math.random().toString(36).substring(2,10).toUpperCase()}
 
 function register(){
- auth.createUserWithEmailAndPassword(regEmail.value,regPassword.value).then(async c=>{
-  const gid=genGoPayId();
-  await db.collection("users").doc(c.user.uid).set({
-   name:regName.value, phone:regPhone.value,
-   card:genCard(), balance:20, gopayId:gid
+ auth.createUserWithEmailAndPassword(rEmail.value,rPass.value).then(c=>{
+  const id=genId();
+  db.collection("users").doc(c.user.uid).set({
+   name:rName.value, phone:rPhone.value,
+   role:rRole.value, gid:id, balance:20
   });
-  addTx("Dépôt",20,"GoPay");
  });
 }
 
-function login(){auth.signInWithEmailAndPassword(loginEmail.value,loginPassword.value);}
-
-function addTx(type,amount,op){
- db.collection("transactions").add({
-  uid:auth.currentUser.uid,type,amount,operator:op,created:Date.now()
- });
- loadRecent(); loadHistory();
-}
-
-function deposit(){
- const amt=+depAmt.value;
- db.collection("users").doc(auth.currentUser.uid)
- .update({balance:firebase.firestore.FieldValue.increment(amt)});
- addTx("Dépôt",amt,depOp.value);
-}
-
-async function send(){
- const q=await db.collection("users").where("gopayId","==",toGid.value).get();
- if(q.empty) return alert("Destinataire introuvable");
- const to=q.docs[0];
- const amt=+sendAmt.value;
- db.collection("users").doc(auth.currentUser.uid)
- .update({balance:firebase.firestore.FieldValue.increment(-amt)});
- db.collection("users").doc(to.id)
- .update({balance:firebase.firestore.FieldValue.increment(amt)});
- addTx("Envoi",-amt,sendOp.value);
-}
-
-async function loadRecent(){
- recent.innerHTML="";
- const q=await db.collection("transactions")
- .where("uid","==",auth.currentUser.uid).limit(3).get();
- q.forEach(d=>{
-  const t=d.data();
-  recent.innerHTML+=`<div class="tx">${t.type} ${t.amount} USD (${t.operator})</div>`;
- });
-}
-
-async function loadHistory(){
- list.innerHTML="";
- const q=await db.collection("transactions")
- .where("uid","==",auth.currentUser.uid).get();
- q.forEach(d=>{
-  const t=d.data();
-  list.innerHTML+=`<div class="tx">${t.type} ${t.amount} USD (${t.operator})</div>`;
- });
-}
+function login(){auth.signInWithEmailAndPassword(lEmail.value,lPass.value)}
+function logout(){auth.signOut()}
 
 auth.onAuthStateChanged(async u=>{
- if(!u){show("home");return;}
- show("dashboard");
- loginBtn.classList.add("hidden");
- registerBtn.classList.add("hidden");
- logoutBtn.classList.remove("hidden");
-
- const d=await db.collection("users").doc(u.uid).get();
- const x=d.data();
- name.textContent=x.name;
- gid.textContent=x.gopayId;
- card.textContent=x.card;
- bal.textContent=x.balance.toFixed(2);
- qr.innerHTML="";
- new QRCode(qr,{text:x.gopayId,width:110,height:110});
- loadRecent(); loadHistory();
+ if(!u){show("home");loginNav.classList.remove("hidden");regNav.classList.remove("hidden");logoutNav.classList.add("hidden");return;}
+ loginNav.classList.add("hidden");regNav.classList.add("hidden");logoutNav.classList.remove("hidden");
+ const d=await db.collection("users").doc(u.uid).get(); const x=d.data();
+ show("dash");
+ uName.textContent=x.name+" ("+x.role+")";
+ uId.textContent=x.gid;
+ uBal.textContent=x.balance.toFixed(2);
+ qr.innerHTML=""; new QRCode(qr,{text:x.gid,width:120,height:120});
+ loadTx();
 });
+
+function tx(type,amount,to){
+ db.collection("transactions").add({uid:auth.currentUser.uid,type,amount,to,date:new Date()});
+}
+
+async function pay(){
+ const a=+payAmount.value;
+ const d=await db.collection("users").doc(auth.currentUser.uid).get();
+ if(a>d.data().balance)return alert("Solde insuffisant");
+ db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-a)});
+ tx("Paiement",-a,payTo.value);
+}
+
+function cashin(){
+ db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(+cinAmount.value)});
+ tx("Cash‑in",+cinAmount.value,"Agent");
+}
+
+function cashout(){
+ db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-coutAmount.value)});
+ tx("Cash‑out",-coutAmount.value,"Agent");
+}
+
+async function loadTx(){
+ txs.innerHTML="";
+ const q=await db.collection("transactions").where("uid","==",auth.currentUser.uid).orderBy("date","desc").get();
+ q.forEach(d=>{
+  const t=d.data();
+  txs.innerHTML+=`<div class="tx">${t.type} : ${t.amount} USD</div>`;
+ });
+}
 </script>
 
 </body>
