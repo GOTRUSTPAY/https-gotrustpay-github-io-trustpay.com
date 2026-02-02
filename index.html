@@ -10,17 +10,15 @@ body{margin:0;font-family:Arial;background:#021c1b;color:#d1fae5}
 .hidden{display:none}
 header{padding:15px;background:#012b28}
 nav a{margin-right:15px;color:#5eead4;font-weight:bold;cursor:pointer}
-main{max-width:1100px;margin:auto;padding:20px}
+main{max-width:700px;margin:auto;padding:20px}
 input,select,button{width:100%;padding:12px;margin:6px 0;border-radius:10px;border:none}
 button{background:#14b8a6;font-weight:bold;cursor:pointer}
 .panel{background:#043837;padding:20px;border-radius:16px;margin-top:20px}
 .card{background:#054f4b;padding:20px;border-radius:18px;display:flex;justify-content:space-between;flex-wrap:wrap}
-#qr{background:#fff;padding:8px;border-radius:10px}
+#qr{background:#fff;padding:8px;border-radius:10px;width:120px;height:120px}
 .actions{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:20px}
-@media(max-width:700px){.actions{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.actions{grid-template-columns:repeat(2,1fr)}}
 .action{background:#0fb9a8;padding:20px;border-radius:16px;text-align:center;font-weight:bold}
-.tx{background:#022c2a;padding:8px;border-radius:8px;margin-bottom:6px}
-small{opacity:.7}
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -46,7 +44,6 @@ small{opacity:.7}
 <h2>GOPAY AFRICA</h2>
 <b>Payments for a Connected Africa</b>
 <p>Paiements digitaux simples, sans carte bancaire.</p>
-<small>Version pilote – soldes et transactions simulés</small>
 </div>
 
 <div id="login" class="panel hidden">
@@ -114,7 +111,6 @@ small{opacity:.7}
 <div id="txs"></div>
 </div>
 
-</div>
 </main>
 
 <script>
