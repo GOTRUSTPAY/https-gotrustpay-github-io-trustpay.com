@@ -15,12 +15,42 @@ main{max-width:1100px;margin:auto;padding:20px}
 input,select,button{width:100%;padding:12px;margin:6px 0;border-radius:10px;border:none}
 button{background:#14b8a6;font-weight:bold;cursor:pointer}
 .panel{background:#043837;padding:20px;border-radius:16px;margin-top:20px}
-.card{background:#054f4b;padding:20px;border-radius:18px;display:flex;justify-content:space-between;flex-wrap:wrap;box-shadow:0 10px 25px rgba(0,0,0,.5)}
-#qr{width:130px;height:130px;background:#fff;padding:8px;border-radius:10px}
 .actions{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:20px}
 @media(max-width:700px){.actions{grid-template-columns:repeat(2,1fr)}}
 .action{background:linear-gradient(145deg,#0fb9a8,#087f73);padding:22px;border-radius:18px;text-align:center;font-weight:bold;cursor:pointer}
 .tx,.news{background:#022c2a;padding:8px;border-radius:8px;margin-bottom:6px}
+.card{
+  width:320px;
+  height:180px;
+  background:linear-gradient(135deg,#065f5b,#043837);
+  border-radius:20px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.7);
+  padding:20px;
+  color:#fff;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  position:relative;
+  flex-wrap:wrap;
+}
+.card::before{
+  content:"";
+  position:absolute;
+  top:10px;
+  right:10px;
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.15);
+}
+#qr{
+  width:120px;
+  height:120px;
+  background:#fff;
+  padding:8px;
+  border-radius:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.3);
+}
 </style>
 
 <!-- Firebase -->
@@ -75,14 +105,14 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
 <div id="dashboard" class="hidden">
 
 <div class="card">
- <div>
-  <h3 id="cardName"></h3>
-  <p>Carte biométrique</p>
-  <b id="cardNumber"></b><br>
-  <small>ID : <span id="cardId"></span></small>
-  <h2>Solde : <span id="balance"></span> USD</h2>
- </div>
- <div id="qr"></div>
+  <div>
+    <h3 id="cardName" style="margin:0;font-size:1.2em;"></h3>
+    <p style="margin:4px 0;">Carte biométrique</p>
+    <div id="cardNumber" style="font-size:1.1em;letter-spacing:2px;"></div>
+    <small>ID : <span id="cardId"></span></small>
+    <h2 style="margin-top:10px;font-size:1.1em;">Solde : <span id="balance"></span> USD</h2>
+  </div>
+  <div id="qr"></div>
 </div>
 
 <h3>Activités récentes</h3>
@@ -95,7 +125,6 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
  <div class="action" onclick="openPanel('history')">📜 Historique</div>
 </div>
 
-<!-- Formulaires -->
 <div id="deposit" class="panel hidden">
  <select id="depOperator">
    <option value="Orange">Orange</option>
@@ -129,7 +158,7 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
 
 </main>
 
-<!-- SCRIPT placé ici, après tout le body -->
+<!-- SCRIPT -->
 <script>
 // Firebase init
 firebase.initializeApp({
@@ -138,7 +167,7 @@ firebase.initializeApp({
  projectId:"gotrustpay-e6524"
 });
 const auth=firebase.auth(),db=firebase.firestore();
-const RATE=1300; // USD -> RWF
+const RATE=1300;
 
 // UI
 function show(id){
@@ -163,7 +192,7 @@ function logout(){auth.signOut()}
 // Card generator
 function genCard(){return "4896 "+Math.floor(7000+Math.random()*2999)+" "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000);}
 
-// Auth state change
+// Auth state
 auth.onAuthStateChanged(async u=>{
  if(!u){loginBtnNav.classList.remove("hidden");registerBtnNav.classList.remove("hidden");logoutBtn.classList.add("hidden");show("home");loadNews();return;}
  loginBtnNav.classList.add("hidden");registerBtnNav.classList.add("hidden");logoutBtn.classList.remove("hidden");
@@ -173,8 +202,6 @@ auth.onAuthStateChanged(async u=>{
  qr.innerHTML=""; new QRCode(qr,{text:x.card,width:120,height:120});
 
  loadRecent();loadHistory();
-
- // refresh activités et news toutes les 3 secondes
  setInterval(()=>{loadRecent();loadNews();},3000);
 });
 
@@ -213,11 +240,41 @@ async function send(){
 }
 
 // Historique & activités
-async function loadRecent(){recentTx.innerHTML=""; const q=await db.collection("transactions").where("uid","==",auth.currentUser.uid).orderBy("date","desc").limit(3).get(); q.forEach(d=>{const t=d.data(); recentTx.innerHTML+=`<div class="tx">${t.type} : ${t.amount.toFixed(2)} USD (${t.operator})</div>`;});}
-async function loadHistory(){txList.innerHTML=""; const q=await db.collection("transactions").where("uid","==",auth.currentUser.uid).orderBy("date","desc").get(); q.forEach(d=>{const t=d.data(); txList.innerHTML+=`<div class="tx">${t.type} : ${t.amount.toFixed(2)} USD (${t.operator})</div>`;});}
+async function loadRecent(){
+ recentTx.innerHTML="";
+ const q=await db.collection("transactions")
+    .where("uid","==",auth.currentUser.uid)
+    .orderBy("date","desc")
+    .limit(5).get();
+ if(q.empty){recentTx.innerHTML="<div class='tx'>Aucune activité récente</div>";return;}
+ q.forEach(d=>{
+   const t = d.data();
+   const date = new Date(t.date.seconds*1000).toLocaleString();
+   recentTx.innerHTML += `<div class="tx">${t.type} : ${t.amount.toFixed(2)} USD (${t.operator})<br><small>${date}</small></div>`;
+ });
+}
+
+async function loadHistory(){
+ txList.innerHTML="";
+ const q=await db.collection("transactions")
+    .where("uid","==",auth.currentUser.uid)
+    .orderBy("date","desc").get();
+ if(q.empty){txList.innerHTML="<div class='tx'>Aucune transaction</div>";return;}
+ q.forEach(d=>{
+   const t = d.data();
+   const date = new Date(t.date.seconds*1000).toLocaleString();
+   txList.innerHTML += `<div class="tx">${t.type} : ${t.amount.toFixed(2)} USD (${t.operator})<br><small>${date}</small></div>`;
+ });
+}
 
 // Actualités
-async function loadNews(){newsList.innerHTML=""; const q=await db.collection("annonces").orderBy("date","desc").limit(3).get(); q.forEach(d=>{newsList.innerHTML+=`<div class="news">${d.data().text}</div>`;});}
+async function loadNews(){
+ newsList.innerHTML="";
+ const q = await db.collection("annonces").orderBy("date","desc").limit(3).get();
+ q.forEach(d=>{
+   newsList.innerHTML += `<div class="news">${d.data().text}</div>`;
+ });
+}
 </script>
 
 </body>
