@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -86,7 +87,6 @@ input,select{
   justify-content:space-between;
   font-size:14px;
 }
-.small{font-size:13px;opacity:.8}
 </style>
 </head>
 
@@ -96,7 +96,6 @@ input,select{
   <nav>
     <a onclick="show('home')">Accueil</a>
     <a onclick="show('login')">Connexion</a>
-    <a id="adminBtn" class="hidden" onclick="show('admin')">Admin</a>
   </nav>
 </header>
 
@@ -128,6 +127,7 @@ input,select{
 <!-- DASHBOARD -->
 <div id="dashboard" class="hidden">
 
+  <!-- CARTE BIOMÉTRIQUE -->
   <div class="card">
     <div>
       <div class="chip"></div>
@@ -142,33 +142,22 @@ input,select{
     </div>
   </div>
 
-  <!-- DEPOT -->
+  <!-- FORMULAIRES MOBILE MONEY -->
   <div class="panel">
     <h3>Dépôt Mobile Money</h3>
+
     <select id="mmType">
       <option>Airtel Money</option>
       <option>Orange Money</option>
       <option>Vodacom M-Pesa</option>
       <option>GoPay</option>
     </select>
+
     <input id="mmPhone" placeholder="Numéro Mobile Money">
     <input id="mmAmount" type="number" placeholder="Montant">
     <button onclick="mobileDeposit()">Confirmer dépôt</button>
-    <p class="small">Anti-double paiement activé</p>
   </div>
 
-  <!-- HISTORIQUE -->
-  <div class="panel">
-    <h3>Historique des dépôts</h3>
-    <div id="history"></div>
-  </div>
-
-</div>
-
-<!-- ADMIN -->
-<div id="admin" class="hidden panel">
-  <h2>Mode Admin</h2>
-  <div id="adminDeposits"></div>
 </div>
 
 </main>
@@ -181,8 +170,6 @@ firebase.initializeApp({
  projectId:"gotrustpay-e6524"
 });
 const auth=firebase.auth(), db=firebase.firestore();
-
-let lastDepositTime=0;
 
 // NAV
 function show(id){
@@ -198,8 +185,7 @@ function register(){
   name:name.value,
   phone:phone.value,
   card:genCard(),
-  balance:0,
-  role:"client"
+  balance:0
  }));
 }
 
@@ -218,69 +204,22 @@ auth.onAuthStateChanged(u=>{
   cardId.textContent=u.uid.slice(0,10).toUpperCase();
   cardNumber.textContent=x.card;
   balance.textContent=x.balance.toFixed(2);
-  if(x.role==="admin") adminBtn.classList.remove("hidden");
   clientQR.innerHTML="";
   new QRCode("clientQR",{text:u.uid,width:130,height:130});
-  loadHistory();
-  loadAdmin();
  });
  loadActivities();
 });
 
-// DEPOT + FRAUDE
+// MOBILE MONEY
 function mobileDeposit(){
- const now=Date.now();
- if(now-lastDepositTime<10000){
-  alert("Double paiement bloqué");
-  return;
- }
- lastDepositTime=now;
-
- const amount=Number(mmAmount.value);
- const uid=auth.currentUser.uid;
-
- db.collection("users").doc(uid)
- .update({balance:firebase.firestore.FieldValue.increment(amount)});
-
- db.collection("deposits").add({
-  uid,
-  amount,
-  method:mmType.value,
-  phone:mmPhone.value,
-  date:new Date()
+ const ref=db.collection("users").doc(auth.currentUser.uid);
+ ref.update({
+  balance:firebase.firestore.FieldValue.increment(Number(mmAmount.value))
  });
-
- alert("Dépôt en traitement");
- loadHistory();
+ alert("Dépôt "+mmType.value+" en cours de traitement");
 }
 
-// HISTORIQUE
-function loadHistory(){
- history.innerHTML="";
- db.collection("deposits")
- .where("uid","==",auth.currentUser.uid)
- .orderBy("date","desc")
- .get().then(s=>{
-  s.forEach(d=>{
-   const x=d.data();
-   history.innerHTML+=`<div class="activity">${x.method} ${x.amount} USD <span>${x.date.toDate().toLocaleString()}</span></div>`;
-  });
- });
-}
-
-// ADMIN
-function loadAdmin(){
- adminDeposits.innerHTML="";
- db.collection("deposits").orderBy("date","desc").limit(20).get()
- .then(s=>{
-  s.forEach(d=>{
-   const x=d.data();
-   adminDeposits.innerHTML+=`<div class="activity">${x.method} ${x.amount} USD <span>${x.phone}</span></div>`;
-  });
- });
-}
-
-// ACTIVITÉS PUBLIQUES
+// ACTIVITÉS DYNAMIQUES
 function randName(){
  const f=["Amina","Patrick","Sofia","Daniel","Jean","Ali","Emma","Paul","Koffi","Lina"];
  const l=["R.","K.","M.","L.","S.","D.","B.","T."];
@@ -295,7 +234,7 @@ function loadActivities(){
  setTimeout(loadActivities,2500);
 }
 
-// QR
+// QR DOWNLOAD
 function downloadQR(){
  const canvas=document.querySelector("#clientQR canvas");
  const a=document.createElement("a");
