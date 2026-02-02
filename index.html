@@ -10,7 +10,7 @@
 <style>
 body{margin:0;font-family:Roboto;background:#061e1c;color:#e6fffa}
 .hidden{display:none}
-header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:#012b28;position:sticky;top:0}
+header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:#012b28}
 .logo{font-weight:700;font-size:20px}
 .menu-btn{font-size:28px;cursor:pointer}
 .menu{position:absolute;top:60px;right:20px;background:#043837;border-radius:12px;display:none}
@@ -18,7 +18,7 @@ header{display:flex;justify-content:space-between;align-items:center;padding:15p
 .menu a:hover{background:#065f5b}
 main{max-width:1100px;margin:auto;padding:20px}
 .panel{background:#043837;padding:20px;border-radius:18px;margin-top:20px}
-input,button,select{width:100%;padding:14px;margin:8px 0;border:none;border-radius:12px}
+input,button{width:100%;padding:14px;margin:8px 0;border:none;border-radius:12px}
 button{background:#14b8a6;font-weight:700;cursor:pointer}
 
 /* CARD */
@@ -72,11 +72,10 @@ footer a{color:#5eead4;text-decoration:none;margin:0 6px}
 <main>
 
 <div id="home" class="panel">
-<h2>Paiements digitaux sécurisés pour l’Afrique</h2>
+<h2>Paiements digitaux sécurisés</h2>
 </div>
 
 <div id="login" class="panel hidden">
-<h3>Connexion</h3>
 <input id="lEmail" placeholder="Email">
 <input id="lPass" type="password" placeholder="Mot de passe">
 <button onclick="login()">Se connecter</button>
@@ -86,7 +85,7 @@ footer a{color:#5eead4;text-decoration:none;margin:0 6px}
 
 <div class="card">
 <div>VIRTUAL</div>
-<div class="card-number" id="cardNumber">5399 5626 9894 2037</div>
+<div class="card-number">5399 5626 9894 2037</div>
 <div class="card-row">
 <div>TITULAIRE<br><b id="uName">GOPAY</b></div>
 <div>EXP<br><b>12/29</b></div>
@@ -99,9 +98,9 @@ footer a{color:#5eead4;text-decoration:none;margin:0 6px}
 </div>
 
 <div class="actions">
-<div class="action">💳 Paiement</div>
-<div class="action">➕ Cash‑in</div>
-<div class="action">➖ Cash‑out</div>
+<div class="action" onclick="show('pay')">💳 Paiement</div>
+<div class="action" onclick="show('cashin')">➕ Cash‑in</div>
+<div class="action" onclick="show('cashout')">➖ Cash‑out</div>
 <div class="action" onclick="show('history')">📜 Historique</div>
 </div>
 
@@ -111,13 +110,29 @@ footer a{color:#5eead4;text-decoration:none;margin:0 6px}
 </div>
 </div>
 
+<div id="pay" class="panel hidden">
+<input id="payId" placeholder="ID GoPay destinataire">
+<input id="payAmount" type="number" placeholder="Montant USD">
+<button onclick="pay()">Confirmer paiement</button>
+</div>
+
+<div id="cashin" class="panel hidden">
+<input id="cinAmount" type="number" placeholder="Montant USD">
+<button onclick="cashin()">Valider Cash‑in</button>
+</div>
+
+<div id="cashout" class="panel hidden">
+<input id="coutAmount" type="number" placeholder="Montant USD">
+<button onclick="cashout()">Valider Cash‑out</button>
+</div>
+
 <div id="history" class="panel hidden">
 <h3>Historique personnel</h3>
 <div id="txs"></div>
 </div>
 
 <div id="admin" class="panel hidden">
-<h3>ADMIN – Vue globale</h3>
+<h3>ADMIN – Utilisateurs</h3>
 <table id="usersTable">
 <tr><th>Nom</th><th>Rôle</th><th>Solde</th><th>Actif</th></tr>
 </table>
@@ -125,22 +140,10 @@ footer a{color:#5eead4;text-decoration:none;margin:0 6px}
 <div id="adminActivities"></div>
 </div>
 
-<div id="legal" class="panel hidden">
-<h3>Mentions légales</h3>
-<p>GoPay Africa est une plateforme de paiement digital sécurisée.</p>
-</div>
-
-<div id="privacy" class="panel hidden">
-<h3>Politique de confidentialité</h3>
-<p>Les données utilisateurs sont strictement confidentielles.</p>
-</div>
-
 </main>
 
 <footer>
-© 2026 GoPay Africa —
-<a onclick="show('legal')">Mentions légales</a> |
-<a onclick="show('privacy')">Politique de confidentialité</a>
+© 2026 GoPay Africa
 </footer>
 
 <script>
@@ -161,46 +164,84 @@ function show(id){
 function login(){
  auth.signInWithEmailAndPassword(lEmail.value,lPass.value)
  .then(async()=>{
-   const uid=auth.currentUser.uid;
-   const ref=db.collection("users").doc(uid);
-   const snap=await ref.get();
-
-   if(!snap.exists){
-     await ref.set({name:"User",role:"user",balance:50,active:true});
-   }
-
-   if(auth.currentUser.email==="motivixx.media@gmail.com"){
-     await ref.update({role:"admin",active:true});
-     show("admin");
-     loadUsers();loadAdminActivities();
-   }else{
-     await ref.update({active:true});
-     show("dash");
-     loadPublicActivities();loadTx();
-   }
+  const uid=auth.currentUser.uid;
+  const ref=db.collection("users").doc(uid);
+  const snap=await ref.get();
+  if(!snap.exists){
+    await ref.set({name:"User",balance:50,role:"user",active:true});
+  }
+  if(auth.currentUser.email==="motivixx.media@gmail.com"){
+    await ref.update({role:"admin",active:true});
+    show("admin");
+    loadUsers();
+    loadAdminActivities();
+  }else{
+    await ref.update({active:true});
+    show("dash");
+    loadUser();
+  }
  })
- .catch(e=>alert("Connexion refusée"));
+ .catch(()=>alert("Connexion refusée"));
 }
 
 function logout(){
- if(auth.currentUser){
-   db.collection("users").doc(auth.currentUser.uid).update({active:false});
- }
+ if(auth.currentUser)db.collection("users").doc(auth.currentUser.uid).update({active:false});
  auth.signOut();show("home");
 }
 
-function loadPublicActivities(){
- const names=["Kevin","Sarah","Amina","Daniel","Joseph","Linda"];
- const types=["Paiement","Cash‑in","Cash‑out"];
- publicActivities.innerHTML="";
- for(let i=0;i<6;i++){
-  const n=names[Math.floor(Math.random()*names.length)];
-  const t=types[Math.floor(Math.random()*types.length)];
-  const a=(Math.random()*500+20).toFixed(2);
-  publicActivities.innerHTML+=`<div class="tx">${n} • ${t} • ${a} USD</div>`;
- }
+async function loadUser(){
+ const snap=await db.collection("users").doc(auth.currentUser.uid).get();
+ uName.textContent=snap.data().name;
+ uBal.textContent=(snap.data().balance||0).toFixed(2);
+ loadPublicActivities();
+ loadTx();
 }
-setInterval(loadPublicActivities,6000);
+
+async function pay(){
+ const id=payId.value;
+ const amt=parseFloat(payAmount.value);
+ if(!id||amt<=0)return alert("Erreur données");
+ const dest=await db.collection("users").where("gid","==",id).get();
+ if(dest.empty)return alert("ID invalide");
+ const ref=db.collection("users").doc(auth.currentUser.uid);
+ const snap=await ref.get();
+ if(amt>snap.data().balance)return alert("Solde insuffisant");
+ await ref.update({balance:firebase.firestore.FieldValue.increment(-amt)});
+ await db.collection("users").doc(dest.docs[0].id)
+ .update({balance:firebase.firestore.FieldValue.increment(amt)});
+ await db.collection("transactions").add({uid:auth.currentUser.uid,type:"Paiement",amount:-amt,date:new Date()});
+ payId.value="";payAmount.value="";
+ loadUser();
+}
+
+async function cashin(){
+ const amt=parseFloat(cinAmount.value);
+ if(amt<=0)return alert("Montant invalide");
+ await db.collection("users").doc(auth.currentUser.uid)
+ .update({balance:firebase.firestore.FieldValue.increment(amt)});
+ await db.collection("transactions").add({uid:auth.currentUser.uid,type:"Cash‑in",amount:amt,date:new Date()});
+ cinAmount.value="";
+ loadUser();
+}
+
+async function cashout(){
+ const amt=parseFloat(coutAmount.value);
+ if(amt<=0)return alert("Montant invalide");
+ const destId=prompt("Entrer l'ID GoPay destinataire");
+ if(!destId)return;
+ const dest=await db.collection("users").where("gid","==",destId).get();
+ if(dest.empty)return alert("ID invalide");
+ const ref=db.collection("users").doc(auth.currentUser.uid);
+ const snap=await ref.get();
+ if(amt>snap.data().balance)return alert("Solde insuffisant");
+ if(!confirm("Confirmer le retrait de "+amt+" USD ?"))return;
+ await ref.update({balance:firebase.firestore.FieldValue.increment(-amt)});
+ await db.collection("users").doc(dest.docs[0].id)
+ .update({balance:firebase.firestore.FieldValue.increment(amt)});
+ await db.collection("transactions").add({uid:auth.currentUser.uid,type:"Cash‑out",amount:-amt,date:new Date()});
+ coutAmount.value="";
+ loadUser();
+}
 
 async function loadTx(){
  txs.innerHTML="";
@@ -213,6 +254,16 @@ async function loadTx(){
  });
 }
 
+function loadPublicActivities(){
+ const names=["Kevin","Sarah","Amina","Daniel","Linda"];
+ const types=["Paiement","Cash‑in","Cash‑out"];
+ publicActivities.innerHTML="";
+ for(let i=0;i<5;i++){
+  publicActivities.innerHTML+=
+   `<div class="tx">${names[Math.floor(Math.random()*5)]} • ${types[Math.floor(Math.random()*3)]} • ${(Math.random()*500).toFixed(2)} USD</div>`;
+ }
+}
+
 async function loadUsers(){
  usersTable.innerHTML='<tr><th>Nom</th><th>Rôle</th><th>Solde</th><th>Actif</th></tr>';
  const q=await db.collection("users").get();
@@ -223,13 +274,7 @@ async function loadUsers(){
 }
 
 function loadAdminActivities(){
- const data=[
-  "Kevin → Paiement 368 USD",
-  "Sarah → Paiement 32 USD",
-  "Daniel → Cash‑in 120 USD"
- ];
- adminActivities.innerHTML="";
- data.forEach(x=>adminActivities.innerHTML+=`<div class="tx">${x}</div>`);
+ adminActivities.innerHTML="<div class='tx'>Surveillance active</div>";
 }
 </script>
 
