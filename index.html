@@ -4,21 +4,42 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GoTrust Pay</title>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+import { getFirestore, collection, doc, getDoc, getDocs, setDoc, addDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+import QRCode from "https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js";
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
+  authDomain: "gotrustpay-e6524.firebaseapp.com",
+  projectId: "gotrustpay-e6524",
+  storageBucket: "gotrustpay-e6524.appspot.com",
+  messagingSenderId: "177034024636",
+  appId: "1:177034024636:web:da80102cc82dd7cfa2a2b9"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+</script>
+
 <style>
-body { margin:0; font-family: Arial, sans-serif; background:#f5f5f5; color:#333; }
+body { margin:0; font-family: Arial, sans-serif; background:#1e1e2f; color:#eee; }
 header { background:#0a74da; color:#fff; padding:20px; text-align:center; }
-nav { display:flex; justify-content:center; gap:15px; padding:10px; background:#0073c2; flex-wrap:wrap;}
+nav { display:flex; justify-content:center; gap:15px; padding:10px; background:#0c5ca6; flex-wrap:wrap;}
 nav a { color:#fff; text-decoration:none; font-weight:bold; }
-main { max-width:1000px; margin:20px auto; padding:20px; background:#fff; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
+main { max-width:1000px; margin:20px auto; padding:20px; background:#27293d; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.5); }
 h2 { color:#0a74da; margin-top:0; }
 button { background:#0a74da; color:#fff; border:none; padding:10px 20px; border-radius:5px; cursor:pointer; margin-top:5px; }
-input, select, textarea { padding:10px; margin:5px 0; width:100%; box-sizing:border-box; }
+input, select, textarea { padding:10px; margin:5px 0; width:100%; box-sizing:border-box; border-radius:5px; border:1px solid #555; background:#1e1e2f; color:#eee; }
 .section { margin-bottom:40px; }
 .hidden { display:none; }
-.card { border:1px solid #ddd; padding:15px; border-radius:8px; margin-bottom:15px; background:#f9f9f9; }
-.qr { width:100px; height:100px; background:#ccc; display:inline-block; margin-right:10px; vertical-align:middle; }
+.card { border:1px solid #444; padding:15px; border-radius:8px; margin-bottom:15px; background:#35354a; }
+.qr { width:120px; height:120px; background:#fff; display:inline-block; margin-right:10px; vertical-align:middle; }
 label { font-weight:bold; display:block; margin-top:10px; }
 .menu { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+.activity { color:#0af; margin-bottom:5px; }
 </style>
 </head>
 <body>
@@ -31,19 +52,21 @@ label { font-weight:bold; display:block; margin-top:10px; }
 <nav>
   <a href="#" onclick="showSection('home')">Accueil</a>
   <a href="#" onclick="showSection('login')">Connexion</a>
-  <a href="#" onclick="showSection('contact')">Contact / Besoin d'aide</a>
+  <a href="#" onclick="showSection('contact')">Contact / Aide</a>
   <a href="#" onclick="showSection('about')">Qui sommes-nous ?</a>
-  <a href="#" onclick="showSection('services')">Nos services</a>
-  <a href="#" onclick="showSection('partners')">Nos partenaires</a>
+  <a href="#" onclick="showSection('services')">Services</a>
+  <a href="#" onclick="showSection('partners')">Partenaires</a>
 </nav>
 
 <main>
+  <!-- Accueil -->
   <div class="section" id="home">
     <h2>Bienvenue sur GoTrust Pay</h2>
-    <p>GoTrust Pay est une plateforme financière sécurisée pour la gestion de vos paiements, dépôts, retraits et prêts.</p>
+    <p>Plateforme financière sécurisée pour gérer vos paiements, dépôts, retraits et prêts.</p>
     <p>Adresse : Goma, Nord Kivu, RDC</p>
   </div>
 
+  <!-- Connexion + inscription client -->
   <div class="section hidden" id="login">
     <h2>Connexion</h2>
     <label>Statut</label>
@@ -56,7 +79,7 @@ label { font-weight:bold; display:block; margin-top:10px; }
     <input type="password" id="loginPassword" placeholder="Mot de passe">
     <button onclick="login()">Se connecter</button>
 
-    <div id="inlineRegister" style="margin-top:20px; border-top:1px solid #ddd; padding-top:15px;">
+    <div id="inlineRegister" style="margin-top:20px; border-top:1px solid #555; padding-top:15px;">
       <h3>Créer un compte client</h3>
       <label>Nom complet</label><input type="text" id="regName">
       <label>Email</label><input type="email" id="regEmail">
@@ -67,11 +90,13 @@ label { font-weight:bold; display:block; margin-top:10px; }
     </div>
   </div>
 
+  <!-- Client Dashboard -->
   <div class="section hidden" id="clientDashboard">
     <h2>Tableau de bord Client</h2>
     <div class="card">
       <h3>Carte Virtuelle</h3>
-      <div class="qr" id="clientQR"></div>
+      <canvas id="clientCardCanvas" width="350" height="200"></canvas><br>
+      <button onclick="downloadCard()">Télécharger Carte</button>
       <p>ID : <span id="clientIdDisplay"></span></p>
       <p>Numéro de carte : <span id="clientCardNumber"></span></p>
       <p>Solde : <span id="clientBalance">0.00 USD</span></p>
@@ -82,18 +107,19 @@ label { font-weight:bold; display:block; margin-top:10px; }
       <button onclick="showClientSection('withdraw')">Retirer</button>
       <button onclick="showClientSection('send')">Envoyer argent</button>
       <button onclick="showClientSection('loan')">Demande de prêt</button>
+      <button onclick="showClientSection('recentActivity')">Activités récentes</button>
     </div>
 
     <div id="clientActions">
       <div class="hidden" id="deposit">
         <h3>Déposer de l'argent</h3>
         <input type="number" id="depositAmount" placeholder="Montant">
-        <label>Choisir devise / service</label>
+        <label>Choisir service</label>
         <select id="depositService">
-          <option value="USD">USD - GoPay</option>
-          <option value="CDF">CDF - Airtel Money</option>
-          <option value="EUR">EUR - Orange Money</option>
-          <option value="GHS">GHS - M-Pesa Vodacom</option>
+          <option value="gopay">GoPay</option>
+          <option value="airtel">Airtel Money</option>
+          <option value="orange">Orange Money</option>
+          <option value="vodacom">M-Pesa Vodacom</option>
         </select>
         <button onclick="deposit()">Confirmer Dépôt</button>
       </div>
@@ -101,12 +127,12 @@ label { font-weight:bold; display:block; margin-top:10px; }
       <div class="hidden" id="withdraw">
         <h3>Retirer de l'argent</h3>
         <input type="number" id="withdrawAmount" placeholder="Montant">
-        <label>Choisir devise / service</label>
+        <label>Service de retrait</label>
         <select id="withdrawService">
-          <option value="USD">USD - GoPay</option>
-          <option value="CDF">CDF - Airtel Money</option>
-          <option value="EUR">EUR - Orange Money</option>
-          <option value="GHS">GHS - M-Pesa Vodacom</option>
+          <option value="gopay">GoPay</option>
+          <option value="airtel">Airtel Money</option>
+          <option value="orange">Orange Money</option>
+          <option value="vodacom">M-Pesa Vodacom</option>
         </select>
         <input type="text" id="withdrawCode" placeholder="Code de retrait">
         <button onclick="withdraw()">Confirmer Retrait</button>
@@ -115,12 +141,12 @@ label { font-weight:bold; display:block; margin-top:10px; }
       <div class="hidden" id="send">
         <h3>Envoyer de l'argent</h3>
         <input type="number" id="sendAmount" placeholder="Montant">
-        <label>Choisir devise / service</label>
+        <label>Service</label>
         <select id="sendService">
-          <option value="USD">USD - GoPay</option>
-          <option value="CDF">CDF - Airtel Money</option>
-          <option value="EUR">EUR - Orange Money</option>
-          <option value="GHS">GHS - M-Pesa Vodacom</option>
+          <option value="gopay">GoPay</option>
+          <option value="airtel">Airtel Money</option>
+          <option value="orange">Orange Money</option>
+          <option value="vodacom">M-Pesa Vodacom</option>
         </select>
         <input type="text" id="sendRecipient" placeholder="Numéro ou ID destinataire">
         <input type="password" id="sendPassword" placeholder="Mot de passe">
@@ -138,27 +164,25 @@ label { font-weight:bold; display:block; margin-top:10px; }
         <textarea id="loanReason" placeholder="Motif"></textarea>
         <button onclick="requestLoan()">Soumettre demande</button>
       </div>
+
+      <div class="hidden" id="recentActivity">
+        <h3>Activités récentes</h3>
+        <div id="recentActivityList"></div>
+      </div>
     </div>
   </div>
 
+  <!-- Admin Dashboard -->
   <div class="section hidden" id="adminDashboard">
     <h2>Tableau de bord Admin</h2>
     <div class="menu">
-      <button onclick="showAdminSection('publish')">Publier message</button>
       <button onclick="showAdminSection('clients')">Clients / Agents</button>
       <button onclick="showAdminSection('loans')">Demandes de prêt</button>
       <button onclick="showAdminSection('withdrawals')">Demandes de retrait</button>
       <button onclick="showAdminSection('history')">Historique</button>
-      <button onclick="showAdminSection('messages')">Envoyer message</button>
+      <button onclick="showAdminSection('recent')">Activités récentes</button>
     </div>
     <div id="adminActions">
-      <div class="hidden" id="publish">
-        <h3>Publier un message sur l'accueil</h3>
-        <textarea id="adminMessage" placeholder="Écrire message ici..."></textarea>
-        <input type="file" id="adminFile">
-        <button onclick="publishMessage()">Publier</button>
-      </div>
-
       <div class="hidden" id="clients">
         <h3>Clients et Agents enregistrés</h3>
         <div id="clientsList"></div>
@@ -179,26 +203,27 @@ label { font-weight:bold; display:block; margin-top:10px; }
         <div id="historyList"></div>
       </div>
 
-      <div class="hidden" id="messages">
-        <h3>Envoyer un message à un client</h3>
-        <input type="text" id="msgClientId" placeholder="ID client">
-        <textarea id="msgContent" placeholder="Message à envoyer"></textarea>
-        <button onclick="sendAdminMessage()">Envoyer</button>
+      <div class="hidden" id="recent">
+        <h3>Activités récentes</h3>
+        <div id="recentAdminList"></div>
       </div>
     </div>
   </div>
 
+  <!-- Contact -->
   <div class="section hidden" id="contact">
     <h2>Contact / Besoin d'aide</h2>
     <p>Email : gotrustpayinfo@gmail.com</p>
     <p>Adresse : Goma, Nord Kivu, RDC</p>
   </div>
 
+  <!-- Qui sommes-nous -->
   <div class="section hidden" id="about">
     <h2>Qui sommes-nous ?</h2>
-    <p>GoTrust Pay est une plateforme financière sécurisée pour faciliter vos transactions, dépôts, retraits et prêts.</p>
+    <p>GoTrust Pay est une plateforme sécurisée pour faciliter vos transactions financières.</p>
   </div>
 
+  <!-- Services -->
   <div class="section hidden" id="services">
     <h2>Nos services</h2>
     <ul>
@@ -209,6 +234,7 @@ label { font-weight:bold; display:block; margin-top:10px; }
     </ul>
   </div>
 
+  <!-- Partenaires -->
   <div class="section hidden" id="partners">
     <h2>Nos partenaires</h2>
     <ul>
@@ -217,119 +243,60 @@ label { font-weight:bold; display:block; margin-top:10px; }
       <li>FinancePlus</li>
     </ul>
   </div>
-
 </main>
 
-<script>
-// Fonctions principales
-function showSection(id){
-  document.querySelectorAll('main .section').forEach(s=>s.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-}
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+import { getFirestore, collection, doc, getDoc, setDoc, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+import QRCode from "https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js";
 
-let users=[], loans=[], history=[];
-let currentUser=null;
+const firebaseConfig = {
+  apiKey: "AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
+  authDomain: "gotrustpay-e6524.firebaseapp.com",
+  projectId: "gotrustpay-e6524",
+  storageBucket: "gotrustpay-e6524.appspot.com",
+  messagingSenderId: "177034024636",
+  appId: "1:177034024636:web:da80102cc82dd7cfa2a2b9"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+/* ------------------------ UTILITAIRES ------------------------ */
+function showSection(id){ document.querySelectorAll('main .section').forEach(s=>s.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+function showClientSection(id){ document.querySelectorAll('#clientActions > div').forEach(d=>d.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+function showAdminSection(id){ document.querySelectorAll('#adminActions > div').forEach(d=>d.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
 function generateId(){ return Math.floor(10000000 + Math.random()*90000000); }
 function generateCard(){ return Math.floor(100000000000 + Math.random()*900000000000); }
 
-function register(){
-  let name=document.getElementById('regName').value;
-  let email=document.getElementById('regEmail').value;
-  let phone=document.getElementById('regPhone').value;
-  let password=document.getElementById('regPassword').value;
-  let code=document.getElementById('regCode').value;
-  if(!name||!email||!phone||!password||!code){ alert('Remplir tous les champs'); return; }
-  let user={id:generateId(),name,email,phone,password,code,balance:0,cardNumber:generateCard(),status:'client'};
-  users.push(user);
-  currentUser=user; updateClientCard(currentUser);
-  showSection('clientDashboard');
-  alert('Compte créé ! Votre ID : '+user.id);
-}
+/* ------------------------ ETAT ------------------------ */
+let currentUser=null;
 
-function login(){
-  let status=document.getElementById('loginStatus').value;
-  let id=document.getElementById('loginId').value.trim();
-  let pwd=document.getElementById('loginPassword').value;
-  if(status==='admin' && id==='gopay' && pwd==='admin243'){
-    currentUser={name:'Administrateur',id:'gopay',status:'admin'};
-    showSection('adminDashboard'); renderAdminClients(); renderAdminLoans(); renderAdminHistory(); return;
-  }
-  let user=users.find(u=>(u.id==id) && u.password===pwd && u.status===status);
-  if(!user){ alert('Utilisateur introuvable ou mot de passe incorrect'); return;}
-  currentUser=user;
-  if(status==='client'){ showSection('clientDashboard'); updateClientCard(currentUser);}
-}
-
-// Client
-function updateClientCard(user){
+/* ------------------------ CLIENT CARD ------------------------ */
+async function updateClientCard(user){
   document.getElementById('clientIdDisplay').textContent=user.id;
   document.getElementById('clientCardNumber').textContent=user.cardNumber;
   document.getElementById('clientBalance').textContent=user.balance.toFixed(2)+' USD';
-}
-function showClientSection(id){
-  document.querySelectorAll('#clientActions > div').forEach(d=>d.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-}
-function deposit(){
-  let amt=parseFloat(document.getElementById('depositAmount').value);
-  if(isNaN(amt)||amt<=0){alert('Montant invalide');return;}
-  currentUser.balance+=amt; updateClientCard(currentUser);
-  history.push({type:'dépôt',user:currentUser.name,amount:amt,date:new Date()});
-  alert('Dépôt effectué');
-}
-function withdraw(){
-  let amt=parseFloat(document.getElementById('withdrawAmount').value);
-  let code=document.getElementById('withdrawCode').value;
-  if(code!==currentUser.code){alert('Code incorrect'); return;}
-  if(currentUser.balance<amt){alert('Solde insuffisant'); return;}
-  currentUser.balance-=amt; updateClientCard(currentUser);
-  history.push({type:'retrait',user:currentUser.name,amount:amt,date:new Date()});
-  alert('Retrait effectué');
-}
-function sendMoney(){
-  let amt=parseFloat(document.getElementById('sendAmount').value);
-  let recipient=document.getElementById('sendRecipient').value;
-  let pwd=document.getElementById('sendPassword').value;
-  if(pwd!==currentUser.password){alert('Mot de passe incorrect'); return;}
-  let rec=users.find(u=>u.id==recipient);
-  if(!rec){alert('Destinataire introuvable'); return;}
-  if(currentUser.balance<amt){alert('Solde insuffisant'); return;}
-  currentUser.balance-=amt; rec.balance+=amt; updateClientCard(currentUser);
-  history.push({type:'envoi',user:currentUser.name,to:rec.name,amount:amt,date:new Date()});
-  alert('Envoi effectué');
-}
-function requestLoan(){
-  loans.push({user:currentUser.name,date:new Date()});
-  alert('Demande de prêt reçue');
+
+  const canvas=document.getElementById('clientCardCanvas');
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle="#0a74da"; ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle="#fff"; ctx.font="18px Arial";
+  ctx.fillText("GoTrust Pay", 20, 30);
+  ctx.fillText("ID: "+user.id,20,60);
+  ctx.fillText("Numéro carte: "+user.cardNumber,20,90);
+  ctx.fillText("Solde: "+user.balance.toFixed(2)+" USD",20,120);
+  QRCode.toCanvas(canvas, user.id, {width:80, margin:10}, function(err){ if(err) console.error(err); });
 }
 
-// Admin
-function showAdminSection(id){
-  document.querySelectorAll('#adminActions > div').forEach(d=>d.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
+/* Télécharger carte */
+function downloadCard(){
+  const canvas=document.getElementById('clientCardCanvas');
+  const link=document.createElement('a');
+  link.href=canvas.toDataURL("image/png");
+  link.download="carte_gotrustpay.png";
+  link.click();
 }
-function renderAdminClients(){
-  let list=document.getElementById('clientsList'); list.innerHTML='';
-  users.forEach(u=>{ list.innerHTML+=`<div class="card">${u.name} (ID: ${u.id}) - Solde: ${u.balance.toFixed(2)} USD</div>`; });
-}
-function renderAdminLoans(){
-  let list=document.getElementById('loansList'); list.innerHTML='';
-  loans.forEach(l=>{ list.innerHTML+=`<div class="card">${l.user} - ${l.date.toLocaleString()}</div>`; });
-}
-function renderAdminHistory(){
-  let list=document.getElementById('historyList'); list.innerHTML='';
-  history.forEach(h=>{ list.innerHTML+=`<div class="card">${h.type} - ${h.user} ${h.amount?'- '+h.amount:''} - ${h.date.toLocaleString()}</div>`; });
-}
-function sendAdminMessage(){
-  let id=document.getElementById('msgClientId').value;
-  let msg=document.getElementById('msgContent').value;
-  let user=users.find(u=>u.id==id);
-  if(!user){alert('Client introuvable'); return;}
-  alert('Message envoyé à '+user.name+': '+msg);
-  document.getElementById('msgClientId').value=''; document.getElementById('msgContent').value='';
-}
-function publishMessage(){ alert('Message publié'); }
-
 </script>
 
 </body>
