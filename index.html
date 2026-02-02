@@ -146,16 +146,40 @@ main{max-width:1100px;margin:auto;padding:20px}
   <div id="live"></div>
 </div>
 
-<!-- Admin -->
-<div id="admin" class="panel hidden">
-<h3>Admin Dashboard: Utilisateurs</h3>
-<div class="online-count" id="onlineCount"></div>
-<table class="admin-table" id="usersTable">
-<tr><th>Nom</th><th>Email</th><th>Solde</th><th>Actif</th></tr>
-</table>
+<!-- Admin complet -->
+<div id="admin-dashboard" class="panel hidden">
+  <h3>Admin Dashboard</h3>
+
+  <!-- Utilisateurs -->
+  <div class="panel">
+    <h4>Liste des utilisateurs</h4>
+    <div class="online-count" id="onlineCount"></div>
+    <table class="admin-table" id="usersTable">
+      <tr><th>Nom</th><th>Email</th><th>Solde</th><th>Actif</th></tr>
+    </table>
+  </div>
+
+  <!-- Historique des transactions -->
+  <div class="panel" id="admin-history">
+    <h4>Historique des transactions</h4>
+    <table class="admin-table" id="txTable">
+      <tr><th>Utilisateur</th><th>Type</th><th>Montant</th><th>Date</th></tr>
+    </table>
+  </div>
+
+  <!-- Messages utilisateurs -->
+  <div class="panel" id="admin-messages">
+    <h4>Messages Utilisateurs</h4>
+    <div id="msgList"></div>
+  </div>
+
+  <!-- Paramètres Admin -->
+  <div class="panel" id="admin-settings">
+    <h4>Paramètres Admin</h4>
+    <p>Options pour gérer le site ou tester des fonctionnalités</p>
+  </div>
 </div>
 
-</div>
 </main>
 
 <script>
@@ -252,19 +276,23 @@ setInterval(()=>{addLiveActivity(names[Math.floor(Math.random()*names.length)],a
 // 🔄 Dashboard utilisateur/admin
 auth.onAuthStateChanged(async u=>{
   if(!u){show('login'); return;}
-  show('dash');
-  const d=await db.collection("users").doc(u.uid).get();
-  const x=d.data();
-  cardName.textContent=x.name.toUpperCase();
-  cardNumber.textContent=x.card.number;
-  cardExp.textContent=x.card.exp;
-  cardCvv.textContent=x.card.cvv;
-  uBal.textContent=x.balance.toFixed(2);
+  show('dash'); // affiche dashboard immédiatement
+  const d = await db.collection("users").doc(u.uid).get();
+  const x = d.data();
+  cardName.textContent = x.name.toUpperCase();
+  cardNumber.textContent = x.card.number;
+  cardExp.textContent = x.card.exp;
+  cardCvv.textContent = x.card.cvv;
+  uBal.textContent = x.balance.toFixed(2);
   lastMove.textContent="Dernier mouvement: Aucun";
 
   if(x.role==="admin"){
-    document.getElementById("admin").classList.remove("hidden");
-    loadUsers(); setInterval(loadUsers,5000);
+    document.getElementById("admin-dashboard").classList.remove("hidden");
+    loadUsers();
+    loadTransactions();
+    loadMessages();
+    setInterval(loadUsers,5000);
+    setInterval(loadTransactions,5000);
   }
 });
 
@@ -279,6 +307,39 @@ async function loadUsers(){
     if(u.active) count++;
   });
   onlineCount.textContent=`Utilisateurs connectés: ${count}`;
+}
+
+// Admin: load transactions
+async function loadTransactions(){
+  const q = await db.collection("transactions").orderBy("date","desc").get();
+  txTable.innerHTML = '<tr><th>Utilisateur</th><th>Type</th><th>Montant</th><th>Date</th></tr>';
+  for(const d of q.docs){
+    const t = d.data();
+    const userSnap = await db.collection("users").doc(t.uid).get();
+    const user = userSnap.data();
+    txTable.innerHTML += `<tr>
+      <td>${user.name}</td>
+      <td>${t.type}</td>
+      <td>${t.amount.toFixed(2)} USD</td>
+      <td>${t.date.toDate().toLocaleString()}</td>
+    </tr>`;
+  }
+}
+
+// Admin: load messages (simulés)
+function loadMessages(){
+  const msgs = [
+    {from:"Jean",content:"Bonjour, je veux un cash-in"},
+    {from:"Amina",content:"Comment puis-je payer?"},
+    {from:"Kevin",content:"Problème de solde"}
+  ];
+  msgList.innerHTML="";
+  msgs.forEach(m=>{
+    const el = document.createElement("div");
+    el.textContent = `${m.from}: ${m.content}`;
+    el.style.padding="5px"; el.style.borderBottom="1px solid #065f5b";
+    msgList.appendChild(el);
+  });
 }
 </script>
 
