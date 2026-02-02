@@ -4,64 +4,44 @@
 <meta charset="UTF-8">
 <title>GoPay Africa</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
-body{margin:0;font-family:Roboto;background:#061e1c;color:#e6fffa}
-header{background:#012b28;padding:15px 20px;display:flex;justify-content:space-between;align-items:center}
-.logo{font-size:22px;font-weight:700}
-.menu-btn{font-size:28px;cursor:pointer}
-.menu{display:none;position:absolute;top:60px;right:20px;background:#043837;border-radius:12px;overflow:hidden}
-.menu a{display:block;padding:12px 18px;color:#5eead4;text-decoration:none;cursor:pointer}
-.menu a:hover{background:#065f5b}
-main{max-width:1000px;margin:auto;padding:20px}
-.panel{background:#043837;padding:20px;border-radius:18px;margin-top:20px}
+body{margin:0;font-family:Arial;background:#061e1c;color:#e6fffa}
+header{display:flex;justify-content:space-between;align-items:center;padding:15px;background:#012b28}
+.logo{font-weight:700;font-size:20px}
+.menu button{margin-left:8px}
+button,input,select{padding:12px;border-radius:10px;border:none;width:100%;margin:6px 0}
+button{background:#14b8a6;font-weight:700;cursor:pointer}
+.panel{background:#043837;padding:15px;border-radius:16px;margin:15px}
 .hidden{display:none}
-
-.card{background:linear-gradient(135deg,#0f766e,#064e4b);border-radius:20px;padding:25px;box-shadow:0 20px 40px rgba(0,0,0,.6);}
+.card{background:linear-gradient(135deg,#064e4b,#0f766e);border-radius:20px;padding:20px}
 .card h2{margin:0}
-.card-number{font-size:22px;letter-spacing:3px;margin:15px 0}
-.card-row{display:flex;justify-content:space-between;font-size:14px}
-
-.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:20px}
-.action{background:#14b8a6;padding:15px;border-radius:14px;text-align:center;font-weight:700;cursor:pointer}
-.action:hover{background:#2dd4bf}
-
-.tx{background:#065f5b;padding:10px;border-radius:10px;margin-bottom:8px;font-size:14px}
-
-table{width:100%;border-collapse:collapse;margin-top:10px}
+.actions{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.tx{background:#065f5b;padding:8px;border-radius:8px;margin-top:6px;font-size:14px}
+table{width:100%;border-collapse:collapse}
 th,td{border:1px solid #065f5b;padding:8px}
-th{background:#0d9488}
-
-footer{text-align:center;margin-top:30px;font-size:14px;opacity:.8}
-footer a{color:#5eead4;cursor:pointer}
+footer{text-align:center;padding:15px;font-size:13px;opacity:.8}
+a{color:#5eead4}
 </style>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
 
 <body>
 
 <header>
 <div class="logo">GoPay Africa</div>
-<div class="menu-btn" onclick="toggleMenu()">☰</div>
+<div class="menu">
+<button onclick="show('login')">Connexion</button>
+<button onclick="show('register')">Créer un compte</button>
+<button onclick="logout()">Déconnexion</button>
+</div>
 </header>
 
-<div class="menu" id="menu">
-<a onclick="show('home')">Accueil</a>
-<a onclick="show('login')">Connexion</a>
-<a onclick="show('register')">Inscription</a>
-<a onclick="logout()">Déconnexion</a>
-</div>
-
-<main>
-
+<!-- HOME -->
 <div id="home" class="panel">
 <h2>Payments for a Connected Africa</h2>
-<p>Paiements digitaux sécurisés et fiables.</p>
+<p>Paiements digitaux sécurisés</p>
 </div>
 
+<!-- LOGIN -->
 <div id="login" class="panel hidden">
 <h3>Connexion</h3>
 <input id="lEmail" placeholder="Email">
@@ -69,205 +49,183 @@ footer a{color:#5eead4;cursor:pointer}
 <button onclick="login()">Se connecter</button>
 </div>
 
+<!-- REGISTER -->
 <div id="register" class="panel hidden">
-<h3>Inscription</h3>
+<h3>Créer un compte</h3>
 <input id="rName" placeholder="Nom complet">
 <input id="rEmail" placeholder="Email">
 <input id="rPass" type="password" placeholder="Mot de passe">
-<button onclick="register()">Créer un compte</button>
+<button onclick="register()">Créer</button>
 </div>
 
-<div id="dash" class="hidden">
-
+<!-- DASH -->
+<div id="dash" class="panel hidden">
 <div class="card">
-<h2>GoPay • VIRTUAL</h2>
-<div class="card-number" id="cardId"></div>
-<div class="card-row">
-<span>TITULAIRE</span><span>EXP</span>
-</div>
-<div class="card-row">
-<strong id="cardName"></strong><strong>12/29</strong>
-</div>
-<p>SOLDE : <b><span id="balance"></span> USD</b></p>
+<h2>VIRTUAL CARD</h2>
+<p><b>GOPAY</b></p>
+<p id="cardName"></p>
+<p>ID: <b id="cardId"></b></p>
+<p>Solde: <b id="cardBal"></b> USD</p>
 </div>
 
 <div class="actions">
-<div class="action" onclick="openP('pay')">💳 Paiement</div>
-<div class="action" onclick="openP('cashin')">➕ Cash‑in</div>
-<div class="action" onclick="openP('cashout')">➖ Cash‑out</div>
+<button onclick="show('pay')">💳 Paiement</button>
+<button onclick="show('cashin')">➕ Cash‑in</button>
+<button onclick="show('cashout')">➖ Cash‑out</button>
+<button onclick="show('history')">📜 Historique</button>
 </div>
 
+<h3>Activités récentes</h3>
+<div id="recent"></div>
+</div>
+
+<!-- PAY -->
 <div id="pay" class="panel hidden">
-<input id="payId" placeholder="ID GoPay destinataire" oninput="fetchRecipientName('pay')">
+<h3>Paiement</h3>
+<input id="payId" placeholder="ID destinataire" oninput="checkId()">
 <input id="payName" placeholder="Nom destinataire" disabled>
-<input id="payAmount" type="number" placeholder="Montant USD">
+<input id="payAmount" type="number" placeholder="Montant">
 <button onclick="pay()">Confirmer</button>
 </div>
 
+<!-- CASHIN -->
 <div id="cashin" class="panel hidden">
-<input id="cinAmount" type="number" placeholder="Montant USD">
+<h3>Cash‑in</h3>
+<input id="cinAmount" type="number" placeholder="Montant">
 <button onclick="cashin()">Valider</button>
 </div>
 
+<!-- CASHOUT -->
 <div id="cashout" class="panel hidden">
-<input id="coutId" placeholder="ID GoPay destinataire" oninput="fetchRecipientName('cout')">
-<input id="coutName" placeholder="Nom destinataire" disabled>
-<input id="coutAmount" type="number" placeholder="Montant USD">
+<h3>Cash‑out</h3>
+<input id="coutAmount" type="number" placeholder="Montant">
 <button onclick="cashout()">Confirmer</button>
 </div>
 
-<div class="panel">
-<h3>Activités récentes</h3>
-<div id="myTx"></div>
+<!-- HISTORY -->
+<div id="history" class="panel hidden">
+<h3>Historique</h3>
+<div id="txs"></div>
 </div>
 
+<!-- ADMIN -->
 <div id="admin" class="panel hidden">
 <h3>ADMIN – Vue globale</h3>
-<table id="usersTable">
+<table>
 <tr><th>Nom</th><th>Rôle</th><th>Solde</th><th>Actif</th></tr>
+<tbody id="adminUsers"></tbody>
 </table>
-<h4>Activités globales</h4>
-<div id="globalTx"></div>
+<h3>Activités globales</h3>
+<div id="adminTx"></div>
 </div>
 
+<!-- LEGAL -->
 <div id="legal" class="panel hidden">
 <h3>Mentions légales</h3>
-<p>GoPay Africa – plateforme de paiement digital sécurisé.</p>
+<p>GoPay Africa – Plateforme digitale</p>
 </div>
 
 <div id="privacy" class="panel hidden">
 <h3>Politique de confidentialité</h3>
-<p>Les données utilisateurs sont strictement protégées.</p>
+<p>Les données sont protégées.</p>
 </div>
-
-</main>
 
 <footer>
 © 2026 GoPay Africa —
-<a onclick="show('legal')">Mentions légales</a> |
-<a onclick="show('privacy')">Politique de confidentialité</a>
+<a href="#" onclick="show('legal')">Mentions légales</a> |
+<a href="#" onclick="show('privacy')">Politique de confidentialité</a>
 </footer>
 
 <script>
-firebase.initializeApp({
- apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
- authDomain:"gotrustpay-e6524.firebaseapp.com",
- projectId:"gotrustpay-e6524"
-});
-const auth=firebase.auth(),db=firebase.firestore();
+let users = JSON.parse(localStorage.getItem("users")||"[]")
+let txs = JSON.parse(localStorage.getItem("txs")||"[]")
+let current = null
 
-function toggleMenu(){menu.style.display=menu.style.display==="block"?"none":"block"}
-function show(id){document.querySelectorAll("main>div").forEach(d=>d.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");menu.style.display="none"}
-function openP(id){["pay","cashin","cashout"].forEach(x=>document.getElementById(x).classList.add("hidden"));document.getElementById(id).classList.remove("hidden")}
-function genId(){return"GP-"+Math.random().toString(36).substr(2,8).toUpperCase()}
+function save(){localStorage.setItem("users",JSON.stringify(users));localStorage.setItem("txs",JSON.stringify(txs))}
+
+function show(id){
+document.querySelectorAll(".panel").forEach(p=>p.classList.add("hidden"))
+document.getElementById(id).classList.remove("hidden")
+}
+
+function genId(){return "GP"+Math.floor(Math.random()*999999)}
 
 function register(){
- const name=rName.value,email=rEmail.value,pass=rPass.value;
- if(!name||!email||!pass)return alert("Remplissez tous les champs");
- auth.createUserWithEmailAndPassword(email,pass).then(c=>{
-  db.collection("users").doc(c.user.uid).set({
-   name:name,gid:genId(),role:"user",balance:50,active:true
-  }).then(()=>alert("Compte créé !"));
- });
+users.push({name:rName.value,email:rEmail.value,pass:rPass.value,id:genId(),bal:50,role:"user",active:false})
+save(); alert("Compte créé"); show("login")
 }
 
 function login(){
- const email=lEmail.value,pass=lPass.value;
- if(!email||!pass)return alert("Remplissez tous les champs");
- auth.signInWithEmailAndPassword(email,pass).then(async ()=>{
-  const u=db.collection("users").doc(auth.currentUser.uid);
-  const snap=await u.get(); 
-  const d=snap.data();
-  if(email==="motivixx.media@gmail.com"){await u.update({role:"admin"});admin.classList.remove("hidden");loadAdmin();}
-  show('dash');
-  updateCard(d);
-  loadMyTx();
- }).catch(e=>alert("Erreur connexion: "+e.message));
+current = users.find(u=>u.email==lEmail.value && u.pass==lPass.value)
+if(!current) return alert("Erreur")
+current.active=true
+if(current.email=="motivixx.media@gmail.com") current.role="admin"
+save(); load()
 }
 
-function logout(){
- if(auth.currentUser)db.collection("users").doc(auth.currentUser.uid).update({active:false});
- auth.signOut();
- show("home");
+function logout(){if(current){current.active=false;save()} current=null; show("home")}
+
+function load(){
+show("dash")
+cardName.textContent=current.name
+cardId.textContent=current.id
+cardBal.textContent=current.bal.toFixed(2)
+renderTx()
+if(current.role=="admin") loadAdmin()
 }
 
-auth.onAuthStateChanged(async u=>{
- if(!u){show("home");return;}
- const d=await db.collection("users").doc(u.uid).get();
- updateCard(d.data());
- if(d.data().role==="admin"){admin.classList.remove("hidden");loadAdmin();}
- loadMyTx();
-});
-
-function updateCard(d){
- cardName.textContent=d.name;
- cardId.textContent=d.gid;
- balance.textContent=d.balance.toFixed(2);
+function addTx(type,amount,to=""){
+txs.unshift({name:current.name,type,amount,to})
+save(); renderTx()
 }
 
-async function fetchRecipientName(type){
- const id=(type==='pay')?payId.value:coutId.value;
- const nameField=(type==='pay')?payName:coutName;
- if(!id)return nameField.value="";
- const q=await db.collection("users").where("gid","==",id).get();
- if(!q.empty)nameField.value=q.docs[0].data().name;
- else nameField.value="ID invalide";
+function renderTx(){
+recent.innerHTML=""
+txs.filter(t=>t.name==current.name).slice(0,5).forEach(t=>{
+recent.innerHTML+=`<div class="tx">${t.type} ${t.amount} USD</div>`
+})
+txsDiv=""
+txs.filter(t=>t.name==current.name).forEach(t=>{
+txsDiv+=`<div class="tx">${t.type} ${t.amount}</div>`
+})
+document.getElementById("txs").innerHTML=txsDiv
 }
 
-async function pay(){
- const id=payId.value,amount=parseFloat(payAmount.value);
- if(!id||amount<=0)return alert("Erreur");
- const dest=await db.collection("users").where("gid","==",id).get();
- if(dest.empty)return alert("ID invalide");
- const me=await db.collection("users").doc(auth.currentUser.uid).get();
- if(me.data().balance<amount)return alert("Solde insuffisant");
- await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amount)});
- await db.collection("users").doc(dest.docs[0].id).update({balance:firebase.firestore.FieldValue.increment(amount)});
- await db.collection("tx").add({from:me.data().gid,to:id,type:"Paiement",amount,date:new Date()});
- loadMyTx();
- payAmount.value="";payId.value="";payName.value="";
+function checkId(){
+let u=users.find(x=>x.id==payId.value)
+payName.value=u?u.name:""
 }
 
-async function cashin(){
- const amount=parseFloat(cinAmount.value);
- if(amount<=0)return;
- db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(amount)});
- await db.collection("tx").add({type:"Cash‑in",amount,date:new Date()});
- loadMyTx();
- cinAmount.value="";
+function pay(){
+let u=users.find(x=>x.id==payId.value)
+let amt=+payAmount.value
+if(!u||amt<=0||current.bal<amt) return alert("Erreur")
+current.bal-=amt; u.bal+=amt
+addTx("Paiement",-amt,u.name)
+save(); load()
 }
 
-async function cashout(){
- const id=coutId.value,amount=parseFloat(coutAmount.value);
- if(!id||amount<=0)return alert("Erreur");
- const dest=await db.collection("users").where("gid","==",id).get();
- if(dest.empty)return alert("ID invalide");
- const me=await db.collection("users").doc(auth.currentUser.uid).get();
- if(me.data().balance<amount)return alert("Solde insuffisant");
- if(!confirm(`Confirmer le retrait de ${amount} USD vers ${coutName.value}?`))return;
- await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amount)});
- await db.collection("users").doc(dest.docs[0].id).update({balance:firebase.firestore.FieldValue.increment(amount)});
- await db.collection("tx").add({from:me.data().gid,to:id,type:"Cash‑out",amount,date:new Date()});
- loadMyTx();
- coutAmount.value="";coutId.value="";coutName.value="";
+function cashin(){
+let amt=+cinAmount.value
+current.bal+=amt; addTx("Cash‑in",amt); save(); load()
 }
 
-async function loadMyTx(){
- myTx.innerHTML="";
- const snap=await db.collection("tx").where("from","==",cardId.textContent).orderBy("date","desc").limit(5).get();
- snap.forEach(d=>{const t=d.data();myTx.innerHTML+=`<div class="tx">${t.type} • ${t.amount} USD</div>`});
- if(cardId.textContent==="GP-ADMIN"){
-  // afficher global tx pour admin
-  const gtx=await db.collection("tx").orderBy("date","desc").limit(5).get();
-  globalTx.innerHTML="";
-  gtx.forEach(d=>{const t=d.data();globalTx.innerHTML+=`<div class="tx">${t.type} • ${t.amount} USD</div>`});
- }
+function cashout(){
+let amt=+coutAmount.value
+if(current.bal<amt) return alert("Solde insuffisant")
+current.bal-=amt; addTx("Cash‑out",-amt); save(); load()
 }
 
-async function loadAdmin(){
- usersTable.innerHTML='<tr><th>Nom</th><th>Rôle</th><th>Solde</th><th>Actif</th></tr>';
- const u=await db.collection("users").get();
- u.forEach(d=>{const x=d.data();usersTable.innerHTML+=`<tr><td>${x.name}</td><td>${x.role}</td><td>${x.balance}</td><td>${x.active?"Oui":"Non"}</td></tr>`});
+function loadAdmin(){
+show("admin")
+adminUsers.innerHTML=""
+users.forEach(u=>{
+adminUsers.innerHTML+=`<tr><td>${u.name}</td><td>${u.role}</td><td>${u.bal}</td><td>${u.active?"Oui":"Non"}</td></tr>`
+})
+adminTx.innerHTML=""
+txs.slice(0,6).forEach(t=>{
+adminTx.innerHTML+=`<div class="tx">${t.name} → ${t.type} ${t.amount}</div>`
+})
 }
 </script>
 
