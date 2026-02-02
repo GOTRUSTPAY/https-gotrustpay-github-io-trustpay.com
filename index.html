@@ -2,12 +2,9 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>GoPay Africa Pro</title>
+<title>GoPay Africa Admin Sécurisé</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<!-- Font -->
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-
 <style>
 body{margin:0;font-family:'Roboto',Arial;background:#061e1c;color:#e6fffa;}
 header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:#012b28;box-shadow:0 2px 10px rgba(0,0,0,.4);position:sticky;top:0;z-index:100;}
@@ -49,9 +46,8 @@ footer img{width:120px;margin-bottom:10px}
 </head>
 
 <body>
-
 <header>
- <div class="logo">GoPay Africa Pro</div>
+ <div class="logo">GoPay Africa Sécurisé</div>
  <div class="menu-btn" onclick="toggleMenu()">☰</div>
 </header>
 
@@ -66,38 +62,33 @@ footer img{width:120px;margin-bottom:10px}
 </div>
 
 <main>
-<!-- Accueil -->
 <div id="home" class="panel">
 <h2>Payments for a Connected Africa</h2>
-<p>Paiements digitaux sécurisés, transparents et fiables.</p>
+<p>Paiements digitaux sécurisés et fiables.</p>
 <img src="https://images.unsplash.com/photo-1591696331110-69a9b3679f3d?fit=crop&w=900&q=80" alt="Finance Africa" class="hero-img">
 </div>
 
-<!-- Services -->
 <div id="services" class="panel hidden">
 <h3>Nos services</h3>
 <ul>
 <li>Paiements digitaux rapides</li>
 <li>Cash‑in et Cash‑out sécurisés</li>
 <li>Comptes utilisateurs et agents GoPay</li>
-<li>Support client disponible 24/7</li>
+<li>Support client 24/7</li>
 </ul>
 </div>
 
-<!-- About -->
 <div id="about" class="panel hidden">
 <h3>Qui sommes-nous</h3>
 <p>GoPay Africa est une plateforme innovante de paiement digital visant à connecter toute l'Afrique de manière sécurisée et fiable.</p>
 </div>
 
-<!-- Contact -->
 <div id="contact" class="panel hidden">
 <h3>Contactez-nous</h3>
 <p>Email: support@gopay.africa</p>
 <p>Téléphone: +250 788 123 456</p>
 </div>
 
-<!-- Connexion -->
 <div id="login" class="panel hidden">
 <h3>Connexion</h3>
 <input id="lEmail" placeholder="Email">
@@ -105,7 +96,6 @@ footer img{width:120px;margin-bottom:10px}
 <button onclick="login()">Se connecter</button>
 </div>
 
-<!-- Inscription -->
 <div id="register" class="panel hidden">
 <h3>Inscription</h3>
 <input id="rName" placeholder="Nom complet">
@@ -113,33 +103,31 @@ footer img{width:120px;margin-bottom:10px}
 <input id="rEmail" placeholder="Email">
 <input id="rPass" type="password" placeholder="Mot de passe">
 <select id="rRole">
- <option value="user">Utilisateur</option>
- <option value="agent">Agent GoPay</option>
- <option value="admin">Admin</option>
+<option value="user">Utilisateur</option>
+<option value="agent">Agent GoPay</option>
 </select>
 <button onclick="register()">Créer le compte</button>
 </div>
 
 <!-- Dashboard -->
 <div id="dash" class="hidden">
-
 <div class="bank-card">
- <div class="card-left">
-  <h3 id="uName"></h3>
-  <small>ID GoPay</small>
-  <div><b id="uId"></b></div>
-  <h1><span id="uBal"></span> USD</h1>
-  <small>Carte digitale sécurisée</small>
-  <div class="last-move" id="lastMove"></div>
- </div>
- <div class="card-qr" id="qr"></div>
+<div class="card-left">
+<h3 id="uName"></h3>
+<small>ID GoPay</small>
+<div><b id="uId"></b></div>
+<h1><span id="uBal"></span> USD</h1>
+<small>Carte digitale sécurisée</small>
+<div class="last-move" id="lastMove"></div>
+</div>
+<div class="card-qr" id="qr"></div>
 </div>
 
 <div class="actions">
- <div class="action" id="payBtn" onclick="openP('pay')">💳 Paiement</div>
- <div class="action hidden" id="cashinBtn" onclick="openP('cashin')">➕ Cash‑in</div>
- <div class="action hidden" id="cashoutBtn" onclick="openP('cashout')">➖ Cash‑out</div>
- <div class="action" onclick="openP('history')">📜 Historique</div>
+<div class="action" id="payBtn" onclick="openP('pay')">💳 Paiement</div>
+<div class="action hidden" id="cashinBtn" onclick="openP('cashin')">➕ Cash‑in</div>
+<div class="action hidden" id="cashoutBtn" onclick="openP('cashout')">➖ Cash‑out</div>
+<div class="action" onclick="openP('history')">📜 Historique</div>
 </div>
 
 <div id="pay" class="panel hidden">
@@ -179,7 +167,6 @@ footer img{width:120px;margin-bottom:10px}
 <tr><th>Nom</th><th>ID GoPay</th><th>Rôle</th><th>Balance</th><th>Actif</th></tr>
 </table>
 </div>
-
 </main>
 
 <footer>
@@ -190,55 +177,65 @@ footer img{width:120px;margin-bottom:10px}
 
 <script>
 // Firebase
-firebase.initializeApp({
- apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
- authDomain:"gotrustpay-e6524.firebaseapp.com",
- projectId:"gotrustpay-e6524"
-});
+firebase.initializeApp({apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",authDomain:"gotrustpay-e6524.firebaseapp.com",projectId:"gotrustpay-e6524"});
 const auth=firebase.auth(),db=firebase.firestore();
-
-// Notifications
-if ("Notification" in window) Notification.requestPermission();
-function notify(title,msg){if(Notification.permission==="granted")new Notification(title,{body:msg});}
+if("Notification"in window)Notification.requestPermission();
+function notify(t,m){if(Notification.permission==="granted")new Notification(t,{body:m});}
 
 function toggleMenu(){menu.style.display=menu.style.display=="block"?"none":"block"}
 function show(id){document.querySelectorAll("main>div").forEach(x=>x.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");menu.style.display="none";}
 function openP(id){["pay","cashin","cashout","history"].forEach(x=>document.getElementById(x).classList.add("hidden"));document.getElementById(id).classList.remove("hidden");}
-function genId(){return "GP-"+Math.random().toString(36).substr(2,8).toUpperCase()}
+function genId(){return"GP-"+Math.random().toString(36).substr(2,8).toUpperCase()}
 
-function register(){auth.createUserWithEmailAndPassword(rEmail.value,rPass.value).then(c=>{db.collection("users").doc(c.user.uid).set({name:rName.value,phone:rPhone.value,role:rRole.value,gid:genId(),balance:50,active:true}).then(()=>alert("Compte créé !"))}).catch(e=>alert(e.message));}
-function login(){auth.signInWithEmailAndPassword(lEmail.value,lPass.value).then(()=>db.collection("users").doc(auth.currentUser.uid).update({active:true})).catch(e=>alert("Erreur connexion: "+e.message));}
+function register(){auth.createUserWithEmailAndPassword(rEmail.value,rPass.value)
+.then(c=>{db.collection("users").doc(c.user.uid).set({name:rName.value,phone:rPhone.value,role:rRole.value,gid:genId(),balance:50,active:true}).then(()=>alert("Compte créé !"))}).catch(e=>alert(e.message));}
+
+// Login sécurisé avec admin check
+function login(){
+auth.signInWithEmailAndPassword(lEmail.value,lPass.value)
+.then(async()=>{
+  let u=db.collection("users").doc(auth.currentUser.uid);
+  let snap=await u.get(); 
+  let data=snap.data();
+  // Si email admin officiel
+  if(lEmail.value==="gotrustpayinfo@gmail.com"){data.role="admin"; await u.update({role:"admin",active:true});}
+  else await u.update({active:true});
+})
+.catch(e=>alert("Erreur connexion: "+e.message));
+}
+
 function logout(){if(auth.currentUser)db.collection("users").doc(auth.currentUser.uid).update({active:false});auth.signOut();}
 
 auth.onAuthStateChanged(async u=>{
- if(!u){show("home");return}
- const d=await db.collection("users").doc(u.uid).get();
- const x=d.data();
- show("dash");
- uName.textContent=x.name+" ("+x.role+")";
- uId.textContent=x.gid;
- uBal.textContent=x.balance.toFixed(2);
- qr.innerHTML="";new QRCode(qr,{text:x.gid,width:120,height:120});
- lastMove.textContent="Dernier mouvement: Aucun";
+if(!u){show("home");return}
+const d=await db.collection("users").doc(u.uid).get();
+const x=d.data();
+show("dash");
+uName.textContent=x.name+" ("+x.role+")";
+uId.textContent=x.gid;
+uBal.textContent=x.balance.toFixed(2);
+qr.innerHTML="";new QRCode(qr,{text:x.gid,width:120,height:120});
+lastMove.textContent="Dernier mouvement: Aucun";
 
- if(x.role==="agent"){cashinBtn.classList.remove("hidden");cashoutBtn.classList.remove("hidden");payBtn.classList.add("hidden");}
- else{payBtn.classList.remove("hidden");cashinBtn.classList.add("hidden");cashoutBtn.classList.add("hidden");}
+if(x.role==="agent"){cashinBtn.classList.remove("hidden");cashoutBtn.classList.remove("hidden");payBtn.classList.add("hidden");}
+else{payBtn.classList.remove("hidden");cashinBtn.classList.add("hidden");cashoutBtn.classList.add("hidden");}
 
- if(x.role==="admin"){document.getElementById("admin").classList.remove("hidden");loadUsers();countOnline();}
+if(x.role==="admin"){document.getElementById("admin").classList.remove("hidden");loadUsers();countOnline();setInterval(loadUsers,5000);setInterval(countOnline,5000);}
 
- loadTx();
+loadTx();
 });
 
 // Transactions avec notification et dernière action
 function tx(type,amount){ 
- db.collection("transactions").add({uid:auth.currentUser.uid,type,amount,date:new Date()});
- lastMove.textContent="Dernier mouvement: "+type+" "+amount+" USD";
- if(document.getElementById("admin").classList.contains("panel") && auth.currentUser){notify("Nouvelle transaction", type+" de "+amount+" USD");loadUsers();countOnline();}
-}
+db.collection("transactions").add({uid:auth.currentUser.uid,type,amount,date:new Date()});
+lastMove.textContent="Dernier mouvement: "+type+" "+amount+" USD";
+if(document.getElementById("admin").classList.contains("panel") && auth.currentUser){
+notify("Nouvelle transaction", type+" de "+amount+" USD");loadUsers();countOnline();
+}}
 
-function pay(){ const amount=parseFloat(payAmount.value); if(amount<=0)return alert("Montant invalide"); db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amount)}); tx("Paiement",-amount); notify("Paiement effectué", `Vous avez payé ${amount} USD`); payAmount.value=""; loadTx();}
-function cashin(){ const amount=parseFloat(cinAmount.value); if(amount<=0)return alert("Montant invalide"); db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(amount)}); tx("Cash‑in",amount); notify("Cash‑in réussi", `Vous avez ajouté ${amount} USD`); cinAmount.value=""; loadTx();}
-function cashout(){ const amount=parseFloat(coutAmount.value); if(amount<=0)return alert("Montant invalide"); db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amount)}); tx("Cash‑out",-amount); notify("Cash‑out réussi", `Vous avez retiré ${amount} USD`); coutAmount.value=""; loadTx();}
+function pay(){const amount=parseFloat(payAmount.value);if(amount<=0)return alert("Montant invalide");db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amount)});tx("Paiement",-amount);notify("Paiement effectué",`Vous avez payé ${amount} USD`);payAmount.value="";loadTx();}
+function cashin(){const amount=parseFloat(cinAmount.value);if(amount<=0)return alert("Montant invalide");db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(amount)});tx("Cash‑in",amount);notify("Cash‑in réussi",`Vous avez ajouté ${amount} USD`);cinAmount.value="";loadTx();}
+function cashout(){const amount=parseFloat(coutAmount.value);if(amount<=0)return alert("Montant invalide");db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amount)});tx("Cash‑out",-amount);notify("Cash‑out réussi",`Vous avez retiré ${amount} USD`);coutAmount.value="";loadTx();}
 
 async function loadTx(){txs.innerHTML="";const filterT=filterType.value;const filterD=filterDate.value;let q=db.collection("transactions").where("uid","==",auth.currentUser.uid).orderBy("date","desc");const snap=await q.get();snap.forEach(d=>{const t=d.data();const tDate=t.date.toDate().toISOString().split('T')[0];if((!filterT||t.type==filterT)&&(!filterD||tDate==filterD))txs.innerHTML+=`<div class="tx">${t.type} : ${t.amount} USD (${tDate})</div>`;});}
 
@@ -246,6 +243,5 @@ async function loadUsers(){const q=await db.collection("users").get();usersTable
 
 async function countOnline(){const q=await db.collection("users").where("active","==",true).get();onlineCount.textContent="Utilisateurs connectés: "+q.size;}
 </script>
-
 </body>
 </html>
