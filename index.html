@@ -2,10 +2,9 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>GoTrust Pay</title>
+<title>GOPAY AFRICA</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Styles -->
 <style>
 body{margin:0;font-family:Arial;background:linear-gradient(135deg,#021c1b,#032f2e);color:#d1fae5}
 .hidden{display:none!important}
@@ -15,63 +14,13 @@ main{max-width:1100px;margin:auto;padding:20px}
 input,select,button{width:100%;padding:12px;margin:6px 0;border-radius:10px;border:none}
 button{background:#14b8a6;font-weight:bold;cursor:pointer}
 .panel{background:#043837;padding:20px;border-radius:16px;margin-top:20px}
+.card{background:#054f4b;padding:20px;border-radius:18px;display:flex;justify-content:space-between;flex-wrap:wrap;box-shadow:0 10px 25px rgba(0,0,0,.5)}
+#qr{width:130px;height:130px;background:#fff;padding:8px;border-radius:10px}
 .actions{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:20px}
 @media(max-width:700px){.actions{grid-template-columns:repeat(2,1fr)}}
 .action{background:linear-gradient(145deg,#0fb9a8,#087f73);padding:22px;border-radius:18px;text-align:center;font-weight:bold;cursor:pointer}
 .tx,.news{background:#022c2a;padding:8px;border-radius:8px;margin-bottom:6px}
-.card{
-  width:320px;
-  height:180px;
-  background:linear-gradient(135deg,#065f5b,#043837);
-  border-radius:20px;
-  box-shadow:0 10px 25px rgba(0,0,0,0.7);
-  padding:20px;
-  color:#fff;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  position:relative;
-  flex-wrap:wrap;
-}
-.card::before{
-  content:"";
-  position:absolute;
-  top:10px;
-  right:10px;
-  width:40px;
-  height:40px;
-  border-radius:50%;
-  background:rgba(255,255,255,0.15);
-}
-#qr{
-  width:120px;
-  height:120px;
-  background:#fff;
-  padding:8px;
-  border-radius:12px;
-  box-shadow:0 5px 15px rgba(0,0,0,0.3);
-}
-  .recent-box{
-  height:160px;
-  overflow:hidden;
-  background:#022c2a;
-  border-radius:12px;
-  padding:10px;
-}
-
-.tx{
-  padding:8px 6px;
-  margin-bottom:6px;
-  background:rgba(20,184,166,0.15);
-  border-radius:8px;
-  font-size:0.9em;
-  animation: slideIn 0.5s ease;
-}
-
-@keyframes slideIn{
-  from{opacity:0;transform:translateY(10px)}
-  to{opacity:1;transform:translateY(0)}
-}
+small{opacity:.7}
 </style>
 
 <!-- Firebase -->
@@ -81,7 +30,6 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
 
 <!-- QR -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
 </head>
 
 <body>
@@ -96,15 +44,18 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
 </header>
 
 <main>
+
 <!-- Accueil -->
 <div id="home" class="panel">
- <h2>GoTrust Pay</h2>
- <p>Paiement digital sécurisé</p>
- <h3>Actualités récentes</h3>
+ <h2>GOPAY AFRICA</h2>
+ <p>Paiement digital simple et accessible à tous</p>
+ <small>Version pilote – soldes et transactions simulés</small>
+
+ <h3 style="margin-top:20px">Actualités</h3>
  <div id="newsList"></div>
 </div>
 
-<!-- Login -->
+<!-- Connexion -->
 <div id="loginPanel" class="panel hidden">
  <h3>Connexion</h3>
  <input id="loginEmail" placeholder="Email">
@@ -112,62 +63,48 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
  <button onclick="login()">Se connecter</button>
 </div>
 
-<!-- Register -->
+<!-- Inscription -->
 <div id="registerPanel" class="panel hidden">
  <h3>Inscription</h3>
  <input id="regName" placeholder="Nom complet">
  <input id="regPhone" placeholder="Téléphone">
  <input id="regEmail" placeholder="Email">
  <input id="regPassword" type="password" placeholder="Mot de passe">
- <button onclick="register()">S'inscrire</button>
+ <button onclick="register()">Créer mon compte GoPay</button>
 </div>
 
 <!-- Dashboard -->
 <div id="dashboard" class="hidden">
 
 <div class="card">
-  <div>
-    <h3 id="cardName" style="margin:0;font-size:1.2em;"></h3>
-    <p style="margin:4px 0;">Carte biométrique</p>
-    <div id="cardNumber" style="font-size:1.1em;letter-spacing:2px;"></div>
-    <small>ID : <span id="cardId"></span></small>
-    <h2 style="margin-top:10px;font-size:1.1em;">Solde : <span id="balance"></span> USD</h2>
-  </div>
-  <div id="qr"></div>
+ <div>
+  <h3 id="cardName"></h3>
+  <p>Carte virtuelle GOPAY AFRICA</p>
+  <b id="cardNumber"></b><br>
+  <small>ID : <span id="cardId"></span></small>
+  <h2>Solde : <span id="balance"></span> USD</h2>
+  <small>Simulation – non utilisable hors GoPay</small>
+ </div>
+ <div id="qr"></div>
 </div>
 
 <h3>Activités récentes</h3>
 <div id="recentTx"></div>
 
 <div class="actions">
- <div class="action" onclick="openPanel('deposit')">💰 Dépôt</div>
- <div class="action" onclick="openPanel('withdraw')">📤 Retrait</div>
- <div class="action" onclick="openPanel('send')">🔁 Envoi</div>
+ <div class="action" onclick="openPanel('deposit')">💰 Approvisionnement</div>
+ <div class="action" onclick="openPanel('send')">🔁 Envoyer GoPay</div>
  <div class="action" onclick="openPanel('history')">📜 Historique</div>
 </div>
 
+<!-- Panels -->
 <div id="deposit" class="panel hidden">
- <select id="depOperator">
-   <option value="Orange">Orange</option>
-   <option value="Airtel">Airtel</option>
-   <option value="GoPay">GoPay</option>
- </select>
- <input id="depAmount" type="number" placeholder="Montant USD">
+ <input id="depAmount" type="number" placeholder="Montant USD (simulation)">
  <button onclick="deposit()">Confirmer</button>
 </div>
 
-<div id="withdraw" class="panel hidden">
- <select id="wdOperator">
-   <option value="Orange">Orange</option>
-   <option value="Airtel">Airtel</option>
-   <option value="GoPay">GoPay</option>
- </select>
- <input id="wdAmount" type="number" placeholder="Montant RWF">
- <button onclick="withdraw()">Confirmer</button>
-</div>
-
 <div id="send" class="panel hidden">
- <input id="toUid" placeholder="ID destinataire">
+ <input id="toUid" placeholder="ID destinataire GoPay">
  <input id="sendAmount" type="number" placeholder="Montant USD">
  <button onclick="send()">Envoyer</button>
 </div>
@@ -179,16 +116,14 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
 
 </main>
 
-<!-- SCRIPT -->
 <script>
-// Firebase init
+// Firebase
 firebase.initializeApp({
  apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
  authDomain:"gotrustpay-e6524.firebaseapp.com",
  projectId:"gotrustpay-e6524"
 });
-const auth=firebase.auth(),db=firebase.firestore();
-const RATE=1300;
+const auth=firebase.auth(), db=firebase.firestore();
 
 // UI
 function show(id){
@@ -196,161 +131,129 @@ function show(id){
  document.getElementById(id).classList.remove("hidden");
 }
 
+// Carte
+function genCard(){
+ return "4896 "+Math.floor(7000+Math.random()*2999)+" "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000);
+}
+
 // Auth
 function register(){
  auth.createUserWithEmailAndPassword(regEmail.value,regPassword.value)
- .then(c=>db.collection("users").doc(c.user.uid).set({
-  name:regName.value, phone:regPhone.value,
-  card:genCard(), balance:0
- })).catch(e=>alert(e.message));
-  
+ .then(async c=>{
+  await db.collection("users").doc(c.user.uid).set({
+   name:regName.value,
+   phone:regPhone.value,
+   card:genCard(),
+   balance:20,
+   createdAt:new Date()
+  });
+  generateWelcomeTx(c.user.uid);
+ }).catch(e=>alert(e.message));
 }
+
 function login(){
  auth.signInWithEmailAndPassword(loginEmail.value,loginPassword.value)
  .catch(e=>alert(e.message));
 }
 function logout(){auth.signOut()}
 
-// Card generator
-function genCard(){return "4896 "+Math.floor(7000+Math.random()*2999)+" "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000);}
+// Transactions initiales
+function generateWelcomeTx(uid){
+ const txs=[
+  {type:"Dépôt",amount:20,operator:"GoPay Africa"},
+  {type:"Paiement",amount:-2.5,operator:"Service GoPay"},
+  {type:"Paiement",amount:-1.3,operator:"Marchand GoPay"}
+ ];
+ txs.forEach(t=>{
+  db.collection("transactions").add({uid,...t,date:new Date()});
+ });
+}
 
 // Auth state
 auth.onAuthStateChanged(async u=>{
- if(!u){loginBtnNav.classList.remove("hidden");registerBtnNav.classList.remove("hidden");logoutBtn.classList.add("hidden");show("home");loadNews();return;}
- loginBtnNav.classList.add("hidden");registerBtnNav.classList.add("hidden");logoutBtn.classList.remove("hidden");
+ if(!u){
+  loginBtnNav.classList.remove("hidden");
+  registerBtnNav.classList.remove("hidden");
+  logoutBtn.classList.add("hidden");
+  show("home"); loadNews(); return;
+ }
+ loginBtnNav.classList.add("hidden");
+ registerBtnNav.classList.add("hidden");
+ logoutBtn.classList.remove("hidden");
 
- const d=await db.collection("users").doc(u.uid).get(); const x=d.data();
- show("dashboard"); cardName.textContent=x.name; cardNumber.textContent=x.card; cardId.textContent=u.uid.slice(0,8); balance.textContent=x.balance.toFixed(2);
- qr.innerHTML=""; new QRCode(qr,{text:x.card,width:120,height:120});
-
- loadRecent();loadHistory();
- setInterval(()=>{loadRecent();loadNews();},3000);
+ const d=await db.collection("users").doc(u.uid).get();
+ const x=d.data();
+ show("dashboard");
+ cardName.textContent=x.name;
+ cardNumber.textContent=x.card;
+ cardId.textContent=u.uid.slice(0,8);
+ balance.textContent=x.balance.toFixed(2);
+ qr.innerHTML="";
+ new QRCode(qr,{text:x.card,width:120,height:120});
+ loadRecent(); loadHistory();
 });
 
 // Panels
 function openPanel(id){
- ["deposit","withdraw","send","history"].forEach(x=>document.getElementById(x).classList.add("hidden"));
+ ["deposit","send","history"].forEach(x=>document.getElementById(x).classList.add("hidden"));
  document.getElementById(id).classList.remove("hidden");
 }
 
-// Transactions
-async function addTx(type,amount,operator){
- await db.collection("transactions").add({uid:auth.currentUser.uid,type,amount,operator,date:new Date()});
- loadRecent();loadHistory();
-}
-function deposit(){
- const operator = depOperator.value;
- const amount = +depAmount.value;
- db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(amount)});
- addTx("Dépôt", amount, operator);
-}
-async function withdraw(){
- const operator = wdOperator.value;
- const amountRWF = +wdAmount.value;
- const usd = amountRWF / RATE;
- const d=await db.collection("users").doc(auth.currentUser.uid).get();
- if(usd>d.data().balance)return alert("Solde insuffisant");
- db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-usd)});
- addTx("Retrait", -usd, operator);
-}
-async function send(){
- const d=await db.collection("users").doc(auth.currentUser.uid).get();
- if(sendAmount.value>d.data().balance)return alert("Solde insuffisant");
- db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-sendAmount.value)});
- db.collection("users").doc(toUid.value).update({balance:firebase.firestore.FieldValue.increment(+sendAmount.value)});
- addTx("Envoi",-sendAmount.value,"Interne");
+// Actions
+function addTx(type,amount,operator){
+ db.collection("transactions").add({
+  uid:auth.currentUser.uid,type,amount,operator,date:new Date()
+ });
+ loadRecent(); loadHistory();
 }
 
-// Historique & activités
+function deposit(){
+ const amount=+depAmount.value;
+ db.collection("users").doc(auth.currentUser.uid)
+ .update({balance:firebase.firestore.FieldValue.increment(amount)});
+ addTx("Dépôt",amount,"GoPay Africa");
+}
+
+async function send(){
+ const d=await db.collection("users").doc(auth.currentUser.uid).get();
+ if(sendAmount.value>d.data().balance) return alert("Solde insuffisant");
+ db.collection("users").doc(auth.currentUser.uid)
+ .update({balance:firebase.firestore.FieldValue.increment(-sendAmount.value)});
+ db.collection("users").doc(toUid.value)
+ .update({balance:firebase.firestore.FieldValue.increment(+sendAmount.value)});
+ addTx("Envoi",-sendAmount.value,"GoPay");
+}
+
+// Lists
 async function loadRecent(){
  recentTx.innerHTML="";
  const q=await db.collection("transactions")
-    .where("uid","==",auth.currentUser.uid)
-    .orderBy("date","desc")
-    .limit(5).get();
- if(q.empty){recentTx.innerHTML="<div class='tx'>Aucune activité récente</div>";return;}
+ .where("uid","==",auth.currentUser.uid)
+ .orderBy("date","desc").limit(3).get();
  q.forEach(d=>{
-   const t = d.data();
-   const date = new Date(t.date.seconds*1000).toLocaleString();
-   recentTx.innerHTML += `<div class="tx">${t.type} : ${t.amount.toFixed(2)} USD (${t.operator})<br><small>${date}</small></div>`;
+  const t=d.data();
+  recentTx.innerHTML+=`<div class="tx">${t.type} : ${t.amount.toFixed(2)} USD (${t.operator})</div>`;
  });
 }
 
 async function loadHistory(){
  txList.innerHTML="";
  const q=await db.collection("transactions")
-    .where("uid","==",auth.currentUser.uid)
-    .orderBy("date","desc").get();
- if(q.empty){txList.innerHTML="<div class='tx'>Aucune transaction</div>";return;}
+ .where("uid","==",auth.currentUser.uid)
+ .orderBy("date","desc").get();
  q.forEach(d=>{
-   const t = d.data();
-   const date = new Date(t.date.seconds*1000).toLocaleString();
-   txList.innerHTML += `<div class="tx">${t.type} : ${t.amount.toFixed(2)} USD (${t.operator})<br><small>${date}</small></div>`;
+  const t=d.data();
+  txList.innerHTML+=`<div class="tx">${t.type} : ${t.amount.toFixed(2)} USD (${t.operator})</div>`;
  });
 }
 
-// Actualités
+// News
 async function loadNews(){
  newsList.innerHTML="";
- const q = await db.collection("annonces").orderBy("date","desc").limit(3).get();
- q.forEach(d=>{
-   newsList.innerHTML += `<div class="news">${d.data().text}</div>`;
- });
-}// ================= ACTIVITÉS RÉCENTES STYLE BINANCE =================
-const fakeUsers = [
- "Alice M.","Jean K.","Patrick L.","Sophie D.","Daniel T.","Amina R.",
- "Kevin B.","Ismael H.","Laura P.","Eric C.","Sarah N.","Michael J."
-];
-
-const operators = ["Orange Money","Airtel Money","GoPay","MoMo"];
-let shownUsers = [];
-const MAX_MEMORY = 20;
-
-function generateActivity(){
-  let available = fakeUsers.filter(n => !shownUsers.includes(n));
-  if(available.length === 0){
-    shownUsers = [];
-    available = [...fakeUsers];
-  }
-
-  const user = available[Math.floor(Math.random()*available.length)];
-  shownUsers.push(user);
-  if(shownUsers.length > MAX_MEMORY) shownUsers.shift();
-
-  const amount = (Math.random()*900 + 10).toFixed(2);
-  const op = operators[Math.floor(Math.random()*operators.length)];
-
-  return `${user} a effectué une transaction de ${amount} USD via ${op}`;
+ const q=await db.collection("annonces").limit(3).get();
+ q.forEach(d=>newsList.innerHTML+=`<div class="news">${d.data().text}</div>`);
 }
-
-function pushActivity(){
-  const box = document.getElementById("recentTx");
-  if(!box) return;
-
-  const div = document.createElement("div");
-  div.className = "tx";
-  div.textContent = generateActivity();
-
-  box.prepend(div);
-
-  while(box.children.length > 6){
-    box.removeChild(box.lastChild);
-  }
-}
-
-// lancement automatique toutes les 3 secondes
-setInterval(pushActivity, 3000);
 </script>
-<!-- Footer à copier ici -->
-<footer style="background:#021c1b;color:#99f6e4;text-align:center;padding:20px;margin-top:30px;font-size:14px;">
-  <div style="margin-bottom:10px;">
-    <a href="#" style="color:#99f6e4;margin:0 10px;text-decoration:none;">Qui sommes-nous</a> |
-    <a href="#" style="color:#99f6e4;margin:0 10px;text-decoration:none;">Contact</a> |
-    <a href="#" style="color:#99f6e4;margin:0 10px;text-decoration:none;">Nos services</a> |
-    <a href="#" style="color:#99f6e4;margin:0 10px;text-decoration:none;">Politique & Confidentialité</a> |
-    <a href="#" style="color:#99f6e4;margin:0 10px;text-decoration:none;">Mentions légales</a>
-  </div>
-  &copy; 2026 GoTrust Pay. Tous droits réservés.
-</footer>
+
 </body>
 </html>
