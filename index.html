@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GoTrust Pay - MVP</title>
+<title>GoTrust Pay</title>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -14,26 +14,90 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
-:root{--bg:#021c1b;--panel:#043837;--card:#065f5b;--accent:#14b8a6;--text:#d1fae5}
+:root{
+  --bg:#021c1b;
+  --panel:#043837;
+  --card:#065f5b;
+  --accent:#14b8a6;
+  --text:#d1fae5;
+}
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#021c1b,#032f2e);color:var(--text)}
-header{background:#021c1b;padding:15px 25px;display:flex;justify-content:space-between}
-nav a{color:#99f6e4;margin-left:20px;font-weight:bold;cursor:pointer;text-decoration:none}
-main{max-width:1200px;margin:25px auto;padding:20px}
+body{
+  margin:0;font-family:Arial,Helvetica,sans-serif;
+  background:linear-gradient(135deg,#021c1b,#032f2e);
+  color:var(--text);
+}
+header{
+  background:#021c1b;
+  padding:15px 25px;
+  display:flex;
+  justify-content:space-between;
+}
+nav a{
+  color:#99f6e4;
+  margin-left:20px;
+  font-weight:bold;
+  cursor:pointer;
+  text-decoration:none;
+}
+main{
+  max-width:1200px;
+  margin:25px auto;
+  padding:20px;
+  display:none; /* 🔐 BLOQUÉ par défaut */
+}
 .hidden{display:none}
-button{background:var(--accent);border:none;padding:10px 16px;border-radius:8px;font-weight:bold;cursor:pointer}
-input,select{width:100%;padding:10px;margin:6px 0;border-radius:6px;border:none}
-.panel{background:var(--panel);border-radius:14px;padding:20px;margin-top:20px}
-.card{background:linear-gradient(135deg,#054a48,#022c2a);border-radius:18px;padding:25px;display:flex;justify-content:space-between;box-shadow:0 10px 30px rgba(0,0,0,.6)}
-.chip{width:50px;height:38px;background:linear-gradient(135deg,#facc15,#eab308);border-radius:6px;margin-bottom:10px}
-.activity{background:#022c2a;padding:10px;border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;font-size:14px}
-.small{font-size:13px;opacity:.8}
-.badge{padding:3px 8px;border-radius:6px;font-size:12px}
+button{
+  background:var(--accent);
+  border:none;
+  padding:10px 16px;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+}
+input,select{
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  border-radius:6px;
+  border:none;
+}
+.panel{
+  background:var(--panel);
+  border-radius:14px;
+  padding:20px;
+  margin-top:20px;
+}
+.card{
+  background:linear-gradient(135deg,#054a48,#022c2a);
+  border-radius:18px;
+  padding:25px;
+  display:flex;
+  justify-content:space-between;
+  box-shadow:0 10px 30px rgba(0,0,0,.6);
+}
+.chip{
+  width:50px;height:38px;
+  background:linear-gradient(135deg,#facc15,#eab308);
+  border-radius:6px;
+  margin-bottom:10px;
+}
+.activity{
+  background:#022c2a;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:8px;
+  display:flex;
+  justify-content:space-between;
+  font-size:14px;
+}
+.badge{padding:4px 8px;border-radius:6px;font-size:12px}
 .ok{background:#14532d}
 .wait{background:#7c2d12}
 .no{background:#7f1d1d}
 </style>
 </head>
+
 <body>
 
 <header>
@@ -72,7 +136,6 @@ input,select{width:100%;padding:10px;margin:6px 0;border-radius:6px;border:none}
 <!-- DASHBOARD -->
 <div id="dashboard" class="hidden">
 
-  <!-- CARTE BIOMETRIQUE -->
   <div class="card">
     <div>
       <div class="chip"></div>
@@ -83,13 +146,11 @@ input,select{width:100%;padding:10px;margin:6px 0;border-radius:6px;border:none}
     </div>
     <div>
       <div id="clientQR" style="background:#fff;padding:6px;border-radius:8px"></div>
-      <button onclick="downloadQR()">QR</button>
     </div>
   </div>
 
-  <!-- DEPOT Mobile Money -->
   <div class="panel">
-    <h3>Dépôt Mobile Money (sandbox/test)</h3>
+    <h3>Dépôt Mobile Money (test)</h3>
     <select id="mmType">
       <option>Airtel Money</option>
       <option>Orange Money</option>
@@ -98,20 +159,9 @@ input,select{width:100%;padding:10px;margin:6px 0;border-radius:6px;border:none}
     </select>
     <input id="mmPhone" placeholder="Numéro">
     <input id="mmAmount" type="number" placeholder="Montant">
-    <button onclick="mobileDeposit()">Déposer</button>
-    <p class="small">Anti‑double paiement actif</p>
+    <button onclick="deposit()">Déposer</button>
   </div>
 
-  <!-- KYC -->
-  <div class="panel">
-    <h3>KYC (vérification)</h3>
-    <input type="file" id="idFile">
-    <input type="file" id="selfieFile">
-    <button onclick="submitKYC()">Envoyer KYC</button>
-    <p id="kycStatus" class="small"></p>
-  </div>
-
-  <!-- HISTORIQUE -->
   <div class="panel">
     <h3>Historique dépôts</h3>
     <div id="history"></div>
@@ -121,7 +171,7 @@ input,select{width:100%;padding:10px;margin:6px 0;border-radius:6px;border:none}
 
 <!-- ADMIN -->
 <div id="admin" class="hidden panel">
-  <h2>Admin – Dépôts à valider</h2>
+  <h2>Admin – Validation dépôts</h2>
   <div id="adminDeposits"></div>
 </div>
 
@@ -130,11 +180,12 @@ input,select{width:100%;padding:10px;margin:6px 0;border-radius:6px;border:none}
 <script>
 // FIREBASE
 firebase.initializeApp({
- apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
- authDomain:"gotrustpay-e6524.firebaseapp.com",
- projectId:"gotrustpay-e6524"
+  apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
+  authDomain:"gotrustpay-e6524.firebaseapp.com",
+  projectId:"gotrustpay-e6524"
 });
-const auth=firebase.auth(), db=firebase.firestore();
+const auth=firebase.auth();
+const db=firebase.firestore();
 let lastDeposit=0;
 
 // NAV
@@ -143,127 +194,131 @@ function show(id){
  document.getElementById(id).classList.remove("hidden");
 }
 
-// REGISTER
-function genCard(){return "4896 "+Math.floor(1000+Math.random()*9000)+" **** ****";}
+// REGISTER (CLIENT ONLY)
+function genCard(){
+ return "4896 "+Math.floor(1000+Math.random()*9000)+" **** ****";
+}
 function register(){
  auth.createUserWithEmailAndPassword(regEmail.value,regPass.value)
  .then(c=>db.collection("users").doc(c.user.uid).set({
-  name:name.value, phone:phone.value, card:genCard(),
-  balance:0, role:"client", kyc:"none"
+   name:name.value,
+   phone:phone.value,
+   card:genCard(),
+   balance:0,
+   role:"client"
  }));
 }
 
 // LOGIN
-function login(){auth.signInWithEmailAndPassword(email.value,password.value);}
-
-// AUTH
-auth.onAuthStateChanged(u=>{
- if(!u){show('home'); return;}
- db.collection("users").doc(u.uid).onSnapshot(d=>{
-  const x=d.data();
-  show("dashboard");
-  cardName.textContent=x.name;
-  cardId.textContent=u.uid.slice(0,10).toUpperCase();
-  cardNumber.textContent=x.card;
-  balance.textContent=x.balance.toFixed(2);
-  kycStatus.textContent="KYC : "+x.kyc;
-  if(x.role==="admin") adminBtn.classList.remove("hidden");
-  clientQR.innerHTML="";
-  new QRCode("clientQR",{text:u.uid,width:130,height:130});
- });
- loadHistory();
- loadAdmin();
- loadActivities();
-});
-
-// DEPOT + FRAUDE + API MOBILE MONEY (sandbox)
-async function mobileDeposit(){
- if(Date.now()-lastDeposit<10000) return alert("Double paiement bloqué");
- lastDeposit=Date.now();
-
- const uid=auth.currentUser.uid;
- const amount=Number(mmAmount.value);
- const phone=mmPhone.value;
- const method=mmType.value;
-
- try{
-     // Sandbox placeholder
-     let result = {status:"success", message:"Test OK"};
-
-     if(result.status==="success"){
-         db.collection("deposits").add({uid,amount,method,phone,status:"pending",date:new Date()});
-         alert("Paiement reçu (sandbox), en attente validation admin");
-     } else alert("Paiement échoué : "+result.message);
-
- }catch(e){alert("Erreur API paiement");}
+function login(){
+ auth.signInWithEmailAndPassword(email.value,password.value);
 }
 
-// HISTORIQUE DEPOTS
+// AUTH BLINDÉ
+auth.onAuthStateChanged(u=>{
+ if(!u){
+   show("home");
+   document.querySelector("main").style.display="block";
+   return;
+ }
+
+ db.collection("users").doc(u.uid).get().then(d=>{
+   if(!d.exists){auth.signOut();return;}
+
+   const x=d.data();
+   show("dashboard");
+   cardName.textContent=x.name;
+   cardId.textContent=u.uid.slice(0,10).toUpperCase();
+   cardNumber.textContent=x.card;
+   balance.textContent=x.balance.toFixed(2);
+
+   if(x.role==="admin"){
+     adminBtn.classList.remove("hidden");
+     loadAdmin();
+   }
+
+   clientQR.innerHTML="";
+   new QRCode("clientQR",{text:u.uid,width:130,height:130});
+
+   loadHistory();
+   document.querySelector("main").style.display="block";
+ });
+});
+
+// DEPOT (SANDBOX)
+function deposit(){
+ if(Date.now()-lastDeposit<10000){alert("Double paiement bloqué");return;}
+ lastDeposit=Date.now();
+
+ db.collection("deposits").add({
+   uid:auth.currentUser.uid,
+   amount:Number(mmAmount.value),
+   method:mmType.value,
+   phone:mmPhone.value,
+   status:"pending",
+   date:new Date()
+ });
+ alert("Dépôt enregistré (test)");
+}
+
+// HISTORY
 function loadHistory(){
- db.collection("deposits").where("uid","==",auth.currentUser.uid)
+ db.collection("deposits")
+ .where("uid","==",auth.currentUser.uid)
  .orderBy("date","desc")
  .onSnapshot(s=>{
    history.innerHTML="";
    s.forEach(d=>{
      const x=d.data();
-     history.innerHTML+=`<div class="activity">
-      ${x.method} ${x.amount} USD
-      <span class="badge ${x.status==="approved"?"ok":x.status==="rejected"?"no":"wait"}">${x.status}</span>
-     </div>`;
+     history.innerHTML+=`
+       <div class="activity">
+         ${x.method} ${x.amount} USD
+         <span class="badge ${x.status==="approved"?"ok":x.status==="rejected"?"no":"wait"}">${x.status}</span>
+       </div>`;
    });
  });
 }
 
-// ADMIN APPROVE / REJECT
+// ADMIN
 function loadAdmin(){
  db.collection("deposits").where("status","==","pending")
  .onSnapshot(s=>{
    adminDeposits.innerHTML="";
    s.forEach(d=>{
      const x=d.data();
-     adminDeposits.innerHTML+=`<div class="activity">
-       ${x.method} ${x.amount} USD
-       <span>
-         <button onclick="approve('${d.id}','${x.uid}',${x.amount})">✔</button>
-         <button onclick="reject('${d.id}')">✖</button>
-       </span>
-     </div>`;
+     adminDeposits.innerHTML+=`
+       <div class="activity">
+         ${x.method} ${x.amount} USD
+         <span>
+           <button onclick="approve('${d.id}','${x.uid}',${x.amount})">✔</button>
+           <button onclick="reject('${d.id}')">✖</button>
+         </span>
+       </div>`;
    });
  });
 }
 function approve(id,uid,amt){
  db.collection("deposits").doc(id).update({status:"approved"});
- db.collection("users").doc(uid).update({balance:firebase.firestore.FieldValue.increment(amt)});
+ db.collection("users").doc(uid)
+ .update({balance:firebase.firestore.FieldValue.increment(amt)});
 }
-function reject(id){db.collection("deposits").doc(id).update({status:"rejected"});}
-
-// KYC
-function submitKYC(){
- db.collection("users").doc(auth.currentUser.uid).update({kyc:"submitted"});
- alert("KYC envoyé");
+function reject(id){
+ db.collection("deposits").doc(id).update({status:"rejected"});
 }
 
-// ACTIVITES DYNAMIQUES
+// ACTIVITES FAKE
 function randName(){
- const f=["Amina","Patrick","Sofia","Daniel","Jean","Ali","Emma","Paul","Koffi","Lina"];
- const l=["R.","K.","M.","L.","S.","D.","B.","T."];
- return f[Math.floor(Math.random()*f.length)]+" "+l[Math.floor(Math.random()*l.length)];
+ const a=["Amina","Jean","Paul","Sofia","Daniel","Ali","Emma"];
+ return a[Math.floor(Math.random()*a.length)];
 }
-function randNum(){return Math.floor(100000+Math.random()*900000);}
 function loadActivities(){
  activities.innerHTML="";
- for(let i=0;i<12;i++){
-   activities.innerHTML+=`<div class="activity">${randName()} transaction <span>${randNum()}</span></div>`;
+ for(let i=0;i<10;i++){
+   activities.innerHTML+=`<div class="activity">${randName()} transaction <span>${Math.floor(Math.random()*900000)}</span></div>`;
  }
  setTimeout(loadActivities,2500);
 }
-
-// QR
-function downloadQR(){
- const c=document.querySelector("#clientQR canvas");
- const a=document.createElement("a");
- a.href=c.toDataURL(); a.download="qr.png"; a.click();
-}
+loadActivities();
 </script>
 </body>
 </html>
