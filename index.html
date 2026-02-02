@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GoTrust Pay - MVP Amélioré</title>
+<title>GoTrust Pay - MVP</title>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -13,9 +12,6 @@
 
 <!-- QR Code -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-<!-- jsPDF pour la carte PDF -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 :root{--bg:#021c1b;--panel:#043837;--card:#065f5b;--accent:#14b8a6;--text:#d1fae5}
@@ -88,7 +84,6 @@ input,select{width:100%;padding:10px;margin:6px 0;border-radius:6px;border:none}
     <div>
       <div id="clientQR" style="background:#fff;padding:6px;border-radius:8px"></div>
       <button onclick="downloadQR()">Télécharger QR</button>
-      <button onclick="downloadCardPDF()">Télécharger carte PDF</button>
     </div>
   </div>
 
@@ -220,7 +215,7 @@ auth.onAuthStateChanged(user=>{
  });
 
  loadHistory(user.uid);
- if(user.uid==="UID_ADMIN_TEST") loadAdmin(); // remplace par UID réel admin
+ if(user.uid==="UID_ADMIN_TEST") loadAdmin(); // remplace par l'UID admin réel
  loadActivities();
 });
 
@@ -304,29 +299,6 @@ function downloadQR(){
  a.href=c.toDataURL();
  a.download="qr.png";
  a.click();
-}
-
-// ===== CARTE PDF =====
-async function downloadCardPDF(){
- if(!auth.currentUser) return alert("Connectez-vous");
- const { jsPDF } = window.jspdf;
- const doc = new jsPDF();
- doc.setFillColor(5, 74, 72);
- doc.rect(10, 20, 190, 100, "F");
- doc.setTextColor(255,255,255);
- doc.setFontSize(16);
- doc.text(`Nom : ${cardName.textContent}`,20,40);
- doc.text(`ID : ${cardId.textContent}`,20,55);
- doc.text(`Carte : ${cardNumber.textContent}`,20,70);
- doc.text(`Solde : ${balance.textContent} USD`,20,85);
-
- // QR code dans PDF
- const canvas=document.querySelector("#clientQR canvas");
- if(canvas){
-   const imgData = canvas.toDataURL("image/png");
-   doc.addImage(imgData,'PNG',140,40,50,50);
- }
- doc.save("carte_gotrustpay.pdf");
 }
 
 // ===== LOGO PNG =====
