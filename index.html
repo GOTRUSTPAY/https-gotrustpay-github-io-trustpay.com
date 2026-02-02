@@ -203,7 +203,16 @@ function register(){
   name:regName.value, phone:regPhone.value,
   card:genCard(), balance:0
  })).catch(e=>alert(e.message));
-}
+}// Génération QR code
+qr.innerHTML = "";
+new QRCode(qr, {
+  text: x.card,
+  width: 150,
+  height: 150,
+  colorDark:"#021c1b",
+  colorLight:"#ffffff",
+  correctLevel: QRCode.CorrectLevel.H
+});
 function login(){
  auth.signInWithEmailAndPassword(loginEmail.value,loginPassword.value)
  .catch(e=>alert(e.message));
@@ -340,6 +349,16 @@ function pushActivity(){
 // lancement automatique toutes les 3 secondes
 setInterval(pushActivity, 3000);
 </script>
-
+<!-- Footer à copier ici -->
+<footer style="background:#021c1b;color:#99f6e4;text-align:center;padding:20px;margin-top:30px;font-size:14px;">
+  <div style="margin-bottom:10px;">
+    <a href="#" style="color:#99f6e4;margin:0 10px;text-decoration:none;">Qui sommes-nous</a> |
+    <a href="#" style="color:#99f6e4;margin:0 10px;text-decoration:none;">Contact</a> |
+    <a href="#" style="color:#99f6e4;margin:0 10px;text-decoration:none;">Nos services</a> |
+    <a href="#" style="color:#99f6e4;margin:0 10px;text-decoration:none;">Politique & Confidentialité</a> |
+    <a href="#" style="color:#99f6e4;margin:0 10px;text-decoration:none;">Mentions légales</a>
+  </div>
+  &copy; 2026 GoTrust Pay. Tous droits réservés.
+</footer>
 </body>
 </html>
