@@ -2,8 +2,8 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GoTrust Pay</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -14,24 +14,46 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
-:root{
- --panel:#043837;--accent:#14b8a6;--text:#d1fae5;
-}
 body{
  margin:0;font-family:Arial;
  background:linear-gradient(135deg,#021c1b,#032f2e);
- color:var(--text);
+ color:#d1fae5
 }
 .hidden{display:none}
-header{background:#021c1b;padding:15px}
-nav a{color:#99f6e4;margin-right:20px;cursor:pointer;font-weight:bold}
-main{max-width:1200px;margin:auto;padding:20px}
-button{background:var(--accent);border:none;padding:10px;border-radius:8px;font-weight:bold}
-input,select{width:100%;padding:10px;margin:6px 0;border-radius:6px;border:none}
-.panel{background:var(--panel);padding:20px;border-radius:14px;margin-top:20px}
-.card{background:#054a48;padding:20px;border-radius:18px;display:flex;justify-content:space-between}
-.activity{background:#022c2a;padding:10px;border-radius:8px;margin-bottom:6px}
-.tabs button{margin-right:10px}
+header{padding:15px;background:#021c1b}
+nav a{margin-right:15px;color:#99f6e4;font-weight:bold;cursor:pointer}
+main{max-width:1100px;margin:auto;padding:20px}
+
+input,button{
+ width:100%;padding:12px;margin:6px 0;
+ border-radius:10px;border:none
+}
+button{
+ background:#14b8a6;font-weight:bold;cursor:pointer
+}
+.panel{
+ background:#043837;padding:20px;border-radius:16px;margin-top:20px
+}
+.card{
+ background:linear-gradient(145deg,#065f5b,#043837);
+ padding:20px;border-radius:22px;
+ display:flex;justify-content:space-between;
+ box-shadow:0 10px 30px rgba(0,0,0,.6)
+}
+.actions{
+ display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:20px
+}
+.action{
+ background:linear-gradient(145deg,#0fb9a8,#087f73);
+ padding:25px;border-radius:20px;
+ text-align:center;font-weight:bold;
+ box-shadow:0 8px 25px rgba(0,0,0,.6);
+ cursor:pointer;transition:.2s
+}
+.action:hover{transform:scale(1.05)}
+.activity{
+ background:#022c2a;padding:10px;border-radius:8px;margin-bottom:6px
+}
 </style>
 </head>
 
@@ -40,106 +62,74 @@ input,select{width:100%;padding:10px;margin:6px 0;border-radius:6px;border:none}
 <header>
 <nav>
  <a onclick="show('home')">Accueil</a>
- <a onclick="show('login')">Connexion</a>
- <a id="adminBtn" class="hidden" onclick="show('admin')">Admin</a>
+ <a id="loginBtn" onclick="show('auth')">Connexion</a>
 </nav>
 </header>
 
 <main>
 
-<!-- HOME -->
-<div id="home">
- <div class="panel">
-  <h2>Activités récentes</h2>
-  <div id="activities"></div>
- </div>
+<div id="home" class="panel">
+ <h2>GoTrust Pay</h2>
+ <p>Paiement digital sécurisé</p>
 </div>
 
-<!-- LOGIN -->
-<div id="login" class="hidden panel">
- <h2>Connexion</h2>
- <input id="email" placeholder="Email">
- <input id="password" type="password" placeholder="Mot de passe">
- <button onclick="login()">Connexion</button>
-
- <h3>Créer un compte</h3>
+<div id="auth" class="panel hidden">
+ <h2>Connexion / Inscription</h2>
  <input id="name" placeholder="Nom complet">
  <input id="phone" placeholder="Téléphone">
- <input id="regEmail" placeholder="Email">
- <input id="regPass" type="password" placeholder="Mot de passe">
- <button onclick="register()">Créer</button>
+ <input id="email" placeholder="Email">
+ <input id="password" type="password" placeholder="Mot de passe">
+ <button onclick="authUser()">Continuer</button>
 </div>
 
-<!-- DASHBOARD -->
 <div id="dashboard" class="hidden">
 
 <div class="card">
  <div>
   <h3 id="cardName"></h3>
+  <p>Carte : <b id="cardNumber"></b></p>
   <p>ID : <span id="cardId"></span></p>
-  <p>Carte : <span id="cardNumber"></span></p>
-  <b>Solde : <span id="balance"></span> USD</b>
+  <h2>Solde : <span id="balance"></span> USD</h2>
  </div>
  <div>
-  <div id="clientQR" style="background:#fff;padding:6px"></div>
-  <button onclick="downloadQR()">QR</button>
+  <div id="qr" style="background:#fff;padding:8px;border-radius:10px"></div>
  </div>
 </div>
 
-<!-- NAV DASHBOARD -->
-<div class="panel tabs">
- <button onclick="dash('deposit')">Dépôt</button>
- <button onclick="dash('withdraw')">Retrait</button>
- <button onclick="dash('transfer')">Transfert</button>
- <button onclick="dash('messages')">Messages</button>
+<div class="actions">
+ <div class="action" onclick="openPanel('deposit')">💰 Dépôt</div>
+ <div class="action" onclick="openPanel('withdraw')">📤 Retrait</div>
+ <div class="action" onclick="openPanel('send')">🔁 Envoi</div>
+ <div class="action" onclick="openPanel('messages')">💬 Messages</div>
 </div>
 
-<!-- DEPOT -->
-<div id="deposit" class="panel">
+<div id="deposit" class="panel hidden">
  <h3>Dépôt</h3>
- <input id="mmPhone" placeholder="Téléphone">
- <input id="mmAmount" type="number" placeholder="Montant">
- <button onclick="mobileDeposit()">Confirmer</button>
+ <input id="depAmount" type="number" placeholder="Montant">
+ <button onclick="deposit()">Confirmer</button>
 </div>
 
-<!-- RETRAIT -->
 <div id="withdraw" class="panel hidden">
  <h3>Retrait</h3>
- <input id="wdPhone" placeholder="Téléphone">
  <input id="wdAmount" type="number" placeholder="Montant">
- <button onclick="withdraw()">Retirer</button>
+ <button onclick="withdraw()">Confirmer</button>
 </div>
 
-<!-- TRANSFERT -->
-<div id="transfer" class="panel hidden">
- <h3>Transfert interne</h3>
- <input id="toUid" placeholder="UID destinataire">
- <input id="trAmount" type="number" placeholder="Montant">
- <button onclick="transfer()">Envoyer</button>
+<div id="send" class="panel hidden">
+ <h3>Envoi interne</h3>
+ <input id="toUid" placeholder="ID destinataire">
+ <input id="sendAmount" type="number" placeholder="Montant">
+ <button onclick="send()">Envoyer</button>
 </div>
 
-<!-- MESSAGES -->
 <div id="messages" class="panel hidden">
- <h3>Messages / Support</h3>
- <input id="msgText" placeholder="Votre message">
+ <h3>Messages</h3>
+ <input id="msg" placeholder="Votre message">
  <button onclick="sendMsg()">Envoyer</button>
  <div id="msgList"></div>
 </div>
 
-<!-- HISTORIQUE -->
-<div class="panel">
- <h3>Historique</h3>
- <div id="history"></div>
 </div>
-
-</div>
-
-<!-- ADMIN -->
-<div id="admin" class="hidden panel">
- <h2>Admin – Dépôts récents</h2>
- <div id="adminDeposits"></div>
-</div>
-
 </main>
 
 <script>
@@ -156,107 +146,87 @@ function show(id){
  document.getElementById(id).classList.remove("hidden");
 }
 
-function dash(id){
- ["deposit","withdraw","transfer","messages"].forEach(x=>document.getElementById(x).classList.add("hidden"));
- document.getElementById(id).classList.remove("hidden");
+function genCard(){
+ return "4896 "+
+ Math.floor(7000+Math.random()*2999)+" "+
+ Math.floor(1000+Math.random()*9000)+" "+
+ Math.floor(1000+Math.random()*9000);
 }
 
-function genCard(){return "4896 "+Math.floor(1000+Math.random()*9000)+" **** ****";}
-
-function register(){
- auth.createUserWithEmailAndPassword(regEmail.value,regPass.value)
- .then(c=>db.collection("users").doc(c.user.uid).set({
-  name:name.value,phone:phone.value,card:genCard(),balance:0,role:"client"
- }));
-}
-
-function login(){
- auth.signInWithEmailAndPassword(email.value,password.value)
- .then(()=>{email.value="";password.value="";});
+// AUTH SIMPLE ET FIABLE
+function authUser(){
+ const e=email.value,p=password.value;
+ auth.signInWithEmailAndPassword(e,p)
+ .catch(()=>{
+  auth.createUserWithEmailAndPassword(e,p)
+  .then(c=>{
+   return db.collection("users").doc(c.user.uid).set({
+    name:name.value,
+    phone:phone.value,
+    card:genCard(),
+    balance:0
+   });
+  });
+ });
 }
 
 auth.onAuthStateChanged(u=>{
  if(!u){show("home");return;}
  db.collection("users").doc(u.uid).get().then(d=>{
-  const x=d.data();show("dashboard");
+  const x=d.data();
+  show("dashboard");
+  loginBtn.classList.add("hidden");
   cardName.textContent=x.name;
-  cardId.textContent=u.uid.slice(0,8);
   cardNumber.textContent=x.card;
+  cardId.textContent=u.uid.slice(0,8);
   balance.textContent=x.balance.toFixed(2);
-  if(x.role==="admin")adminBtn.classList.remove("hidden");
-  clientQR.innerHTML="";new QRCode("clientQR",{text:u.uid,width:120,height:120});
-  loadHistory();loadMessages();loadAdmin();
+  qr.innerHTML="";
+  new QRCode("qr",{text:x.card,width:130,height:130});
  });
- loadActivities();
 });
 
-// DEPOT
-function mobileDeposit(){
- const a=Number(mmAmount.value),uid=auth.currentUser.uid;
- db.collection("users").doc(uid).update({balance:firebase.firestore.FieldValue.increment(a)});
- db.collection("deposits").add({uid,amount:a,date:new Date()});
- alert("Dépôt OK");loadHistory();
+function openPanel(id){
+ ["deposit","withdraw","send","messages"].forEach(x=>document.getElementById(x).classList.add("hidden"));
+ document.getElementById(id).classList.remove("hidden");
 }
 
-// RETRAIT
-function withdraw(){
- const a=Number(wdAmount.value),uid=auth.currentUser.uid;
- db.collection("users").doc(uid).update({balance:firebase.firestore.FieldValue.increment(-a)});
- alert("Retrait demandé");loadHistory();
+// OPERATIONS AVEC CONTROLE SOLDE
+async function getBalance(){
+ const d=await db.collection("users").doc(auth.currentUser.uid).get();
+ return d.data().balance;
 }
 
-// TRANSFERT
-function transfer(){
- const a=Number(trAmount.value);
+function deposit(){
  db.collection("users").doc(auth.currentUser.uid)
- .update({balance:firebase.firestore.FieldValue.increment(-a)});
- db.collection("users").doc(toUid.value)
- .update({balance:firebase.firestore.FieldValue.increment(a)});
- alert("Transfert effectué");loadHistory();
+ .update({balance:firebase.firestore.FieldValue.increment(+depAmount.value)});
+ alert("Dépôt effectué");
 }
 
-// MESSAGES
+async function withdraw(){
+ const bal=await getBalance();
+ if(+wdAmount.value>bal){alert("Solde insuffisant");return;}
+ db.collection("users").doc(auth.currentUser.uid)
+ .update({balance:firebase.firestore.FieldValue.increment(-wdAmount.value)});
+ alert("Retrait effectué");
+}
+
+async function send(){
+ const bal=await getBalance();
+ if(+sendAmount.value>bal){alert("Solde insuffisant");return;}
+ db.collection("users").doc(auth.currentUser.uid)
+ .update({balance:firebase.firestore.FieldValue.increment(-sendAmount.value)});
+ db.collection("users").doc(toUid.value)
+ .update({balance:firebase.firestore.FieldValue.increment(+sendAmount.value)});
+ alert("Envoi réussi");
+}
+
 function sendMsg(){
  db.collection("messages").add({
   uid:auth.currentUser.uid,
-  text:msgText.value,
+  text:msg.value,
   date:new Date()
  });
- msgText.value="";loadMessages();
-}
-function loadMessages(){
- msgList.innerHTML="";
- db.collection("messages").where("uid","==",auth.currentUser.uid)
- .orderBy("date","desc").get().then(s=>{
-  s.forEach(d=>msgList.innerHTML+=`<div class="activity">${d.data().text}</div>`);
- });
-}
-
-// HISTORIQUE
-function loadHistory(){
- history.innerHTML="";
- db.collection("deposits").where("uid","==",auth.currentUser.uid)
- .get().then(s=>s.forEach(d=>history.innerHTML+=`<div class="activity">+${d.data().amount} USD</div>`));
-}
-
-// ADMIN
-function loadAdmin(){
- adminDeposits.innerHTML="";
- db.collection("deposits").orderBy("date","desc").limit(10).get()
- .then(s=>s.forEach(d=>adminDeposits.innerHTML+=`<div class="activity">${d.data().amount} USD</div>`));
-}
-
-// ACTIVITÉS
-function loadActivities(){
- activities.innerHTML="";
- for(let i=0;i<10;i++)activities.innerHTML+=`<div class="activity">Transaction ${Math.floor(Math.random()*900000)}</div>`;
- setTimeout(loadActivities,3000);
-}
-
-function downloadQR(){
- const c=document.querySelector("#clientQR canvas");
- const a=document.createElement("a");
- a.href=c.toDataURL();a.download="qr.png";a.click();
+ msg.value="";
 }
 </script>
 
