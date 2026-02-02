@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GoTrust Pay - MVP</title>
+<title>GoTrust Pay - MVP Amélioré</title>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -12,6 +12,9 @@
 
 <!-- QR Code -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<!-- jsPDF pour la carte PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 :root{--bg:#021c1b;--panel:#043837;--card:#065f5b;--accent:#14b8a6;--text:#d1fae5}
@@ -84,6 +87,7 @@ input,select{width:100%;padding:10px;margin:6px 0;border-radius:6px;border:none}
     <div>
       <div id="clientQR" style="background:#fff;padding:6px;border-radius:8px"></div>
       <button onclick="downloadQR()">Télécharger QR</button>
+      <button onclick="downloadCardPDF()">Télécharger carte PDF</button>
     </div>
   </div>
 
@@ -157,6 +161,8 @@ const historyDiv=document.getElementById("history");
 const adminBtn=document.getElementById("adminBtn");
 const adminDeposits=document.getElementById("adminDeposits");
 const activitiesDiv=document.getElementById("activities");
+const idFile=document.getElementById("idFile");
+const selfieFile=document.getElementById("selfieFile");
 
 // ===== NAV =====
 function show(id){
@@ -167,32 +173,38 @@ function show(id){
 // ===== REGISTER =====
 function genCard(){return "4896 "+Math.floor(1000+Math.random()*9000)+" **** ****";}
 async function register(){
- if(!regEmail.value || !regPass.value || !nameInput.value) return alert("Champs requis");
- const cred = await auth.createUserWithEmailAndPassword(regEmail.value,regPass.value);
- await db.collection("users").doc(cred.user.uid).set({
-   name:nameInput.value,
-   phone:phoneInput.value,
-   card:genCard(),
-   balance:0,
-   role:"client",
-   kyc:"none",
-   createdAt:firebase.firestore.FieldValue.serverTimestamp()
- });
- nameInput.value=phoneInput.value=regEmail.value=regPass.value="";
- show("dashboard");
+ try {
+   if(!regEmail.value || !regPass.value || !nameInput.value) return alert("Champs requis");
+   const cred = await auth.createUserWithEmailAndPassword(regEmail.value,regPass.value);
+   await db.collection("users").doc(cred.user.uid).set({
+     name:nameInput.value,
+     phone:phoneInput.value,
+     card:genCard(),
+     balance:0,
+     role:"client",
+     kyc:"none",
+     createdAt:firebase.firestore.FieldValue.serverTimestamp()
+   });
+   nameInput.value=phoneInput.value=regEmail.value=regPass.value="";
+   show("dashboard");
+ } catch(e){ alert("Erreur inscription : "+e.message); }
 }
 
 // ===== LOGIN =====
 async function login(){
- await auth.signInWithEmailAndPassword(email.value,password.value);
- email.value=password.value="";
+ try {
+   await auth.signInWithEmailAndPassword(email.value,password.value);
+   email.value=password.value="";
+ } catch(e){ alert("Erreur connexion : "+e.message); }
 }
 
 // ===== AUTH STATE =====
 auth.onAuthStateChanged(user=>{
  if(!user){show("home"); adminBtn.classList.add("hidden"); return;}
  show("dashboard");
- db.collection("users").doc(user.uid).onSnapshot(doc=>{
+
+ const userRef = db.collection("users").doc(user.uid);
+ userRef.onSnapshot(doc=>{
    if(!doc.exists) return;
    const x=doc.data();
    cardName.textContent=x.name;
@@ -201,21 +213,24 @@ auth.onAuthStateChanged(user=>{
    balance.textContent=x.balance.toFixed(2);
    kycStatus.textContent="KYC : "+x.kyc;
    if(x.role==="admin") adminBtn.classList.remove("hidden"); else adminBtn.classList.add("hidden");
+
    clientQR.innerHTML="";
    new QRCode(clientQR,{text:user.uid,width:130,height:130});
  });
+
  loadHistory(user.uid);
- loadAdmin();
+ if(user.uid==="UID_ADMIN_TEST") loadAdmin(); // remplace par UID réel admin
  loadActivities();
 });
 
 // ===== DEPOT =====
 async function mobileDeposit(){
+ if(!auth.currentUser) return alert("Vous devez être connecté");
  if(Date.now()-lastDeposit<10000) return alert("Double paiement bloqué");
  lastDeposit=Date.now();
  const uid=auth.currentUser.uid;
- const amount=Number(mmAmount.value);
- if(amount<=0) return alert("Montant invalide");
+ const amount=parseFloat(mmAmount.value);
+ if(isNaN(amount) || amount<=0) return alert("Montant invalide");
  await db.collection("deposits").add({
    uid, amount, phone:mmPhone.value, method:mmType.value,
    status:"pending", date:firebase.firestore.FieldValue.serverTimestamp()
@@ -239,6 +254,7 @@ function loadHistory(uid){
 
 // ===== ADMIN =====
 function loadAdmin(){
+ adminDeposits.innerHTML="";
  db.collection("deposits").where("status","==","pending").onSnapshot(s=>{
    adminDeposits.innerHTML="";
    s.forEach(d=>{
@@ -252,11 +268,21 @@ function loadAdmin(){
    });
  });
 }
-function approve(id,uid,amt){ db.collection("deposits").doc(id).update({status:"approved"}); db.collection("users").doc(uid).update({balance:firebase.firestore.FieldValue.increment(amt)});}
-function reject(id){ db.collection("deposits").doc(id).update({status:"rejected"});}
+function approve(id,uid,amt){
+ db.collection("deposits").doc(id).update({status:"approved"});
+ db.collection("users").doc(uid).update({balance:firebase.firestore.FieldValue.increment(amt)});
+}
+function reject(id){
+ db.collection("deposits").doc(id).update({status:"rejected"});
+}
 
 // ===== KYC =====
-function submitKYC(){ db.collection("users").doc(auth.currentUser.uid).update({kyc:"submitted"}); alert("KYC envoyé"); }
+async function submitKYC(){
+ if(!auth.currentUser) return alert("Vous devez être connecté");
+ if(!idFile.files[0] || !selfieFile.files[0]) return alert("Choisissez les fichiers");
+ await db.collection("users").doc(auth.currentUser.uid).update({kyc:"submitted"});
+ alert("KYC envoyé");
+}
 
 // ===== ACTIVITES =====
 function loadActivities(){
@@ -272,10 +298,34 @@ function loadActivities(){
 // ===== QR =====
 function downloadQR(){
  const c=document.querySelector("#clientQR canvas");
+ if(!c) return alert("QR non généré");
  const a=document.createElement("a");
  a.href=c.toDataURL();
  a.download="qr.png";
  a.click();
+}
+
+// ===== CARTE PDF =====
+async function downloadCardPDF(){
+ if(!auth.currentUser) return alert("Connectez-vous");
+ const { jsPDF } = window.jspdf;
+ const doc = new jsPDF();
+ doc.setFillColor(5, 74, 72);
+ doc.rect(10, 20, 190, 100, "F");
+ doc.setTextColor(255,255,255);
+ doc.setFontSize(16);
+ doc.text(`Nom : ${cardName.textContent}`,20,40);
+ doc.text(`ID : ${cardId.textContent}`,20,55);
+ doc.text(`Carte : ${cardNumber.textContent}`,20,70);
+ doc.text(`Solde : ${balance.textContent} USD`,20,85);
+
+ // QR code dans PDF
+ const canvas=document.querySelector("#clientQR canvas");
+ if(canvas){
+   const imgData = canvas.toDataURL("image/png");
+   doc.addImage(imgData,'PNG',140,40,50,50);
+ }
+ doc.save("carte_gotrustpay.pdf");
 }
 
 // ===== LOGO PNG =====
