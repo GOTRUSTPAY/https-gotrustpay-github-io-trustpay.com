@@ -3,17 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GoTrust Pay - MVP Amélioré</title>
+<title>GoTrust Pay - MVP Production</title>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
 <!-- QR Code -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-<!-- jsPDF pour la carte PDF -->
+<!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
@@ -135,10 +136,12 @@ window.addEventListener("DOMContentLoaded",()=>{
 firebase.initializeApp({
  apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
  authDomain:"gotrustpay-e6524.firebaseapp.com",
- projectId:"gotrustpay-e6524"
+ projectId:"gotrustpay-e6524",
+ storageBucket:"gotrustpay-e6524.appspot.com"
 });
 const auth = firebase.auth();
 const db = firebase.firestore();
+const storage = firebase.storage();
 let lastDeposit=0;
 
 // ===== Elements =====
@@ -219,7 +222,7 @@ auth.onAuthStateChanged(user=>{
  });
 
  loadHistory(user.uid);
- if(user.uid==="UID_ADMIN_TEST") loadAdmin(); // remplace par UID réel admin
+ if(user.uid==="UID_ADMIN_TEST") loadAdmin(); // Remplacer par l'UID réel admin
  loadActivities();
 });
 
@@ -268,10 +271,12 @@ function loadAdmin(){
    });
  });
 }
-function approve(id,uid,amt){
- db.collection("deposits").doc(id).update({status:"approved"});
- db.collection("users").doc(uid).update({balance:firebase.firestore.FieldValue.increment(amt)});
+
+async function approve(id,uid,amt){
+ await db.collection("deposits").doc(id).update({status:"approved"});
+ await db.collection("users").doc(uid).update({balance:firebase.firestore.FieldValue.increment(amt)});
 }
+
 function reject(id){
  db.collection("deposits").doc(id).update({status:"rejected"});
 }
@@ -280,8 +285,17 @@ function reject(id){
 async function submitKYC(){
  if(!auth.currentUser) return alert("Vous devez être connecté");
  if(!idFile.files[0] || !selfieFile.files[0]) return alert("Choisissez les fichiers");
- await db.collection("users").doc(auth.currentUser.uid).update({kyc:"submitted"});
- alert("KYC envoyé");
+
+ // Upload fichiers vers Firebase Storage
+ const uid = auth.currentUser.uid;
+ const idRef = storage.ref(`kyc/${uid}_id.${idFile.files[0].name.split('.').pop()}`);
+ const selfieRef = storage.ref(`kyc/${uid}_selfie.${selfieFile.files[0].name.split('.').pop()}`);
+
+ await idRef.put(idFile.files[0]);
+ await selfieRef.put(selfieFile.files[0]);
+
+ await db.collection("users").doc(uid).update({kyc:"submitted"});
+ alert("KYC envoyé avec succès !");
 }
 
 // ===== ACTIVITES =====
