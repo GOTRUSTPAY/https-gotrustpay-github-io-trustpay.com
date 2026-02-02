@@ -28,20 +28,20 @@ input,button{
  width:100%;padding:12px;margin:6px 0;
  border-radius:10px;border:none
 }
-button{background:#14b8a6;font-weight:bold;cursor:pointer}
+button{background:#14b8a6;font-weight:bold}
 
 .panel{
  background:#043837;padding:20px;border-radius:16px;margin-top:20px
 }
 .card{
- background:linear-gradient(145deg,#065f5b,#043837);
- padding:20px;border-radius:22px;
- display:flex;flex-wrap:wrap;gap:20px;
- box-shadow:0 10px 30px rgba(0,0,0,.6)
+ background:#054f4b;
+ padding:20px;border-radius:18px;
+ display:flex;justify-content:space-between;flex-wrap:wrap;
+ box-shadow:0 10px 25px rgba(0,0,0,.5)
 }
 #qr{
- width:140px;height:140px;
- background:#fff;padding:10px;border-radius:12px
+ width:130px;height:130px;
+ background:#fff;padding:8px;border-radius:10px
 }
 
 .actions{
@@ -55,12 +55,13 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
 
 .action{
  background:linear-gradient(145deg,#0fb9a8,#087f73);
- padding:20px;border-radius:18px;
+ padding:22px;border-radius:18px;
  text-align:center;font-weight:bold;
  cursor:pointer
 }
-.tx{background:#022c2a;padding:8px;border-radius:8px;margin-bottom:6px}
-.admin{background:#7c2d12}
+.tx,.news{
+ background:#022c2a;padding:8px;border-radius:8px;margin-bottom:6px
+}
 </style>
 </head>
 
@@ -79,10 +80,11 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
 <div id="home" class="panel">
  <h2>GoTrust Pay</h2>
  <p>Paiement digital sécurisé</p>
+ <div id="newsList"></div>
 </div>
 
 <div id="auth" class="panel hidden">
- <h2>Connexion / Inscription</h2>
+ <h3>Connexion / Inscription</h3>
  <input id="name" placeholder="Nom complet">
  <input id="phone" placeholder="Téléphone">
  <input id="email" placeholder="Email">
@@ -95,12 +97,16 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
 <div class="card">
  <div>
   <h3 id="cardName"></h3>
-  <p>Carte : <b id="cardNumber"></b></p>
-  <p>ID : <span id="cardId"></span></p>
+  <p>Carte biométrique</p>
+  <b id="cardNumber"></b><br>
+  <small>ID : <span id="cardId"></span></small>
   <h2>Solde : <span id="balance"></span> USD</h2>
  </div>
  <div id="qr"></div>
 </div>
+
+<h3>Activités récentes</h3>
+<div id="recentTx"></div>
 
 <div class="actions">
  <div class="action" onclick="openPanel('deposit')">💰 Dépôt</div>
@@ -110,30 +116,24 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
 </div>
 
 <div id="deposit" class="panel hidden">
- <input id="depAmount" type="number" placeholder="Montant">
+ <input id="depAmount" type="number" placeholder="Montant USD">
  <button onclick="deposit()">Confirmer</button>
 </div>
 
 <div id="withdraw" class="panel hidden">
- <input id="wdAmount" type="number" placeholder="Montant">
+ <input id="wdAmount" type="number" placeholder="Montant RWF">
  <button onclick="withdraw()">Confirmer</button>
 </div>
 
 <div id="send" class="panel hidden">
  <input id="toUid" placeholder="ID destinataire">
- <input id="sendAmount" type="number" placeholder="Montant">
+ <input id="sendAmount" type="number" placeholder="Montant USD">
  <button onclick="send()">Envoyer</button>
 </div>
 
 <div id="history" class="panel hidden">
- <h3>Historique</h3>
+ <h3>Historique complet</h3>
  <div id="txList"></div>
-</div>
-
-<div id="adminPanel" class="panel hidden admin">
- <h3>ADMIN</h3>
- <input id="adminMsg" placeholder="Message global">
- <button onclick="sendAdminMsg()">Publier</button>
 </div>
 
 </main>
@@ -145,15 +145,14 @@ firebase.initializeApp({
  projectId:"gotrustpay-e6524"
 });
 const auth=firebase.auth(),db=firebase.firestore();
+const RATE=1300; // USD -> RWF
 
 function show(id){
  document.querySelectorAll("main>div").forEach(d=>d.classList.add("hidden"));
  document.getElementById(id).classList.remove("hidden");
 }
 
-function logout(){
- auth.signOut();
-}
+function logout(){auth.signOut()}
 
 function genCard(){
  return "4896 "+Math.floor(7000+Math.random()*2999)+" "+
@@ -165,11 +164,8 @@ function authUser(){
  auth.signInWithEmailAndPassword(email.value,password.value)
  .catch(()=>auth.createUserWithEmailAndPassword(email.value,password.value)
  .then(c=>db.collection("users").doc(c.user.uid).set({
-  name:name.value,
-  phone:phone.value,
-  card:genCard(),
-  balance:0,
-  role:"user"
+  name:name.value,phone:phone.value,
+  card:genCard(),balance:0
  })));
 }
 
@@ -178,13 +174,14 @@ auth.onAuthStateChanged(async u=>{
   loginBtn.classList.remove("hidden");
   logoutBtn.classList.add("hidden");
   show("home");
+  loadNews();
   return;
  }
  loginBtn.classList.add("hidden");
  logoutBtn.classList.remove("hidden");
 
- const snap=await db.collection("users").doc(u.uid).get();
- const x=snap.data();
+ const d=await db.collection("users").doc(u.uid).get();
+ const x=d.data();
 
  show("dashboard");
  cardName.textContent=x.name;
@@ -195,7 +192,7 @@ auth.onAuthStateChanged(async u=>{
  qr.innerHTML="";
  new QRCode(qr,{text:x.card,width:120,height:120});
 
- if(x.role==="admin") adminPanel.classList.remove("hidden");
+ loadRecent();
  loadHistory();
 });
 
@@ -207,21 +204,9 @@ function openPanel(id){
 async function addTx(type,amount){
  await db.collection("transactions").add({
   uid:auth.currentUser.uid,
-  type,amount,
-  date:new Date()
+  type,amount,date:new Date()
  });
- loadHistory();
-}
-
-async function loadHistory(){
- txList.innerHTML="";
- const q=await db.collection("transactions")
- .where("uid","==",auth.currentUser.uid)
- .orderBy("date","desc").get();
- q.forEach(d=>{
-  const t=d.data();
-  txList.innerHTML+=`<div class="tx">${t.type} : ${t.amount} USD</div>`;
- });
+ loadRecent();loadHistory();
 }
 
 function deposit(){
@@ -232,15 +217,16 @@ function deposit(){
 
 async function withdraw(){
  const d=await db.collection("users").doc(auth.currentUser.uid).get();
- if(+wdAmount.value>d.data().balance)return alert("Solde insuffisant");
+ const usd=wdAmount.value/RATE;
+ if(usd>d.data().balance)return alert("Solde insuffisant");
  db.collection("users").doc(auth.currentUser.uid)
- .update({balance:firebase.firestore.FieldValue.increment(-wdAmount.value)});
- addTx("Retrait",-wdAmount.value);
+ .update({balance:firebase.firestore.FieldValue.increment(-usd)});
+ addTx("Retrait",-usd);
 }
 
 async function send(){
  const d=await db.collection("users").doc(auth.currentUser.uid).get();
- if(+sendAmount.value>d.data().balance)return alert("Solde insuffisant");
+ if(sendAmount.value>d.data().balance)return alert("Solde insuffisant");
  db.collection("users").doc(auth.currentUser.uid)
  .update({balance:firebase.firestore.FieldValue.increment(-sendAmount.value)});
  db.collection("users").doc(toUid.value)
@@ -248,39 +234,36 @@ async function send(){
  addTx("Envoi",-sendAmount.value);
 }
 
-function sendAdminMsg(){
- db.collection("annonces").add({
-  text:adminMsg.value,
-  date:new Date()
+async function loadRecent(){
+ recentTx.innerHTML="";
+ const q=await db.collection("transactions")
+ .where("uid","==",auth.currentUser.uid)
+ .orderBy("date","desc").limit(3).get();
+ q.forEach(d=>{
+  const t=d.data();
+  recentTx.innerHTML+=`<div class="tx">${t.type} : ${t.amount.toFixed(2)} USD</div>`;
  });
- adminMsg.value="";
+}
+
+async function loadHistory(){
+ txList.innerHTML="";
+ const q=await db.collection("transactions")
+ .where("uid","==",auth.currentUser.uid)
+ .orderBy("date","desc").get();
+ q.forEach(d=>{
+  const t=d.data();
+  txList.innerHTML+=`<div class="tx">${t.type} : ${t.amount.toFixed(2)} USD</div>`;
+ });
+}
+
+async function loadNews(){
+ newsList.innerHTML="";
+ const q=await db.collection("annonces").orderBy("date","desc").limit(3).get();
+ q.forEach(d=>{
+  newsList.innerHTML+=`<div class="news">${d.data().text}</div>`;
+ });
 }
 </script>
-
-<!--
-🔥 FIRESTORE RULES (À COLLER DANS FIREBASE CONSOLE)
-
-rules_version = '2';
-service cloud.firestore {
- match /databases/{db}/documents {
-
-  match /users/{uid} {
-   allow read,write: if request.auth!=null && request.auth.uid==uid;
-  }
-
-  match /transactions/{id} {
-   allow read,write: if request.auth!=null &&
-    request.auth.uid==resource.data.uid;
-  }
-
-  match /annonces/{id} {
-   allow read: if true;
-   allow write: if request.auth!=null &&
-    get(/databases/$(db)/documents/users/$(request.auth.uid)).data.role=="admin";
-  }
- }
-}
--->
 
 </body>
 </html>
