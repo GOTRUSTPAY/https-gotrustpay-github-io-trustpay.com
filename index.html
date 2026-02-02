@@ -1,5 +1,4 @@
-
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -32,17 +31,23 @@ header{
   background:#021c1b;
   padding:15px 25px;
   display:flex;
+  align-items:center;
   justify-content:space-between;
 }
+.logo{
+  display:flex;align-items:center;gap:12px;
+}
+.logo svg{width:48px;height:48px}
 nav a{
   color:#99f6e4;
   margin-left:20px;
-  font-weight:bold;
   cursor:pointer;
+  font-weight:bold;
   text-decoration:none;
 }
 main{max-width:1200px;margin:25px auto;padding:20px}
 .hidden{display:none}
+
 button{
   background:var(--accent);
   border:none;
@@ -51,25 +56,24 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
-input,select{
+button:hover{opacity:.9}
+
+input,select,textarea{
   width:100%;
   padding:10px;
   margin:6px 0;
   border-radius:6px;
   border:none;
 }
-.panel{
-  background:var(--panel);
-  border-radius:14px;
-  padding:20px;
-  margin-top:20px;
-}
+
+/* CARD */
 .card{
   background:linear-gradient(135deg,#054a48,#022c2a);
   border-radius:18px;
   padding:25px;
   display:flex;
   justify-content:space-between;
+  align-items:center;
   box-shadow:0 10px 30px rgba(0,0,0,.6);
 }
 .chip{
@@ -78,6 +82,15 @@ input,select{
   border-radius:6px;
   margin-bottom:10px;
 }
+
+/* SECTIONS */
+.panel{
+  background:var(--panel);
+  border-radius:14px;
+  padding:20px;
+  margin-top:20px;
+}
+
 .activity{
   background:#022c2a;
   padding:10px;
@@ -93,6 +106,24 @@ input,select{
 <body>
 
 <header>
+  <div class="logo">
+    <!-- LOGO SVG TELECHARGEABLE -->
+    <svg id="gtpLogo" viewBox="0 0 100 100">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#14b8a6"/>
+          <stop offset="100%" stop-color="#065f5b"/>
+        </linearGradient>
+      </defs>
+      <shield fill="url(#g)"/>
+      <path d="M50 5 L90 25 V55 C90 75 70 90 50 95 C30 90 10 75 10 55 V25 Z" fill="url(#g)"/>
+      <path d="M35 52 L47 64 L67 40" fill="none" stroke="#ecfeff" stroke-width="8"/>
+    </svg>
+    <div>
+      <b>GoTrust Pay</b><br>
+      <small>Paiements sécurisés</small>
+    </div>
+  </div>
   <nav>
     <a onclick="show('home')">Accueil</a>
     <a onclick="show('login')">Connexion</a>
@@ -104,6 +135,11 @@ input,select{
 <!-- HOME -->
 <div id="home">
   <div class="panel">
+    <h2>Publications officielles</h2>
+    <div id="publications"></div>
+  </div>
+
+  <div class="panel">
     <h2>Activités récentes</h2>
     <div id="activities"></div>
   </div>
@@ -114,48 +150,53 @@ input,select{
   <h2>Connexion</h2>
   <input id="email" placeholder="Email">
   <input id="password" type="password" placeholder="Mot de passe">
-  <button onclick="login()">Connexion</button>
+  <button onclick="login()">Se connecter</button>
 
   <h3>Créer un compte</h3>
   <input id="name" placeholder="Nom complet">
   <input id="phone" placeholder="Téléphone">
   <input id="regEmail" placeholder="Email">
   <input id="regPass" type="password" placeholder="Mot de passe">
-  <button onclick="register()">Créer</button>
+  <button onclick="register()">Créer le compte</button>
 </div>
 
 <!-- DASHBOARD -->
 <div id="dashboard" class="hidden">
 
-  <!-- CARTE BIOMÉTRIQUE -->
   <div class="card">
     <div>
       <div class="chip"></div>
       <h3 id="cardName"></h3>
       <p>ID : <span id="cardId"></span></p>
-      <p>Carte : <span id="cardNumber"></span></p>
+      <p>Numéro : <span id="cardNumber"></span></p>
       <p><b>Solde : <span id="balance"></span> USD</b></p>
     </div>
     <div>
       <div id="clientQR" style="background:#fff;padding:6px;border-radius:8px"></div>
       <button onclick="downloadQR()">Télécharger QR</button>
+      <button onclick="downloadLogo()">Télécharger logo</button>
     </div>
   </div>
 
-  <!-- FORMULAIRES MOBILE MONEY -->
+  <!-- ACTIONS -->
   <div class="panel">
-    <h3>Dépôt Mobile Money</h3>
+    <h3>Dépôt</h3>
+    <input id="depAmount" type="number" placeholder="Montant">
+    <button onclick="deposit()">Confirmer dépôt</button>
 
-    <select id="mmType">
-      <option>Airtel Money</option>
-      <option>Orange Money</option>
-      <option>Vodacom M-Pesa</option>
-      <option>GoPay</option>
-    </select>
+    <h3>Retrait</h3>
+    <input id="witAmount" type="number" placeholder="Montant">
+    <button onclick="withdraw()">Confirmer retrait</button>
 
-    <input id="mmPhone" placeholder="Numéro Mobile Money">
-    <input id="mmAmount" type="number" placeholder="Montant">
-    <button onclick="mobileDeposit()">Confirmer dépôt</button>
+    <h3>Envoyer argent</h3>
+    <input id="sendAmount" type="number" placeholder="Montant">
+    <input id="sendEmail" placeholder="Email destinataire">
+    <button onclick="sendMoney()">Envoyer</button>
+
+    <h3>Demande de prêt</h3>
+    <input id="loanAmount" type="number" placeholder="Montant">
+    <textarea id="loanReason" placeholder="Motif"></textarea>
+    <button onclick="loan()">Envoyer demande</button>
   </div>
 
 </div>
@@ -178,14 +219,12 @@ function show(id){
 }
 
 // REGISTER
-function genCard(){return "4896 "+Math.floor(1000+Math.random()*9000)+" **** ****";}
+function randomCard(){return "4896 "+Math.floor(1000+Math.random()*9000)+" **** ****"}
 function register(){
  auth.createUserWithEmailAndPassword(regEmail.value,regPass.value)
  .then(c=>db.collection("users").doc(c.user.uid).set({
-  name:name.value,
-  phone:phone.value,
-  card:genCard(),
-  balance:0
+  name:name.value, phone:phone.value,
+  card:randomCard(), balance:0, role:"client"
  }));
 }
 
@@ -207,39 +246,58 @@ auth.onAuthStateChanged(u=>{
   clientQR.innerHTML="";
   new QRCode("clientQR",{text:u.uid,width:130,height:130});
  });
- loadActivities();
+ loadActivities(); loadPublications();
 });
 
-// MOBILE MONEY
-function mobileDeposit(){
+// TRANSACTIONS
+function deposit(){updateBalance(+depAmount.value)}
+function withdraw(){updateBalance(-witAmount.value)}
+function updateBalance(v){
  const ref=db.collection("users").doc(auth.currentUser.uid);
- ref.update({
-  balance:firebase.firestore.FieldValue.increment(Number(mmAmount.value))
+ ref.update({balance:firebase.firestore.FieldValue.increment(Number(v))})
+ .then(()=>ref.get().then(d=>balance.textContent=d.data().balance.toFixed(2)));
+}
+function sendMoney(){
+ db.collection("users").where("email","==",sendEmail.value).get().then(s=>{
+  if(s.empty)return alert("Destinataire introuvable");
+  updateBalance(-sendAmount.value);
+  db.collection("users").doc(s.docs[0].id)
+  .update({balance:firebase.firestore.FieldValue.increment(Number(sendAmount.value))});
  });
- alert("Dépôt "+mmType.value+" en cours de traitement");
+}
+function loan(){
+ db.collection("loans").add({
+  user:auth.currentUser.uid,
+  amount:loanAmount.value,
+  reason:loanReason.value,
+  date:new Date()
+ });
+ alert("Demande envoyée");
 }
 
-// ACTIVITÉS DYNAMIQUES
-function randName(){
- const f=["Amina","Patrick","Sofia","Daniel","Jean","Ali","Emma","Paul","Koffi","Lina"];
- const l=["R.","K.","M.","L.","S.","D.","B.","T."];
- return f[Math.floor(Math.random()*f.length)]+" "+l[Math.floor(Math.random()*l.length)];
-}
-function randNum(){return Math.floor(100000+Math.random()*900000);}
+// ACTIVITIES
+const names=["Amina R.","Jean K.","Patrick M.","Sofia L.","Daniel K."];
 function loadActivities(){
  activities.innerHTML="";
- for(let i=0;i<12;i++){
-  activities.innerHTML+=`<div class="activity">${randName()} transaction <span>${randNum()}</span></div>`;
- }
- setTimeout(loadActivities,2500);
+ names.forEach((n,i)=>{
+  activities.innerHTML+=`<div class="activity">${n} a effectué une transaction<span>${i+1} j</span></div>`;
+ });
 }
 
-// QR DOWNLOAD
-function downloadQR(){
- const canvas=document.querySelector("#clientQR canvas");
+// PUBLICATIONS
+function loadPublications(){
+ publications.innerHTML="";
+ db.collection("publications").orderBy("date","desc").get()
+ .then(s=>s.forEach(d=>publications.innerHTML+=`<div class="activity">${d.data().text}</div>`));
+}
+
+// DOWNLOAD LOGO
+function downloadLogo(){
+ const svg=document.getElementById("gtpLogo").outerHTML;
+ const blob=new Blob([svg],{type:"image/svg+xml"});
  const a=document.createElement("a");
- a.href=canvas.toDataURL();
- a.download="gotrustpay-qr.png";
+ a.href=URL.createObjectURL(blob);
+ a.download="gotrustpay-logo.svg";
  a.click();
 }
 </script>
