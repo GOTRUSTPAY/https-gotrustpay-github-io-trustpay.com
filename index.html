@@ -2,183 +2,57 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>GoPay Africa – Secure Digital Banking</title>
+<title>GoPay Africa – Admin & Digital Card</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-
 <style>
-body{
-  margin:0;
-  font-family:'Roboto',Arial;
-  background:#061e1c;
-  color:#e6fffa;
-}
-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:15px 20px;
-  background:#012b28;
-  position:sticky;
-  top:0;
-  z-index:100;
-}
+body{margin:0;font-family:'Roboto',Arial;background:#061e1c;color:#e6fffa;}
+header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:#012b28;position:sticky;top:0;z-index:100;}
 .logo{font-size:22px;font-weight:700}
 .menu-btn{font-size:30px;cursor:pointer}
-
-.menu{
-  position:absolute;
-  top:60px;
-  right:20px;
-  background:#043837;
-  border-radius:14px;
-  display:none;
-}
-.menu a{
-  display:block;
-  padding:12px 18px;
-  cursor:pointer;
-  color:#5eead4;
-  text-decoration:none;
-}
+.menu{position:absolute;top:60px;right:20px;background:#043837;border-radius:14px;display:none;z-index:200;}
+.menu a{display:block;padding:12px 18px;cursor:pointer;color:#5eead4;text-decoration:none;}
 .menu a:hover{background:#065f5b}
-
 main{max-width:1100px;margin:auto;padding:20px}
 .hidden{display:none}
-.panel{
-  background:#043837;
-  padding:20px;
-  border-radius:18px;
-  margin-top:20px;
-}
+.panel{background:#043837;padding:20px;border-radius:18px;margin-top:20px;}
+.actions{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:20px;}
+.action{background:#0d9488;padding:18px;border-radius:16px;text-align:center;font-weight:600;cursor:pointer;font-size:14px;}
+.action:hover{background:#14b8a6}
+@media(max-width:600px){.actions{grid-template-columns:repeat(2,1fr)}}
 
-/* ===================== */
-/* 🎴 CARTE DIGITALE PRO */
-/* ===================== */
-
-.card-wrapper{
-  perspective:1200px;
-  max-width:420px;
-  margin:30px auto;
-}
-
-.card{
-  width:100%;
-  height:260px;
-  border-radius:26px;
-  position:relative;
-  transform-style:preserve-3d;
-  transition:transform .9s ease;
-  cursor:pointer;
-}
+/* 🎴 Carte 3D PRO */
+.card-wrapper{perspective:1200px;max-width:420px;margin:30px auto;}
+.card{width:100%;height:260px;border-radius:26px;position:relative;transform-style:preserve-3d;transition:transform .9s ease;cursor:pointer;}
 .card.flip{transform:rotateY(180deg)}
-
-.card-face{
-  position:absolute;
-  inset:0;
-  border-radius:26px;
-  padding:25px;
-  backface-visibility:hidden;
-  box-shadow:0 25px 60px rgba(0,0,0,.65);
-}
-
-/* RECTO */
-.card-front{
-  background:linear-gradient(135deg,#052e2b,#0f766e,#14b8a6);
-}
-.card-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
+.card-face{position:absolute;inset:0;border-radius:26px;padding:25px;backface-visibility:hidden;box-shadow:0 25px 60px rgba(0,0,0,.65);}
+.card-front{background:linear-gradient(135deg,#052e2b,#0f766e,#14b8a6);}
+.card-top{display:flex;justify-content:space-between;align-items:center;}
 .card-logo{width:90px}
 .card-visa{font-weight:700;letter-spacing:2px;font-size:14px}
+.card-chip{width:55px;height:40px;background:linear-gradient(135deg,#facc15,#ca8a04);border-radius:8px;margin:25px 0;}
+.card-number{font-size:22px;letter-spacing:3px;margin-bottom:20px;}
+.card-info{display:flex;justify-content:space-between;font-size:14px;}
+.card-info small{opacity:.7;font-size:11px;}
+.card-balance{margin-top:15px;}
+.card-back{background:linear-gradient(135deg,#022c2a,#065f5b);transform:rotateY(180deg);}
+.mag-strip{background:#000;height:45px;margin-top:10px;}
+.cvv-box{background:#fff;color:#000;padding:8px;margin-top:25px;text-align:right;font-weight:700;}
 
-.card-chip{
-  width:55px;
-  height:40px;
-  background:linear-gradient(135deg,#facc15,#ca8a04);
-  border-radius:8px;
-  margin:25px 0;
-}
+/* Activités live */
+.live-box{margin-top:30px;}
+.live-item{background:#065f5b;padding:10px;border-radius:10px;margin-bottom:8px;font-size:14px;}
 
-.card-number{
-  font-size:22px;
-  letter-spacing:3px;
-  margin-bottom:20px;
-}
-
-.card-info{
-  display:flex;
-  justify-content:space-between;
-  font-size:14px;
-}
-.card-info small{opacity:.7;font-size:11px}
-
-.card-balance{
-  margin-top:15px;
-}
-
-/* VERSO */
-.card-back{
-  background:linear-gradient(135deg,#022c2a,#065f5b);
-  transform:rotateY(180deg);
-}
-.mag-strip{
-  background:#000;
-  height:45px;
-  margin-top:10px;
-}
-.cvv-box{
-  background:#fff;
-  color:#000;
-  padding:8px;
-  margin-top:25px;
-  text-align:right;
-  font-weight:700;
-}
-
-/* ===================== */
-/* 📊 ACTIVITÉS LIVE */
-/* ===================== */
-
-.live-box{
-  margin-top:30px;
-}
-.live-item{
-  background:#065f5b;
-  padding:10px;
-  border-radius:10px;
-  margin-bottom:8px;
-  font-size:14px;
-}
-
-/* ACTIONS */
-.actions{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:15px;
-}
-.action{
-  background:#0d9488;
-  padding:18px;
-  border-radius:16px;
-  text-align:center;
-  font-weight:600;
-  cursor:pointer;
-}
-.action:hover{background:#14b8a6}
-@media(max-width:600px){
-  .actions{grid-template-columns:repeat(2,1fr)}
-}
+/* Admin table */
+.admin-table{width:100%;border-collapse:collapse;margin-top:15px;}
+.admin-table th,.admin-table td{border:1px solid #065f5b;padding:10px;text-align:left;}
+.admin-table th{background:#0d9488;}
+.online-count{margin-top:15px;font-weight:700;color:#14b8a6;}
 </style>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
-
 <body>
 
 <header>
@@ -194,13 +68,15 @@ main{max-width:1100px;margin:auto;padding:20px}
 
 <main>
 
+<!-- Connexion -->
 <div id="login" class="panel">
-  <h3>Connexion</h3>
+  <h3>Connexion Admin/Utilisateur</h3>
   <input id="lEmail" placeholder="Email">
   <input id="lPass" type="password" placeholder="Mot de passe">
   <button onclick="login()">Se connecter</button>
 </div>
 
+<!-- Inscription -->
 <div id="register" class="panel hidden">
   <h3>Inscription</h3>
   <input id="rName" placeholder="Nom complet">
@@ -209,7 +85,7 @@ main{max-width:1100px;margin:auto;padding:20px}
   <button onclick="register()">Créer le compte</button>
 </div>
 
-<!-- DASHBOARD -->
+<!-- Dashboard utilisateur -->
 <div id="dash" class="hidden">
 
 <div class="card-wrapper">
@@ -236,7 +112,6 @@ main{max-width:1100px;margin:auto;padding:20px}
         <h2><span id="uBal"></span> USD</h2>
       </div>
     </div>
-
     <div class="card-face card-back">
       <div class="mag-strip"></div>
       <div class="cvv-box">CVV <span id="cardCvv"></span></div>
@@ -245,15 +120,39 @@ main{max-width:1100px;margin:auto;padding:20px}
 </div>
 
 <div class="actions">
-  <div class="action">💳 Paiement</div>
-  <div class="action">➕ Cash‑in</div>
-  <div class="action">➖ Cash‑out</div>
-  <div class="action">📜 Historique</div>
+  <div class="action" onclick="openPanel('pay')">💳 Paiement</div>
+  <div class="action" onclick="openPanel('cashin')">➕ Cash‑in</div>
+  <div class="action" onclick="openPanel('cashout')">➖ Cash‑out</div>
+</div>
+
+<div id="pay" class="panel hidden">
+  <input id="payTo" placeholder="Email destinataire">
+  <input id="payAmount" type="number" placeholder="Montant USD">
+  <button onclick="pay()">Payer</button>
+</div>
+
+<div id="cashin" class="panel hidden">
+  <input id="cinAmount" type="number" placeholder="Montant USD">
+  <button onclick="cashin()">Cash‑in</button>
+</div>
+
+<div id="cashout" class="panel hidden">
+  <input id="coutAmount" type="number" placeholder="Montant USD">
+  <button onclick="cashout()">Cash‑out</button>
 </div>
 
 <div class="panel live-box">
   <h3>Activités récentes</h3>
   <div id="live"></div>
+</div>
+
+<!-- Admin -->
+<div id="admin" class="panel hidden">
+<h3>Admin Dashboard: Utilisateurs</h3>
+<div class="online-count" id="onlineCount"></div>
+<table class="admin-table" id="usersTable">
+<tr><th>Nom</th><th>Email</th><th>Solde</th><th>Actif</th></tr>
+</table>
 </div>
 
 </div>
@@ -269,44 +168,90 @@ firebase.initializeApp({
 const auth=firebase.auth();
 const db=firebase.firestore();
 
+// ⚡ Menu
 function show(id){
   document.querySelectorAll("main>div").forEach(x=>x.classList.add("hidden"));
   document.getElementById(id).classList.remove("hidden");
   menu.style.display="none";
 }
-
-// 🧠 GÉNÉRATION CARTE
-function genCard(){
-  return {
-    number:"5399 "+rnd()+" "+rnd()+" "+rnd(),
-    exp:"12/"+(new Date().getFullYear()+3).toString().slice(-2),
-    cvv:Math.floor(100+Math.random()*900)
-  }
+function openPanel(id){
+  ["pay","cashin","cashout"].forEach(x=>document.getElementById(x).classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
 }
-function rnd(){return Math.floor(1000+Math.random()*9000)}
 
-// AUTH
+// 🎴 Carte dynamique
+function genCard(){
+  return {number:"5399 "+rnd()+" "+rnd()+" "+rnd(),exp:"12/"+(new Date().getFullYear()+3).toString().slice(-2),cvv:Math.floor(100+Math.random()*900)};
+}
+function rnd(){return Math.floor(1000+Math.random()*9000);}
+
+// 👤 Auth
 function register(){
   auth.createUserWithEmailAndPassword(rEmail.value,rPass.value)
-  .then(c=>{
+  .then(async c=>{
     const card=genCard();
-    db.collection("users").doc(c.user.uid).set({
-      name:rName.value,
-      balance:50,
-      card
-    });
-  });
+    await db.collection("users").doc(c.user.uid).set({name:rName.value,email:rEmail.value,balance:50,card:card,active:true,role:"user"});
+    rName.value=rEmail.value=rPass.value="";
+    alert("Compte créé avec succès !");
+  })
+  .catch(err=>alert(err.message));
 }
 
 function login(){
-  auth.signInWithEmailAndPassword(lEmail.value,lPass.value);
+  auth.signInWithEmailAndPassword(lEmail.value,lPass.value)
+  .then(async c=>{
+    const u=db.collection("users").doc(c.user.uid);
+    const snap=await u.get();
+    const data=snap.data();
+    if(lEmail.value==="motivixx.media@gmail.com") await u.update({role:"admin",active:true});
+    else await u.update({active:true});
+  })
+  .catch(err=>alert(err.message));
 }
 
-function logout(){auth.signOut();show('login')}
+function logout(){
+  if(auth.currentUser) db.collection("users").doc(auth.currentUser.uid).update({active:false});
+  auth.signOut(); show('login');
+}
 
-// DASHBOARD
+// 💰 Transactions
+async function pay(){
+  const amt=parseFloat(payAmount.value); if(!amt||amt<=0)return;
+  const toEmail=payTo.value; if(!toEmail) return;
+  const snap=await db.collection("users").where("email","==",toEmail).get();
+  if(snap.empty){alert("Utilisateur non trouvé"); return;}
+  const recip=snap.docs[0]; 
+  await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});
+  await db.collection("users").doc(recip.id).update({balance:firebase.firestore.FieldValue.increment(amt)});
+  tx("Paiement",amt);
+  payAmount.value=""; payTo.value="";
+}
+function cashin(){const amt=parseFloat(cinAmount.value);if(!amt||amt<=0)return;db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(amt)});tx("Cash-in",amt);cinAmount.value="";}
+function cashout(){const amt=parseFloat(coutAmount.value);if(!amt||amt<=0)return;db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});tx("Cash-out",amt);coutAmount.value="";}
+
+// 🔔 Activités + dernière transaction
+function tx(type,amt){
+  const uid=auth.currentUser.uid;
+  db.collection("transactions").add({uid,type,amount:amt,date:new Date()});
+  lastMove.textContent=`Dernier mouvement: ${type} ${amt} USD`;
+  addLiveActivity(auth.currentUser.email,type,amt);
+}
+
+// ⚡ Activités live crédibles
+const names=["Jean","Amina","Kevin","Fatou","Samuel","David","Sarah","Moussa"];
+const acts=["Paiement","Cash-in","Cash-out"];
+function addLiveActivity(name,type,amt){
+  const el=document.createElement("div");
+  el.className="live-item";
+  el.textContent=`${name} • ${type} • ${amt} USD`;
+  live.prepend(el);
+  if(live.children.length>6) live.lastChild.remove();
+}
+setInterval(()=>{addLiveActivity(names[Math.floor(Math.random()*names.length)],acts[Math.floor(Math.random()*3)],Math.floor(Math.random()*500)+10)},4000);
+
+// 🔄 Dashboard utilisateur/admin
 auth.onAuthStateChanged(async u=>{
-  if(!u){show('login');return}
+  if(!u){show('login'); return;}
   show('dash');
   const d=await db.collection("users").doc(u.uid).get();
   const x=d.data();
@@ -315,18 +260,26 @@ auth.onAuthStateChanged(async u=>{
   cardExp.textContent=x.card.exp;
   cardCvv.textContent=x.card.cvv;
   uBal.textContent=x.balance.toFixed(2);
+  lastMove.textContent="Dernier mouvement: Aucun";
+
+  if(x.role==="admin"){
+    document.getElementById("admin").classList.remove("hidden");
+    loadUsers(); setInterval(loadUsers,5000);
+  }
 });
 
-// 📊 ACTIVITÉS LIVE
-const names=["Jean","Amina","Kevin","Fatou","Samuel","David","Sarah","Moussa"];
-const acts=["Paiement","Cash‑in","Cash‑out"];
-setInterval(()=>{
-  const el=document.createElement("div");
-  el.className="live-item";
-  el.textContent=`${names[Math.floor(Math.random()*names.length)]} • ${acts[Math.floor(Math.random()*3)]} • ${Math.floor(Math.random()*500)+10} USD`;
-  live.prepend(el);
-  if(live.children.length>6)live.lastChild.remove();
-},3000);
+// Admin: load users
+async function loadUsers(){
+  const q=await db.collection("users").get();
+  usersTable.innerHTML='<tr><th>Nom</th><th>Email</th><th>Solde</th><th>Actif</th></tr>';
+  let count=0;
+  q.forEach(d=>{
+    const u=d.data();
+    usersTable.innerHTML+=`<tr><td>${u.name}</td><td>${u.email}</td><td>${u.balance.toFixed(2)} USD</td><td>${u.active?"Oui":"Non"}</td></tr>`;
+    if(u.active) count++;
+  });
+  onlineCount.textContent=`Utilisateurs connectés: ${count}`;
+}
 </script>
 
 </body>
