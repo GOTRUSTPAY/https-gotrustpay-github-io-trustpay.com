@@ -5,25 +5,19 @@
 <title>GoPay Africa</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-
 <style>
 body{margin:0;font-family:Roboto;background:#061e1c;color:#e6fffa}
 header{background:#012b28;padding:15px 20px;display:flex;justify-content:space-between;align-items:center}
 .logo{font-size:22px;font-weight:700}
 .menu-btn{font-size:28px;cursor:pointer}
 .menu{display:none;position:absolute;top:60px;right:20px;background:#043837;border-radius:12px;overflow:hidden}
-.menu a{display:block;padding:12px 18px;color:#5eead4;text-decoration:none}
+.menu a{display:block;padding:12px 18px;color:#5eead4;text-decoration:none;cursor:pointer}
 .menu a:hover{background:#065f5b}
 main{max-width:1000px;margin:auto;padding:20px}
 .panel{background:#043837;padding:20px;border-radius:18px;margin-top:20px}
 .hidden{display:none}
 
-.card{
-background:linear-gradient(135deg,#0f766e,#064e4b);
-border-radius:20px;
-padding:25px;
-box-shadow:0 20px 40px rgba(0,0,0,.6);
-}
+.card{background:linear-gradient(135deg,#0f766e,#064e4b);border-radius:20px;padding:25px;box-shadow:0 20px 40px rgba(0,0,0,.6);}
 .card h2{margin:0}
 .card-number{font-size:22px;letter-spacing:3px;margin:15px 0}
 .card-row{display:flex;justify-content:space-between;font-size:14px}
@@ -34,7 +28,7 @@ box-shadow:0 20px 40px rgba(0,0,0,.6);
 
 .tx{background:#065f5b;padding:10px;border-radius:10px;margin-bottom:8px;font-size:14px}
 
-table{width:100%;border-collapse:collapse}
+table{width:100%;border-collapse:collapse;margin-top:10px}
 th,td{border:1px solid #065f5b;padding:8px}
 th{background:#0d9488}
 
@@ -104,7 +98,8 @@ footer a{color:#5eead4;cursor:pointer}
 </div>
 
 <div id="pay" class="panel hidden">
-<input id="payId" placeholder="ID GoPay destinataire">
+<input id="payId" placeholder="ID GoPay destinataire" oninput="fetchRecipientName('pay')">
+<input id="payName" placeholder="Nom destinataire" disabled>
 <input id="payAmount" type="number" placeholder="Montant USD">
 <button onclick="pay()">Confirmer</button>
 </div>
@@ -115,7 +110,8 @@ footer a{color:#5eead4;cursor:pointer}
 </div>
 
 <div id="cashout" class="panel hidden">
-<input id="coutId" placeholder="ID GoPay destinataire">
+<input id="coutId" placeholder="ID GoPay destinataire" oninput="fetchRecipientName('cout')">
+<input id="coutName" placeholder="Nom destinataire" disabled>
 <input id="coutAmount" type="number" placeholder="Montant USD">
 <button onclick="cashout()">Confirmer</button>
 </div>
@@ -166,38 +162,57 @@ function openP(id){["pay","cashin","cashout"].forEach(x=>document.getElementById
 function genId(){return"GP-"+Math.random().toString(36).substr(2,8).toUpperCase()}
 
 function register(){
- auth.createUserWithEmailAndPassword(rEmail.value,rPass.value).then(c=>{
+ const name=rName.value,email=rEmail.value,pass=rPass.value;
+ if(!name||!email||!pass)return alert("Remplissez tous les champs");
+ auth.createUserWithEmailAndPassword(email,pass).then(c=>{
   db.collection("users").doc(c.user.uid).set({
-   name:rName.value,
-   gid:genId(),
-   role:"user",
-   balance:50,
-   active:true
-  });
+   name:name,gid:genId(),role:"user",balance:50,active:true
+  }).then(()=>alert("Compte créé !"));
  });
 }
 
 function login(){
- auth.signInWithEmailAndPassword(lEmail.value,lPass.value);
+ const email=lEmail.value,pass=lPass.value;
+ if(!email||!pass)return alert("Remplissez tous les champs");
+ auth.signInWithEmailAndPassword(email,pass).then(async ()=>{
+  const u=db.collection("users").doc(auth.currentUser.uid);
+  const snap=await u.get(); 
+  const d=snap.data();
+  if(email==="motivixx.media@gmail.com"){await u.update({role:"admin"});admin.classList.remove("hidden");loadAdmin();}
+  show('dash');
+  updateCard(d);
+  loadMyTx();
+ }).catch(e=>alert("Erreur connexion: "+e.message));
 }
 
 function logout(){
  if(auth.currentUser)db.collection("users").doc(auth.currentUser.uid).update({active:false});
- auth.signOut();show("home");
+ auth.signOut();
+ show("home");
 }
 
 auth.onAuthStateChanged(async u=>{
- if(!u)return;
- const ref=db.collection("users").doc(u.uid);
- const snap=await ref.get();
- const d=snap.data();
- show("dash");
+ if(!u){show("home");return;}
+ const d=await db.collection("users").doc(u.uid).get();
+ updateCard(d.data());
+ if(d.data().role==="admin"){admin.classList.remove("hidden");loadAdmin();}
+ loadMyTx();
+});
+
+function updateCard(d){
  cardName.textContent=d.name;
  cardId.textContent=d.gid;
  balance.textContent=d.balance.toFixed(2);
- if(u.email==="motivixx.media@gmail.com"){await ref.update({role:"admin"});admin.classList.remove("hidden");loadAdmin();}
- loadMyTx();
-});
+}
+
+async function fetchRecipientName(type){
+ const id=(type==='pay')?payId.value:coutId.value;
+ const nameField=(type==='pay')?payName:coutName;
+ if(!id)return nameField.value="";
+ const q=await db.collection("users").where("gid","==",id).get();
+ if(!q.empty)nameField.value=q.docs[0].data().name;
+ else nameField.value="ID invalide";
+}
 
 async function pay(){
  const id=payId.value,amount=parseFloat(payAmount.value);
@@ -210,42 +225,49 @@ async function pay(){
  await db.collection("users").doc(dest.docs[0].id).update({balance:firebase.firestore.FieldValue.increment(amount)});
  await db.collection("tx").add({from:me.data().gid,to:id,type:"Paiement",amount,date:new Date()});
  loadMyTx();
+ payAmount.value="";payId.value="";payName.value="";
 }
 
-function cashin(){
+async function cashin(){
  const amount=parseFloat(cinAmount.value);
  if(amount<=0)return;
  db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(amount)});
- db.collection("tx").add({type:"Cash‑in",amount,date:new Date()});
+ await db.collection("tx").add({type:"Cash‑in",amount,date:new Date()});
  loadMyTx();
+ cinAmount.value="";
 }
 
 async function cashout(){
  const id=coutId.value,amount=parseFloat(coutAmount.value);
- if(!id||amount<=0)return;
- const me=await db.collection("users").doc(auth.currentUser.uid).get();
- if(me.data().balance<amount)return alert("Solde insuffisant");
+ if(!id||amount<=0)return alert("Erreur");
  const dest=await db.collection("users").where("gid","==",id).get();
  if(dest.empty)return alert("ID invalide");
+ const me=await db.collection("users").doc(auth.currentUser.uid).get();
+ if(me.data().balance<amount)return alert("Solde insuffisant");
+ if(!confirm(`Confirmer le retrait de ${amount} USD vers ${coutName.value}?`))return;
  await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amount)});
  await db.collection("users").doc(dest.docs[0].id).update({balance:firebase.firestore.FieldValue.increment(amount)});
  await db.collection("tx").add({from:me.data().gid,to:id,type:"Cash‑out",amount,date:new Date()});
  loadMyTx();
+ coutAmount.value="";coutId.value="";coutName.value="";
 }
 
 async function loadMyTx(){
  myTx.innerHTML="";
- const snap=await db.collection("tx").orderBy("date","desc").limit(5).get();
+ const snap=await db.collection("tx").where("from","==",cardId.textContent).orderBy("date","desc").limit(5).get();
  snap.forEach(d=>{const t=d.data();myTx.innerHTML+=`<div class="tx">${t.type} • ${t.amount} USD</div>`});
+ if(cardId.textContent==="GP-ADMIN"){
+  // afficher global tx pour admin
+  const gtx=await db.collection("tx").orderBy("date","desc").limit(5).get();
+  globalTx.innerHTML="";
+  gtx.forEach(d=>{const t=d.data();globalTx.innerHTML+=`<div class="tx">${t.type} • ${t.amount} USD</div>`});
+ }
 }
 
 async function loadAdmin(){
  usersTable.innerHTML='<tr><th>Nom</th><th>Rôle</th><th>Solde</th><th>Actif</th></tr>';
  const u=await db.collection("users").get();
  u.forEach(d=>{const x=d.data();usersTable.innerHTML+=`<tr><td>${x.name}</td><td>${x.role}</td><td>${x.balance}</td><td>${x.active?"Oui":"Non"}</td></tr>`});
- const tx=await db.collection("tx").orderBy("date","desc").limit(5).get();
- globalTx.innerHTML="";
- tx.forEach(d=>{const t=d.data();globalTx.innerHTML+=`<div class="tx">${t.type} • ${t.amount} USD</div>`});
 }
 </script>
 
