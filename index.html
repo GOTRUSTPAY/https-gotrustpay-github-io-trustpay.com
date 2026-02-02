@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -16,16 +17,18 @@
   .section { margin-bottom:40px; }
   .hidden { display:none; }
   .card { border:1px solid #ddd; padding:15px; border-radius:8px; margin-bottom:15px; background:#f9f9f9; }
+  .qr { width:100px; height:100px; background:#ccc; display:inline-block; margin-right:10px; vertical-align:middle; }
+  label { font-weight:bold; display:block; margin-top:10px; }
   .menu { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
-  .activity { font-size:0.9em; color:#555; margin-top:5px; }
-  canvas { border-radius:10px; }
 </style>
 </head>
 <body>
+
 <header>
   <h1>GoTrust Pay</h1>
   <p>Plateforme financière sécurisée</p>
 </header>
+
 <nav>
   <a href="#" onclick="showSection('home')">Accueil</a>
   <a href="#" onclick="showSection('login')">Connexion</a>
@@ -34,11 +37,11 @@
   <a href="#" onclick="showSection('services')">Nos services</a>
   <a href="#" onclick="showSection('partners')">Nos partenaires</a>
 </nav>
+
 <main>
   <!-- Accueil -->
   <div class="section" id="home">
     <h2>Bienvenue sur GoTrust Pay</h2>
-    <div id="homeMessages"></div>
     <p>GoTrust Pay est une plateforme financière sécurisée pour la gestion de vos paiements, dépôts, retraits et prêts.</p>
     <p>Adresse : Goma, Nord Kivu, RDC</p>
   </div>
@@ -56,6 +59,7 @@
     <input type="password" id="loginPassword" placeholder="Mot de passe">
     <button onclick="login()">Se connecter</button>
 
+    <!-- Formulaire d'inscription intégré -->
     <div id="inlineRegister" style="margin-top:20px; border-top:1px solid #ddd; padding-top:15px;">
       <h3>Créer un compte client</h3>
       <label>Nom complet</label><input type="text" id="regName">
@@ -72,18 +76,19 @@
     <h2>Tableau de bord Client</h2>
     <div class="card">
       <h3>Carte Virtuelle</h3>
-      <canvas id="clientCardCanvas" width="350" height="200"></canvas>
+      <div class="qr" id="clientQR"></div>
       <p>ID : <span id="clientIdDisplay"></span></p>
       <p>Numéro de carte : <span id="clientCardNumber"></span></p>
       <p>Solde : <span id="clientBalance">0.00 USD</span></p>
-      <button onclick="downloadCard()">Télécharger la carte</button>
     </div>
+
     <div class="menu">
       <button onclick="showClientSection('deposit')">Déposer</button>
       <button onclick="showClientSection('withdraw')">Retirer</button>
       <button onclick="showClientSection('send')">Envoyer argent</button>
       <button onclick="showClientSection('loan')">Demande de prêt</button>
     </div>
+
     <div id="clientActions">
       <div class="hidden" id="deposit">
         <h3>Déposer de l'argent</h3>
@@ -97,6 +102,7 @@
         </select>
         <button onclick="deposit()">Confirmer Dépôt</button>
       </div>
+
       <div class="hidden" id="withdraw">
         <h3>Retirer de l'argent</h3>
         <input type="number" id="withdrawAmount" placeholder="Montant">
@@ -110,6 +116,7 @@
         <input type="text" id="withdrawCode" placeholder="Code de retrait">
         <button onclick="withdraw()">Confirmer Retrait</button>
       </div>
+
       <div class="hidden" id="send">
         <h3>Envoyer de l'argent</h3>
         <input type="number" id="sendAmount" placeholder="Montant">
@@ -124,6 +131,7 @@
         <input type="password" id="sendPassword" placeholder="Mot de passe">
         <button onclick="sendMoney()">Envoyer</button>
       </div>
+
       <div class="hidden" id="loan">
         <h3>Demande de prêt</h3>
         <input type="text" id="loanName" placeholder="Nom complet">
@@ -153,24 +161,30 @@
       <div class="hidden" id="publish">
         <h3>Publier un message sur l'accueil</h3>
         <textarea id="adminMessage" placeholder="Écrire message ici..."></textarea>
+        <input type="file" id="adminFile">
         <button onclick="publishMessage()">Publier</button>
       </div>
+
       <div class="hidden" id="clients">
         <h3>Clients et Agents enregistrés</h3>
         <div id="clientsList"></div>
       </div>
+
       <div class="hidden" id="loans">
         <h3>Demandes de prêt</h3>
         <div id="loansList"></div>
       </div>
+
       <div class="hidden" id="withdrawals">
         <h3>Demandes de retrait</h3>
         <div id="withdrawList"></div>
       </div>
+
       <div class="hidden" id="history">
         <h3>Historique de la plateforme</h3>
         <div id="historyList"></div>
       </div>
+
       <div class="hidden" id="messages">
         <h3>Envoyer un message à un client</h3>
         <input type="text" id="msgClientId" placeholder="ID client">
@@ -215,107 +229,125 @@
   </div>
 </main>
 
-<!-- Firebase + QR + JS -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
-import QRCode from "https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js";
-
-// Config Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
-  authDomain: "gotrustpay-e6524.firebaseapp.com",
-  projectId: "gotrustpay-e6524",
-  storageBucket: "gotrustpay-e6524.appspot.com",
-  messagingSenderId: "177034024636",
-  appId: "1:177034024636:web:da80102cc82dd7cfa2a2b9"
-};
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-let currentUser=null;
-
-// --- Utilitaires ---
-window.showSection = function(id){
+<script>
+function showSection(id){
   document.querySelectorAll('main .section').forEach(s=>s.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
 }
-window.showClientSection = function(id){
+
+/* Données simulées */
+let users=[], loans=[], history=[];
+let currentUser=null;
+
+function generateId(){ return Math.floor(10000000 + Math.random()*90000000); }
+function generateCard(){ return Math.floor(100000000000 + Math.random()*900000000000); }
+
+/* Inscription client depuis connexion */
+function register(){
+  let name=document.getElementById('regName').value;
+  let email=document.getElementById('regEmail').value;
+  let phone=document.getElementById('regPhone').value;
+  let password=document.getElementById('regPassword').value;
+  let code=document.getElementById('regCode').value;
+  
+  if(!name||!email||!phone||!password||!code){ alert('Remplir tous les champs'); return; }
+
+  let user={id:generateId(),name,email,phone,password,code,balance:0,cardNumber:generateCard(),status:'client'};
+  users.push(user);
+
+  currentUser=user; // connexion immédiate
+  updateClientCard(currentUser);
+  showSection('clientDashboard');
+
+  alert('Compte créé ! Votre ID : '+user.id);
+
+  document.getElementById('regName').value='';
+  document.getElementById('regEmail').value='';
+  document.getElementById('regPhone').value='';
+  document.getElementById('regPassword').value='';
+  document.getElementById('regCode').value='';
+}
+
+/* Connexion */
+function login(){
+  let status=document.getElementById('loginStatus').value;
+  let id=document.getElementById('loginId').value.trim();
+  let pwd=document.getElementById('loginPassword').value;
+
+  // Admin fixe
+  if(status==='admin' && id==='gopay' && pwd==='admin243'){
+    currentUser={name:'Administrateur',id:'gopay',status:'admin'};
+    showSection('adminDashboard');
+    renderAdminClients();
+    renderAdminLoans();
+    return;
+  }
+
+  let user=users.find(u=>(u.id==id || (status==='admin' && u.status==='admin')) && u.password===pwd && (u.status===status));
+  if(!user){ alert('Utilisateur introuvable ou mot de passe incorrect'); return;}
+  currentUser=user;
+  if(status==='client'){ showSection('clientDashboard'); updateClientCard(currentUser);}
+  else{ alert('Agent connecté !');}
+}
+
+function updateClientCard(user){
+  document.getElementById('clientIdDisplay').textContent=user.id;
+  document.getElementById('clientCardNumber').textContent=user.cardNumber;
+  document.getElementById('clientBalance').textContent=user.balance.toFixed(2)+' USD';
+}
+
+/* Client actions */
+function showClientSection(id){
   document.querySelectorAll('#clientActions > div').forEach(d=>d.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
 }
-window.showAdminSection = function(id){
+function deposit(){
+  let amt=parseFloat(document.getElementById('depositAmount').value);
+  if(isNaN(amt)||amt<=0){alert('Montant invalide');return;}
+  currentUser.balance+=amt; updateClientCard(currentUser);
+  history.push({type:'dépôt',user:currentUser.name,amount:amt,date:new Date()});
+  alert('Dépôt effectué via '+document.getElementById('depositService').value);
+}
+function withdraw(){
+  let amt=parseFloat(document.getElementById('withdrawAmount').value);
+  let code=document.getElementById('withdrawCode').value;
+  if(isNaN(amt)||amt<=0){alert('Montant invalide');return;}
+  if(code!==currentUser.code){alert('Code incorrect');return;}
+  if(currentUser.balance<amt){alert('Solde insuffisant');return;}
+  currentUser.balance-=amt; updateClientCard(currentUser);
+  history.push({type:'retrait',user:currentUser.name,amount:amt,date:new Date()});
+  alert('Retrait effectué via '+document.getElementById('withdrawService').value);
+}
+function sendMoney(){
+  let amt=parseFloat(document.getElementById('sendAmount').value);
+  let recipient=document.getElementById('sendRecipient').value;
+  let pwd=document.getElementById('sendPassword').value;
+  if(pwd!==currentUser.password){alert('Mot de passe incorrect');return;}
+  let rec=users.find(u=>u.id==recipient);
+  if(!rec){alert('Destinataire introuvable');return;}
+  if(currentUser.balance<amt){alert('Solde insuffisant');return;}
+  currentUser.balance-=amt; rec.balance+=amt; updateClientCard(currentUser);
+  history.push({type:'envoi',user:currentUser.name,amount:amt,to:rec.name,date:new Date()});
+  alert('Envoi effectué');
+}
+function requestLoan(){loans.push({user:currentUser.name,date:new Date()}); alert('Demande de prêt reçue, en cours d’analyse');}
+
+/* Admin actions */
+function showAdminSection(id){
   document.querySelectorAll('#adminActions > div').forEach(d=>d.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
-  if(id==='clients') loadAdminClients();
-  if(id==='loans') loadAdminLoans();
-  if(id==='history') loadHistory();
 }
-
-// --- Dessiner carte avec QR ---
-function drawCard(user){
-  const canvas = document.getElementById('clientCardCanvas');
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle='#0a74da'; ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle='#fff'; ctx.font='18px Arial';
-  ctx.fillText('GoTrust Pay',20,30);
-  ctx.fillText('Nom : '+user.name,20,60);
-  ctx.fillText('ID : '+user.id,20,90);
-  ctx.fillText('Numéro : '+user.cardNumber,20,120);
-  ctx.fillText('Solde : '+user.balance.toFixed(2)+' USD',20,150);
-  // QR code réel
-  QRCode.toCanvas(canvas,user.id,{width:80,margin:2,color:{dark:'#000',light:'#fff'}},function(err){
-    if(err) console.error(err);
-    // position QR
-    ctx.drawImage(canvas,canvas.width-90,30,80,80);
-  });
+function renderAdminClients(){
+  let list=document.getElementById('clientsList'); list.innerHTML='';
+  users.forEach(u=>list.innerHTML+=`<div class="card">${u.name} (ID: ${u.id}) - Solde: ${u.balance.toFixed(2)} USD</div>`);
 }
-window.downloadCard=function(){
-  const canvas=document.getElementById('clientCardCanvas');
-  const link=document.createElement('a');
-  link.download='Carte_'+currentUser.name+'.png';
-  link.href=canvas.toDataURL();
-  link.click();
+function renderAdminLoans(){
+  let list=document.getElementById('loansList'); list.innerHTML='';
+  loans.forEach((l,i)=>list.innerHTML+=`<div class="card">${l.user} - ${l.date.toLocaleString()}</div>`);
 }
-
-// Le reste (inscription, connexion, dépôt, retrait, envoi, prêt, admin messages) reste comme dans le fichier précédent
-// et doit utiliser Firestore pour persisté les données.
-
-// Exemple inscription client :
-window.register = async function(){
-  const name=document.getElementById('regName').value.trim();
-  const email=document.getElementById('regEmail').value.trim();
-  const phone=document.getElementById('regPhone').value.trim();
-  const password=document.getElementById('regPassword').value.trim();
-  const code=document.getElementById('regCode').value.trim();
-  if(!name||!email||!phone||!password||!code){alert('Remplir tous les champs');return;}
-  const id=Math.floor(10000000+Math.random()*90000000);
-  const cardNumber=Math.floor(100000000000+Math.random()*900000000000);
-  const user={id,name,email,phone,password,code,cardNumber,balance:0,status:'client'};
-  await setDoc(doc(db,'users',id.toString()),user);
-  currentUser=user;
-  drawCard(user);
-  showSection('clientDashboard');
-  alert('Compte créé ! Votre ID : '+id);
-  ['regName','regEmail','regPhone','regPassword','regCode'].forEach(f=>document.getElementById(f).value='');
-}
-
-// --- Charger messages accueil ---
-function loadHomeMessages(){
-  const col=collection(db,'messages');
-  onSnapshot(col,snap=>{
-    const container=document.getElementById('homeMessages');
-    container.innerHTML='';
-    snap.docs.sort((a,b)=>b.data().date.toDate()-a.data().date.toDate()).forEach(d=>{
-      const div=document.createElement('div');
-      div.className='card activity';
-      div.textContent=d.data().content;
-      container.appendChild(div);
-    });
-  });
-}
-loadHomeMessages();
-
+function publishMessage(){alert('Message publié sur l’accueil');}
+function sendAdminMessage(){alert('Message envoyé au client ID '+document.getElementById('msgClientId').value);}
 </script>
+
 </body>
 </html>
