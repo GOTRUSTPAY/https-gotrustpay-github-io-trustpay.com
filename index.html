@@ -14,21 +14,17 @@ main{max-width:1100px;margin:auto;padding:20px}
 input,select,button{width:100%;padding:12px;margin:6px 0;border-radius:10px;border:none}
 button{background:#14b8a6;font-weight:bold;cursor:pointer}
 .panel{background:#043837;padding:20px;border-radius:16px;margin-top:20px}
-.card{background:#054f4b;padding:20px;border-radius:18px;display:flex;justify-content:space-between;flex-wrap:wrap;box-shadow:0 10px 25px rgba(0,0,0,.5)}
-#qr{width:130px;height:130px;background:#fff;padding:8px;border-radius:10px}
-.actions{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:20px}
-@media(max-width:700px){.actions{grid-template-columns:repeat(2,1fr)}}
-.action{background:linear-gradient(145deg,#0fb9a8,#087f73);padding:22px;border-radius:18px;text-align:center;font-weight:bold;cursor:pointer}
-.tx,.news{background:#022c2a;padding:8px;border-radius:8px;margin-bottom:6px}
+.card{background:#054f4b;padding:20px;border-radius:18px;display:flex;justify-content:space-between;flex-wrap:wrap}
+#qr{width:120px;height:120px;background:#fff;padding:6px;border-radius:10px}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px}
+.action{background:#0fb9a8;padding:20px;border-radius:16px;text-align:center;font-weight:bold;cursor:pointer}
+.tx{background:#022c2a;padding:8px;border-radius:8px;margin-bottom:6px}
 small{opacity:.7}
 </style>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-<!-- QR -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 
@@ -37,87 +33,85 @@ small{opacity:.7}
 <header>
 <nav>
  <a onclick="show('home')">Accueil</a>
- <a id="loginBtnNav" onclick="show('loginPanel')">Connexion</a>
- <a id="registerBtnNav" onclick="show('registerPanel')">Inscription</a>
- <a id="logoutBtn" class="hidden" onclick="logout()">Déconnexion</a>
+ <a id="loginBtn" onclick="show('login')">Connexion</a>
+ <a id="registerBtn" onclick="show('register')">Inscription</a>
+ <a id="logoutBtn" class="hidden" onclick="auth.signOut()">Déconnexion</a>
 </nav>
 </header>
 
 <main>
 
-<!-- Accueil -->
 <div id="home" class="panel">
- <h2>GOPAY AFRICA</h2>
- <p>Paiement digital simple et accessible à tous</p>
- <small>Version pilote – soldes et transactions simulés</small>
-
- <h3 style="margin-top:20px">Actualités</h3>
- <div id="newsList"></div>
+<h2>GOPAY AFRICA</h2>
+<p>Paiement digital accessible à tous</p>
+<small>Version pilote – transactions simulées</small>
 </div>
 
-<!-- Connexion -->
-<div id="loginPanel" class="panel hidden">
- <h3>Connexion</h3>
- <input id="loginEmail" placeholder="Email">
- <input id="loginPassword" type="password" placeholder="Mot de passe">
- <button onclick="login()">Se connecter</button>
+<div id="login" class="panel hidden">
+<input id="loginEmail" placeholder="Email">
+<input id="loginPassword" type="password" placeholder="Mot de passe">
+<button onclick="login()">Connexion</button>
 </div>
 
-<!-- Inscription -->
-<div id="registerPanel" class="panel hidden">
- <h3>Inscription</h3>
- <input id="regName" placeholder="Nom complet">
- <input id="regPhone" placeholder="Téléphone">
- <input id="regEmail" placeholder="Email">
- <input id="regPassword" type="password" placeholder="Mot de passe">
- <button onclick="register()">Créer mon compte GoPay</button>
+<div id="register" class="panel hidden">
+<input id="regName" placeholder="Nom complet">
+<input id="regPhone" placeholder="Téléphone">
+<input id="regEmail" placeholder="Email">
+<input id="regPassword" type="password" placeholder="Mot de passe">
+<button onclick="register()">Créer mon compte</button>
 </div>
 
-<!-- Dashboard -->
 <div id="dashboard" class="hidden">
 
 <div class="card">
- <div>
-  <h3 id="cardName"></h3>
-  <p>Carte virtuelle GOPAY AFRICA</p>
-  <b id="cardNumber"></b><br>
-  <small>ID : <span id="cardId"></span></small>
-  <h2>Solde : <span id="balance"></span> USD</h2>
-  <small>Simulation – non utilisable hors GoPay</small>
- </div>
- <div id="qr"></div>
+<div>
+<h3 id="name"></h3>
+<p>ID GoPay : <b id="gid"></b></p>
+<b id="card"></b>
+<h2>Solde : <span id="bal"></span> USD</h2>
+<small>Simulation</small>
+</div>
+<div id="qr"></div>
 </div>
 
 <h3>Activités récentes</h3>
-<div id="recentTx"></div>
+<div id="recent"></div>
 
 <div class="actions">
- <div class="action" onclick="openPanel('deposit')">💰 Approvisionnement</div>
- <div class="action" onclick="openPanel('send')">🔁 Envoyer GoPay</div>
- <div class="action" onclick="openPanel('history')">📜 Historique</div>
+<div class="action" onclick="openPanel('deposit')">💰 Dépôt</div>
+<div class="action" onclick="openPanel('send')">🔁 Envoi</div>
+<div class="action" onclick="openPanel('history')">📜 Historique</div>
 </div>
 
-<!-- Panels -->
 <div id="deposit" class="panel hidden">
- <input id="depAmount" type="number" placeholder="Montant USD (simulation)">
- <button onclick="deposit()">Confirmer</button>
+<select id="depOp">
+<option>Orange</option>
+<option>Airtel</option>
+<option>GoPay</option>
+</select>
+<input id="depAmt" type="number" placeholder="Montant USD">
+<button onclick="deposit()">Confirmer</button>
 </div>
 
 <div id="send" class="panel hidden">
- <input id="toUid" placeholder="ID destinataire GoPay">
- <input id="sendAmount" type="number" placeholder="Montant USD">
- <button onclick="send()">Envoyer</button>
+<select id="sendOp">
+<option>Orange</option>
+<option>Airtel</option>
+<option>GoPay</option>
+</select>
+<input id="toGid" placeholder="ID GoPay destinataire">
+<input id="sendAmt" type="number" placeholder="Montant USD">
+<button onclick="send()">Envoyer</button>
 </div>
 
 <div id="history" class="panel hidden">
- <h3>Historique complet</h3>
- <div id="txList"></div>
+<div id="list"></div>
 </div>
 
+</div>
 </main>
 
 <script>
-// Firebase
 firebase.initializeApp({
  apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
  authDomain:"gotrustpay-e6524.firebaseapp.com",
@@ -125,134 +119,94 @@ firebase.initializeApp({
 });
 const auth=firebase.auth(), db=firebase.firestore();
 
-// UI
 function show(id){
  document.querySelectorAll("main>div").forEach(d=>d.classList.add("hidden"));
  document.getElementById(id).classList.remove("hidden");
 }
-
-// Carte
-function genCard(){
- return "4896 "+Math.floor(7000+Math.random()*2999)+" "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000);
-}
-
-// Auth
-function register(){
- auth.createUserWithEmailAndPassword(regEmail.value,regPassword.value)
- .then(async c=>{
-  await db.collection("users").doc(c.user.uid).set({
-   name:regName.value,
-   phone:regPhone.value,
-   card:genCard(),
-   balance:20,
-   createdAt:new Date()
-  });
-  generateWelcomeTx(c.user.uid);
- }).catch(e=>alert(e.message));
-}
-
-function login(){
- auth.signInWithEmailAndPassword(loginEmail.value,loginPassword.value)
- .catch(e=>alert(e.message));
-}
-function logout(){auth.signOut()}
-
-// Transactions initiales
-function generateWelcomeTx(uid){
- const txs=[
-  {type:"Dépôt",amount:20,operator:"GoPay Africa"},
-  {type:"Paiement",amount:-2.5,operator:"Service GoPay"},
-  {type:"Paiement",amount:-1.3,operator:"Marchand GoPay"}
- ];
- txs.forEach(t=>{
-  db.collection("transactions").add({uid,...t,date:new Date()});
- });
-}
-
-// Auth state
-auth.onAuthStateChanged(async u=>{
- if(!u){
-  loginBtnNav.classList.remove("hidden");
-  registerBtnNav.classList.remove("hidden");
-  logoutBtn.classList.add("hidden");
-  show("home"); loadNews(); return;
- }
- loginBtnNav.classList.add("hidden");
- registerBtnNav.classList.add("hidden");
- logoutBtn.classList.remove("hidden");
-
- const d=await db.collection("users").doc(u.uid).get();
- const x=d.data();
- show("dashboard");
- cardName.textContent=x.name;
- cardNumber.textContent=x.card;
- cardId.textContent=u.uid.slice(0,8);
- balance.textContent=x.balance.toFixed(2);
- qr.innerHTML="";
- new QRCode(qr,{text:x.card,width:120,height:120});
- loadRecent(); loadHistory();
-});
-
-// Panels
 function openPanel(id){
  ["deposit","send","history"].forEach(x=>document.getElementById(x).classList.add("hidden"));
  document.getElementById(id).classList.remove("hidden");
 }
 
-// Actions
-function addTx(type,amount,operator){
+function genCard(){return "4896 "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000);}
+function genGoPayId(){return "GP-"+Math.floor(100000+Math.random()*900000);}
+
+function register(){
+ auth.createUserWithEmailAndPassword(regEmail.value,regPassword.value).then(async c=>{
+  const gid=genGoPayId();
+  await db.collection("users").doc(c.user.uid).set({
+   name:regName.value, phone:regPhone.value,
+   card:genCard(), balance:20, gopayId:gid
+  });
+  addTx("Dépôt",20,"GoPay");
+ });
+}
+
+function login(){auth.signInWithEmailAndPassword(loginEmail.value,loginPassword.value);}
+
+function addTx(type,amount,op){
  db.collection("transactions").add({
-  uid:auth.currentUser.uid,type,amount,operator,date:new Date()
+  uid:auth.currentUser.uid,type,amount,operator:op,created:Date.now()
  });
  loadRecent(); loadHistory();
 }
 
 function deposit(){
- const amount=+depAmount.value;
+ const amt=+depAmt.value;
  db.collection("users").doc(auth.currentUser.uid)
- .update({balance:firebase.firestore.FieldValue.increment(amount)});
- addTx("Dépôt",amount,"GoPay Africa");
+ .update({balance:firebase.firestore.FieldValue.increment(amt)});
+ addTx("Dépôt",amt,depOp.value);
 }
 
 async function send(){
- const d=await db.collection("users").doc(auth.currentUser.uid).get();
- if(sendAmount.value>d.data().balance) return alert("Solde insuffisant");
+ const q=await db.collection("users").where("gopayId","==",toGid.value).get();
+ if(q.empty) return alert("Destinataire introuvable");
+ const to=q.docs[0];
+ const amt=+sendAmt.value;
  db.collection("users").doc(auth.currentUser.uid)
- .update({balance:firebase.firestore.FieldValue.increment(-sendAmount.value)});
- db.collection("users").doc(toUid.value)
- .update({balance:firebase.firestore.FieldValue.increment(+sendAmount.value)});
- addTx("Envoi",-sendAmount.value,"GoPay");
+ .update({balance:firebase.firestore.FieldValue.increment(-amt)});
+ db.collection("users").doc(to.id)
+ .update({balance:firebase.firestore.FieldValue.increment(amt)});
+ addTx("Envoi",-amt,sendOp.value);
 }
 
-// Lists
 async function loadRecent(){
- recentTx.innerHTML="";
+ recent.innerHTML="";
  const q=await db.collection("transactions")
- .where("uid","==",auth.currentUser.uid)
- .orderBy("date","desc").limit(3).get();
+ .where("uid","==",auth.currentUser.uid).limit(3).get();
  q.forEach(d=>{
   const t=d.data();
-  recentTx.innerHTML+=`<div class="tx">${t.type} : ${t.amount.toFixed(2)} USD (${t.operator})</div>`;
+  recent.innerHTML+=`<div class="tx">${t.type} ${t.amount} USD (${t.operator})</div>`;
  });
 }
 
 async function loadHistory(){
- txList.innerHTML="";
+ list.innerHTML="";
  const q=await db.collection("transactions")
- .where("uid","==",auth.currentUser.uid)
- .orderBy("date","desc").get();
+ .where("uid","==",auth.currentUser.uid).get();
  q.forEach(d=>{
   const t=d.data();
-  txList.innerHTML+=`<div class="tx">${t.type} : ${t.amount.toFixed(2)} USD (${t.operator})</div>`;
+  list.innerHTML+=`<div class="tx">${t.type} ${t.amount} USD (${t.operator})</div>`;
  });
 }
 
-// News
-async function loadNews(){
- newsList.innerHTML="";
- const q=await db.collection("annonces").limit(3).get();
- q.forEach(d=>newsList.innerHTML+=`<div class="news">${d.data().text}</div>`);
-}
+auth.onAuthStateChanged(async u=>{
+ if(!u){show("home");return;}
+ show("dashboard");
+ loginBtn.classList.add("hidden");
+ registerBtn.classList.add("hidden");
+ logoutBtn.classList.remove("hidden");
+
+ const d=await db.collection("users").doc(u.uid).get();
+ const x=d.data();
+ name.textContent=x.name;
+ gid.textContent=x.gopayId;
+ card.textContent=x.card;
+ bal.textContent=x.balance.toFixed(2);
+ qr.innerHTML="";
+ new QRCode(qr,{text:x.gopayId,width:110,height:110});
+ loadRecent(); loadHistory();
+});
 </script>
 
 </body>
