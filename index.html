@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GoTrust Pay</title>
+<title>GoTrust Pay - MVP</title>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -14,82 +14,26 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
-:root{
-  --bg:#021c1b;
-  --panel:#043837;
-  --card:#065f5b;
-  --accent:#14b8a6;
-  --text:#d1fae5;
-}
+:root{--bg:#021c1b;--panel:#043837;--card:#065f5b;--accent:#14b8a6;--text:#d1fae5}
 *{box-sizing:border-box}
-body{
-  margin:0;font-family:Arial,Helvetica,sans-serif;
-  background:linear-gradient(135deg,#021c1b,#032f2e);
-  color:var(--text);
-}
-header{
-  background:#021c1b;
-  padding:15px 25px;
-  display:flex;
-  justify-content:space-between;
-}
-nav a{
-  color:#99f6e4;
-  margin-left:20px;
-  font-weight:bold;
-  cursor:pointer;
-  text-decoration:none;
-}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#021c1b,#032f2e);color:var(--text)}
+header{background:#021c1b;padding:15px 25px;display:flex;justify-content:space-between}
+nav a{color:#99f6e4;margin-left:20px;font-weight:bold;cursor:pointer;text-decoration:none}
 main{max-width:1200px;margin:25px auto;padding:20px}
 .hidden{display:none}
-button{
-  background:var(--accent);
-  border:none;
-  padding:10px 16px;
-  border-radius:8px;
-  font-weight:bold;
-  cursor:pointer;
-}
-input,select{
-  width:100%;
-  padding:10px;
-  margin:6px 0;
-  border-radius:6px;
-  border:none;
-}
-.panel{
-  background:var(--panel);
-  border-radius:14px;
-  padding:20px;
-  margin-top:20px;
-}
-.card{
-  background:linear-gradient(135deg,#054a48,#022c2a);
-  border-radius:18px;
-  padding:25px;
-  display:flex;
-  justify-content:space-between;
-  box-shadow:0 10px 30px rgba(0,0,0,.6);
-}
-.chip{
-  width:50px;height:38px;
-  background:linear-gradient(135deg,#facc15,#eab308);
-  border-radius:6px;
-  margin-bottom:10px;
-}
-.activity{
-  background:#022c2a;
-  padding:10px;
-  border-radius:10px;
-  margin-bottom:8px;
-  display:flex;
-  justify-content:space-between;
-  font-size:14px;
-}
+button{background:var(--accent);border:none;padding:10px 16px;border-radius:8px;font-weight:bold;cursor:pointer}
+input,select{width:100%;padding:10px;margin:6px 0;border-radius:6px;border:none}
+.panel{background:var(--panel);border-radius:14px;padding:20px;margin-top:20px}
+.card{background:linear-gradient(135deg,#054a48,#022c2a);border-radius:18px;padding:25px;display:flex;justify-content:space-between;box-shadow:0 10px 30px rgba(0,0,0,.6)}
+.chip{width:50px;height:38px;background:linear-gradient(135deg,#facc15,#eab308);border-radius:6px;margin-bottom:10px}
+.activity{background:#022c2a;padding:10px;border-radius:10px;margin-bottom:8px;display:flex;justify-content:space-between;font-size:14px}
 .small{font-size:13px;opacity:.8}
+.badge{padding:3px 8px;border-radius:6px;font-size:12px}
+.ok{background:#14532d}
+.wait{background:#7c2d12}
+.no{background:#7f1d1d}
 </style>
 </head>
-
 <body>
 
 <header>
@@ -114,20 +58,21 @@ input,select{
 <div id="login" class="hidden panel">
   <h2>Connexion</h2>
   <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Mot de passe">
+  <input id="password" type="password">
   <button onclick="login()">Connexion</button>
 
   <h3>Créer un compte</h3>
   <input id="name" placeholder="Nom complet">
   <input id="phone" placeholder="Téléphone">
   <input id="regEmail" placeholder="Email">
-  <input id="regPass" type="password" placeholder="Mot de passe">
+  <input id="regPass" type="password">
   <button onclick="register()">Créer</button>
 </div>
 
 <!-- DASHBOARD -->
 <div id="dashboard" class="hidden">
 
+  <!-- CARTE BIOMETRIQUE -->
   <div class="card">
     <div>
       <div class="chip"></div>
@@ -138,28 +83,37 @@ input,select{
     </div>
     <div>
       <div id="clientQR" style="background:#fff;padding:6px;border-radius:8px"></div>
-      <button onclick="downloadQR()">Télécharger QR</button>
+      <button onclick="downloadQR()">QR</button>
     </div>
   </div>
 
-  <!-- DEPOT -->
+  <!-- DEPOT Mobile Money -->
   <div class="panel">
-    <h3>Dépôt Mobile Money</h3>
+    <h3>Dépôt Mobile Money (sandbox/test)</h3>
     <select id="mmType">
       <option>Airtel Money</option>
       <option>Orange Money</option>
       <option>Vodacom M-Pesa</option>
       <option>GoPay</option>
     </select>
-    <input id="mmPhone" placeholder="Numéro Mobile Money">
+    <input id="mmPhone" placeholder="Numéro">
     <input id="mmAmount" type="number" placeholder="Montant">
-    <button onclick="mobileDeposit()">Confirmer dépôt</button>
-    <p class="small">Anti-double paiement activé</p>
+    <button onclick="mobileDeposit()">Déposer</button>
+    <p class="small">Anti‑double paiement actif</p>
+  </div>
+
+  <!-- KYC -->
+  <div class="panel">
+    <h3>KYC (vérification)</h3>
+    <input type="file" id="idFile">
+    <input type="file" id="selfieFile">
+    <button onclick="submitKYC()">Envoyer KYC</button>
+    <p id="kycStatus" class="small"></p>
   </div>
 
   <!-- HISTORIQUE -->
   <div class="panel">
-    <h3>Historique des dépôts</h3>
+    <h3>Historique dépôts</h3>
     <div id="history"></div>
   </div>
 
@@ -167,7 +121,7 @@ input,select{
 
 <!-- ADMIN -->
 <div id="admin" class="hidden panel">
-  <h2>Mode Admin</h2>
+  <h2>Admin – Dépôts à valider</h2>
   <div id="adminDeposits"></div>
 </div>
 
@@ -181,8 +135,7 @@ firebase.initializeApp({
  projectId:"gotrustpay-e6524"
 });
 const auth=firebase.auth(), db=firebase.firestore();
-
-let lastDepositTime=0;
+let lastDeposit=0;
 
 // NAV
 function show(id){
@@ -195,92 +148,102 @@ function genCard(){return "4896 "+Math.floor(1000+Math.random()*9000)+" **** ***
 function register(){
  auth.createUserWithEmailAndPassword(regEmail.value,regPass.value)
  .then(c=>db.collection("users").doc(c.user.uid).set({
-  name:name.value,
-  phone:phone.value,
-  card:genCard(),
-  balance:0,
-  role:"client"
+  name:name.value, phone:phone.value, card:genCard(),
+  balance:0, role:"client", kyc:"none"
  }));
 }
 
 // LOGIN
-function login(){
- auth.signInWithEmailAndPassword(email.value,password.value);
-}
+function login(){auth.signInWithEmailAndPassword(email.value,password.value);}
 
 // AUTH
 auth.onAuthStateChanged(u=>{
- if(!u){show("home");return;}
- db.collection("users").doc(u.uid).get().then(d=>{
+ if(!u){show('home'); return;}
+ db.collection("users").doc(u.uid).onSnapshot(d=>{
   const x=d.data();
   show("dashboard");
   cardName.textContent=x.name;
   cardId.textContent=u.uid.slice(0,10).toUpperCase();
   cardNumber.textContent=x.card;
   balance.textContent=x.balance.toFixed(2);
+  kycStatus.textContent="KYC : "+x.kyc;
   if(x.role==="admin") adminBtn.classList.remove("hidden");
   clientQR.innerHTML="";
   new QRCode("clientQR",{text:u.uid,width:130,height:130});
-  loadHistory();
-  loadAdmin();
  });
+ loadHistory();
+ loadAdmin();
  loadActivities();
 });
 
-// DEPOT + FRAUDE
-function mobileDeposit(){
- const now=Date.now();
- if(now-lastDepositTime<10000){
-  alert("Double paiement bloqué");
-  return;
- }
- lastDepositTime=now;
+// DEPOT + FRAUDE + API MOBILE MONEY (sandbox)
+async function mobileDeposit(){
+ if(Date.now()-lastDeposit<10000) return alert("Double paiement bloqué");
+ lastDeposit=Date.now();
 
- const amount=Number(mmAmount.value);
  const uid=auth.currentUser.uid;
+ const amount=Number(mmAmount.value);
+ const phone=mmPhone.value;
+ const method=mmType.value;
 
- db.collection("users").doc(uid)
- .update({balance:firebase.firestore.FieldValue.increment(amount)});
+ try{
+     // Sandbox placeholder
+     let result = {status:"success", message:"Test OK"};
 
- db.collection("deposits").add({
-  uid,
-  amount,
-  method:mmType.value,
-  phone:mmPhone.value,
-  date:new Date()
- });
+     if(result.status==="success"){
+         db.collection("deposits").add({uid,amount,method,phone,status:"pending",date:new Date()});
+         alert("Paiement reçu (sandbox), en attente validation admin");
+     } else alert("Paiement échoué : "+result.message);
 
- alert("Dépôt en traitement");
- loadHistory();
+ }catch(e){alert("Erreur API paiement");}
 }
 
-// HISTORIQUE
+// HISTORIQUE DEPOTS
 function loadHistory(){
- history.innerHTML="";
- db.collection("deposits")
- .where("uid","==",auth.currentUser.uid)
+ db.collection("deposits").where("uid","==",auth.currentUser.uid)
  .orderBy("date","desc")
- .get().then(s=>{
-  s.forEach(d=>{
-   const x=d.data();
-   history.innerHTML+=`<div class="activity">${x.method} ${x.amount} USD <span>${x.date.toDate().toLocaleString()}</span></div>`;
-  });
+ .onSnapshot(s=>{
+   history.innerHTML="";
+   s.forEach(d=>{
+     const x=d.data();
+     history.innerHTML+=`<div class="activity">
+      ${x.method} ${x.amount} USD
+      <span class="badge ${x.status==="approved"?"ok":x.status==="rejected"?"no":"wait"}">${x.status}</span>
+     </div>`;
+   });
  });
 }
 
-// ADMIN
+// ADMIN APPROVE / REJECT
 function loadAdmin(){
- adminDeposits.innerHTML="";
- db.collection("deposits").orderBy("date","desc").limit(20).get()
- .then(s=>{
-  s.forEach(d=>{
-   const x=d.data();
-   adminDeposits.innerHTML+=`<div class="activity">${x.method} ${x.amount} USD <span>${x.phone}</span></div>`;
-  });
+ db.collection("deposits").where("status","==","pending")
+ .onSnapshot(s=>{
+   adminDeposits.innerHTML="";
+   s.forEach(d=>{
+     const x=d.data();
+     adminDeposits.innerHTML+=`<div class="activity">
+       ${x.method} ${x.amount} USD
+       <span>
+         <button onclick="approve('${d.id}','${x.uid}',${x.amount})">✔</button>
+         <button onclick="reject('${d.id}')">✖</button>
+       </span>
+     </div>`;
+   });
  });
 }
+function approve(id,uid,amt){
+ db.collection("deposits").doc(id).update({status:"approved"});
+ db.collection("users").doc(uid).update({balance:firebase.firestore.FieldValue.increment(amt)});
+}
+function reject(id){db.collection("deposits").doc(id).update({status:"rejected"});}
 
-// ACTIVITÉS PUBLIQUES
+// KYC
+function submitKYC(){
+ db.collection("users").doc(auth.currentUser.uid).update({kyc:"submitted"});
+ alert("KYC envoyé");
+}
+
+// ACTIVITES DYNAMIQUES
 function randName(){
  const f=["Amina","Patrick","Sofia","Daniel","Jean","Ali","Emma","Paul","Koffi","Lina"];
  const l=["R.","K.","M.","L.","S.","D.","B.","T."];
@@ -290,20 +253,17 @@ function randNum(){return Math.floor(100000+Math.random()*900000);}
 function loadActivities(){
  activities.innerHTML="";
  for(let i=0;i<12;i++){
-  activities.innerHTML+=`<div class="activity">${randName()} transaction <span>${randNum()}</span></div>`;
+   activities.innerHTML+=`<div class="activity">${randName()} transaction <span>${randNum()}</span></div>`;
  }
  setTimeout(loadActivities,2500);
 }
 
 // QR
 function downloadQR(){
- const canvas=document.querySelector("#clientQR canvas");
+ const c=document.querySelector("#clientQR canvas");
  const a=document.createElement("a");
- a.href=canvas.toDataURL();
- a.download="gotrustpay-qr.png";
- a.click();
+ a.href=c.toDataURL(); a.download="qr.png"; a.click();
 }
 </script>
-
 </body>
 </html>
