@@ -9,7 +9,7 @@
 body{margin:0;font-family:Arial;background:#021c1b;color:#d1fae5}
 .hidden{display:none}
 header{padding:15px;background:#012b28;display:flex;align-items:center;justify-content:space-between}
-header img{height:40px;border-radius:8px}
+header svg{height:40px;width:auto}
 nav a{margin-right:15px;color:#5eead4;font-weight:bold;cursor:pointer;text-decoration:none}
 main{max-width:700px;margin:auto;padding:20px}
 input,select,button{width:100%;padding:12px;margin:6px 0;border-radius:10px;border:none}
@@ -21,9 +21,8 @@ button{background:#14b8a6;font-weight:bold;cursor:pointer}
 @media(max-width:500px){.actions{grid-template-columns:repeat(2,1fr)}}
 .action{background:#0fb9a8;padding:20px;border-radius:16px;text-align:center;font-weight:bold;cursor:pointer}
 footer{padding:20px;text-align:center;background:#012b28;color:#5eead4;margin-top:40px}
-footer a{color:#5eead4;text-decoration:none;margin:0 5px}
-.tx{background:#043837;padding:10px;border-radius:10px;margin-top:5px}
-.activity{background:#06514f;padding:10px;border-radius:10px;margin-top:5px}
+footer a{color:#5eead4;text-decoration:none;margin:0 5px;cursor:pointer}
+.tx,.activity{background:#043837;padding:10px;border-radius:10px;margin-top:5px}
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -35,13 +34,16 @@ footer a{color:#5eead4;text-decoration:none;margin:0 5px}
 <body>
 
 <header>
-  <img src="https://via.placeholder.com/150x40?text=GoPay+Africa" alt="GoPay Africa">
-  <nav>
-   <a onclick="show('home')">Accueil</a>
-   <a id="loginNav" onclick="show('login')">Connexion</a>
-   <a id="regNav" onclick="show('register')">Inscription</a>
-   <a id="logoutNav" class="hidden" onclick="logout()">Déconnexion</a>
-  </nav>
+<!-- Logo SVG GoPay Africa -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 50">
+  <text x="0" y="35" font-size="30" fill="#5eead4" font-weight="bold" font-family="Arial">GoPay Africa</text>
+</svg>
+<nav>
+ <a onclick="show('home')">Accueil</a>
+ <a id="loginNav" onclick="show('login')">Connexion</a>
+ <a id="regNav" onclick="show('register')">Inscription</a>
+ <a id="logoutNav" class="hidden" onclick="logout()">Déconnexion</a>
+</nav>
 </header>
 
 <main>
@@ -200,11 +202,9 @@ auth.onAuthStateChanged(async u=>{
  uBal.textContent=x.balance.toFixed(2);
  qr.innerHTML=""; new QRCode(qr,{text:x.gid,width:120,height:120});
 
- // afficher activités récentes publiques
  loadTx();
  recentActivity();
 
- // cacher Cash-in/out pour non-agents
  if(x.role!=="agent"){
    document.getElementById("cashinBtn").style.display="none";
    document.getElementById("cashoutBtn").style.display="none";
@@ -242,23 +242,33 @@ async function loadTx(){
  });
 }
 
-// Activité récente publique
-const names=["Alice","Bob","Charlie","David","Eve","Fabrice","Gisèle","Hugo","Iris","Jean"];
-let shown=[];
-function recentActivity(){
- const container=document.getElementById("activities");
- container.innerHTML="";
- for(let i=0;i<5;i++){
-   let n;
-   do{ n=names[Math.floor(Math.random()*names.length)]; }while(shown.includes(n));
-   shown.push(n);
-   const div=document.createElement("div");
-   div.className="activity";
-   div.textContent=`${n} a effectué un paiement`;
-   container.appendChild(div);
- }
+// ACTIVITÉ RÉCENTE AUTOMATIQUE
+const namesPool = [
+ "Alice","Bob","Charlie","David","Eve","Fabrice","Gisèle",
+ "Hugo","Iris","Jean","Kevin","Laura","Marc","Nina","Olivier"
+];
+let usedNames = [];
+
+function generateActivity() {
+ if (usedNames.length >= namesPool.length) return;
+ let name;
+ do { name = namesPool[Math.floor(Math.random() * namesPool.length)]; } while (usedNames.includes(name));
+ usedNames.push(name);
+ const actions = ["a effectué un paiement","a rechargé son compte","a payé un commerçant","a reçu un paiement"];
+ const act = actions[Math.floor(Math.random() * actions.length)];
+ const div = document.createElement("div");
+ div.className = "activity";
+ div.textContent = `${name} ${act}`;
+ const box = document.getElementById("activities");
+ box.prepend(div);
+ if (box.children.length > 6) box.removeChild(box.lastChild);
  document.getElementById("recentActivities").classList.remove("hidden");
 }
+
+// Initial call + interval toutes les 12 secondes
+generateActivity();
+setInterval(generateActivity, 12000);
+
 </script>
 
 </body>
