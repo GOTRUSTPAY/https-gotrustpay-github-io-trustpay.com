@@ -25,9 +25,10 @@ input, select, textarea { padding:10px; margin:5px 0; width:100%; box-sizing:bor
 .section { margin-bottom:40px; }
 .hidden { display:none; }
 .card { border:1px solid #ddd; padding:15px; border-radius:8px; margin-bottom:15px; background:#f9f9f9; }
-.qr { width:100px; height:100px; background:#ccc; display:inline-block; margin-right:10px; vertical-align:middle; }
+.qr { width:150px; height:150px; display:inline-block; margin-right:10px; vertical-align:middle; }
 label { font-weight:bold; display:block; margin-top:10px; }
 .menu { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
+.balance { font-size:1.2em; font-weight:bold; margin-top:10px; }
 </style>
 </head>
 <body>
@@ -47,14 +48,11 @@ label { font-weight:bold; display:block; margin-top:10px; }
 </nav>
 
 <main>
-
-<!-- Accueil -->
 <div class="section" id="home">
   <h2>Bienvenue sur GoTrust Pay</h2>
   <div id="publications"></div>
 </div>
 
-<!-- Connexion + Inscription -->
 <div class="section hidden" id="login">
   <h2>Connexion</h2>
   <input type="email" id="loginEmail" placeholder="Email">
@@ -70,20 +68,16 @@ label { font-weight:bold; display:block; margin-top:10px; }
     <label>Code de retrait (6 chiffres)</label><input type="text" id="regCode">
     <button onclick="register()">S'inscrire</button>
   </div>
-</div>
-
-<!-- Client Dashboard -->
-<div class="section hidden" id="clientDashboard">
+</div><div class="section hidden" id="clientDashboard">
   <h2>Tableau de bord Client</h2>
+  <div class="balance">Solde : <span id="clientBalance">0.00</span> USD</div>
 
-  <!-- QR Code -->
   <div class="card">
     <h3>Votre QR Code</h3>
     <div id="clientQR"></div>
     <button onclick="downloadQR()">Télécharger QR Code</button>
   </div>
 
-  <!-- Menu actions client -->
   <div class="menu">
     <button onclick="showClientSection('deposit')">Déposer</button>
     <button onclick="showClientSection('withdraw')">Retirer</button>
@@ -92,30 +86,47 @@ label { font-weight:bold; display:block; margin-top:10px; }
   </div>
 
   <div id="clientActions">
-    <!-- Dépôt -->
     <div class="hidden" id="deposit">
       <h3>Déposer de l'argent</h3>
       <input type="number" id="depositAmount" placeholder="Montant">
+      <label>Service</label>
+      <select id="depositService">
+        <option value="gopay">GoPay</option>
+        <option value="airtel">Airtel Money</option>
+        <option value="orange">Orange Money</option>
+        <option value="vodacom">M-Pesa Vodacom</option>
+      </select>
       <button onclick="deposit()">Confirmer Dépôt</button>
     </div>
 
-    <!-- Retrait -->
     <div class="hidden" id="withdraw">
       <h3>Retirer de l'argent</h3>
       <input type="number" id="withdrawAmount" placeholder="Montant">
+      <label>Service</label>
+      <select id="withdrawService">
+        <option value="gopay">GoPay</option>
+        <option value="airtel">Airtel Money</option>
+        <option value="orange">Orange Money</option>
+        <option value="vodacom">M-Pesa Vodacom</option>
+      </select>
       <input type="text" id="withdrawCode" placeholder="Code de retrait 6 chiffres">
       <button onclick="withdraw()">Confirmer Retrait</button>
     </div>
 
-    <!-- Envoyer argent -->
     <div class="hidden" id="send">
       <h3>Envoyer de l'argent</h3>
       <input type="number" id="sendAmount" placeholder="Montant">
-      <input type="text" id="sendRecipient" placeholder="Email destinataire">
+      <label>Service</label>
+      <select id="sendService">
+        <option value="gopay">GoPay</option>
+        <option value="airtel">Airtel Money</option>
+        <option value="orange">Orange Money</option>
+        <option value="vodacom">M-Pesa Vodacom</option>
+      </select>
+      <input type="email" id="sendRecipient" placeholder="Email destinataire">
       <button onclick="sendMoney()">Envoyer</button>
     </div>
 
-    <!-- Demande de prêt -->
     <div class="hidden" id="loan">
       <h3>Demande de prêt</h3>
       <input type="number" id="loanAmount" placeholder="Montant du prêt">
@@ -124,21 +135,17 @@ label { font-weight:bold; display:block; margin-top:10px; }
     </div>
   </div>
 
-  <!-- Messages -->
   <h3>Messages</h3>
   <textarea id="msgText" placeholder="Écrire un message"></textarea>
   <button onclick="sendMessage()">Envoyer</button>
   <div id="messages"></div>
-</div>
-
-<!-- Admin Dashboard -->
-<div class="section hidden" id="adminDashboard">
+</div><div class="section hidden" id="adminDashboard">
   <h2>Tableau de bord Admin</h2>
   <div class="menu">
     <button onclick="showAdminSection('publish')">Publier message</button>
     <button onclick="showAdminSection('clients')">Clients</button>
     <button onclick="showAdminSection('loans')">Demandes de prêt</button>
-    <button onclick="showAdminSection('withdrawals')">Demandes retrait</button>
+    <button onclick="showAdminSection('withdrawals')">Transactions retrait</button>
     <button onclick="showAdminSection('messagesAdmin')">Messages</button>
   </div>
   <div id="adminActions">
@@ -153,28 +160,24 @@ label { font-weight:bold; display:block; margin-top:10px; }
   </div>
 </div>
 
-<!-- Contact -->
 <div class="section hidden" id="contact">
   <h2>Contact</h2>
   <p>Email : gotrustpayinfo@gmail.com</p>
 </div>
 
-<!-- Qui sommes-nous -->
 <div class="section hidden" id="about">
   <h2>Qui sommes-nous ?</h2>
   <p>GoTrust Pay est une plateforme sécurisée pour vos transactions.</p>
 </div>
 
-<!-- Services -->
 <div class="section hidden" id="services">
   <h2>Nos services</h2>
   <ul>
-    <li>Dépôts / Retraits / Envoi</li>
+    <li>Dépôts / Retraits / Envoi via réseaux locaux</li>
     <li>Demandes de prêt sécurisées</li>
   </ul>
 </div>
 
-<!-- Partenaires -->
 <div class="section hidden" id="partners">
   <h2>Nos partenaires</h2>
   <ul>
@@ -198,18 +201,9 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 // ================= NAVIGATION =================
-function showSection(id){
-  document.querySelectorAll('main .section').forEach(s=>s.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-}
-function showClientSection(id){
-  document.querySelectorAll('#clientActions > div').forEach(d=>d.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-}
-function showAdminSection(id){
-  document.querySelectorAll('#adminActions > div').forEach(d=>d.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-}
+function showSection(id){document.querySelectorAll('main .section').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');}
+function showClientSection(id){document.querySelectorAll('#clientActions > div').forEach(d=>d.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');}
+function showAdminSection(id){document.querySelectorAll('#adminActions > div').forEach(d=>d.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');}
 
 // ================= REGISTER / LOGIN =================
 function register(){
@@ -219,6 +213,7 @@ function register(){
     .then(cred=>db.collection('users').doc(cred.user.uid).set({name,email,phone,code,balance:0,role:'client'}))
     .then(()=>alert('Compte créé !')).catch(e=>alert(e.message));
 }
+
 function login(){
   auth.signInWithEmailAndPassword(loginEmail.value,loginPassword.value)
     .catch(e=>alert(e.message));
@@ -229,12 +224,8 @@ auth.onAuthStateChanged(user=>{
   if(user){
     db.collection('users').doc(user.uid).get().then(doc=>{
       const data=doc.data();
-      if(data.role==='admin') showSection('adminDashboard');
-      else{
-        showSection('clientDashboard');
-        generateQR(user.uid);
-        loadMessages();
-      }
+      if(data.role==='admin'){showSection('adminDashboard');} 
+      else {showSection('clientDashboard'); generateQR(user.uid); loadBalance(); loadMessages();}
       loadClients(); loadLoans(); loadWithdrawals(); loadPublications(); loadAllMessages();
     });
   }else showSection('home');
@@ -242,115 +233,9 @@ auth.onAuthStateChanged(user=>{
 
 // ================= QR =================
 let qr;
-function generateQR(uid){
-  document.getElementById('clientQR').innerHTML='';
-  qr=new QRCode('clientQR',{text:uid,width:150,height:150});
-}
-function downloadQR(){
-  const img=document.querySelector('#clientQR img').src;
-  const a=document.createElement('a'); a.href=img; a.download='QR.png'; a.click();
-}
-
-// ================= CLIENT ACTIONS =================
-function deposit(){
-  const amt=parseFloat(document.getElementById('depositAmount').value);
-  if(isNaN(amt)||amt<=0){alert('Montant invalide'); return;}
-  const uid=auth.currentUser.uid;
-  db.collection('users').doc(uid).update({balance: firebase.firestore.FieldValue.increment(amt)});
-  db.collection('transactions').add({uid,type:'deposit',amount:amt,date:new Date()});
-  alert('Dépôt effectué !');
-}
-function withdraw(){
-  const amt=parseFloat(document.getElementById('withdrawAmount').value);
-  const codeInput=document.getElementById('withdrawCode').value;
-  const uid=auth.currentUser.uid;
-  if(!amt || !codeInput){alert('Remplir tous les champs'); return;}
-  db.collection('users').doc(uid).get().then(doc=>{
-    const data = doc.data();
-    if(data.balance<amt){alert('Solde insuffisant'); return;}
-    if(data.code !== codeInput){alert('Code incorrect'); return;}
-    db.collection('users').doc(uid).update({balance: firebase.firestore.FieldValue.increment(-amt)});
-    db.collection('transactions').add({uid,type:'withdraw',amount:amt,date:new Date()});
-    alert('Retrait effectué !');
-  });
-}
-function sendMoney(){
-  const amt=parseFloat(document.getElementById('sendAmount').value);
-  const recEmail=document.getElementById('sendRecipient').value;
-  if(!amt||!recEmail){alert('Remplir les champs'); return;}
-  const uid=auth.currentUser.uid;
-  db.collection('users').where('email','==',recEmail).get().then(snap=>{
-    if(snap.empty){alert('Destinataire introuvable'); return;}
-    const recId=snap.docs[0].id;
-    db.collection('users').doc(uid).get().then(doc=>{
-      if(doc.data().balance<amt){alert('Solde insuffisant'); return;}
-      db.collection('users').doc(uid).update({balance: firebase.firestore.FieldValue.increment(-amt)});
-      db.collection('users').doc(recId).update({balance: firebase.firestore.FieldValue.increment(amt)});
-      db.collection('transactions').add({uid,type:'send',amount:amt,to:recEmail,date:new Date()});
-      alert('Envoi effectué !');
-    });
-  });
-}
-function requestLoan(){
-  const amt=parseFloat(document.getElementById('loanAmount').value);
-  const reason=document.getElementById('loanReason').value;
-  db.collection('loans').add({uid:auth.currentUser.uid,amount:amt,reason,date:new Date()});
-  alert('Demande de prêt envoyée !');
-}
-
-// ================= MESSAGES =================
-function sendMessage(){
-  const txt=document.getElementById('msgText').value;
-  if(!txt) return;
-  db.collection('messages').add({uid:auth.currentUser.uid,text:txt,date:new Date()});
-  document.getElementById('msgText').value='';
-}
-function loadMessages(){
-  db.collection('messages').orderBy('date')
-    .onSnapshot(snap=>{
-      const m=document.getElementById('messages'); m.innerHTML='';
-      snap.forEach(d=>m.innerHTML+=`<div class="card">${d.data().text}</div>`);
-    });
-}
-
-// ================= ADMIN =================
-function publishMessage(){
-  const txt=document.getElementById('adminMessage').value;
-  if(!txt) return; db.collection('publications').add({text:txt,date:new Date()});
-  document.getElementById('adminMessage').value='';
-}
-function loadPublications(){
-  db.collection('publications').orderBy('date','desc')
-    .onSnapshot(snap=>{
-      const pub=document.getElementById('publications'); pub.innerHTML='';
-      snap.forEach(d=>pub.innerHTML+=`<div class="card">${d.data().text}</div>`);
-    });
-}
-function loadClients(){
-  db.collection('users').get().then(snap=>{
-    const list=document.getElementById('clientsList'); if(!list) return; list.innerHTML='';
-    snap.forEach(doc=>{const d=doc.data(); if(d.role==='client') list.innerHTML+=`<div class="card">${d.name} (${d.email}) - Solde: ${d.balance||0}</div>`;});
-  });
-}
-function loadLoans(){
-  db.collection('loans').get().then(snap=>{
-    const list=document.getElementById('loansList'); if(!list) return; list.innerHTML='';
-    snap.forEach(doc=>{const d=doc.data(); list.innerHTML+=`<div class="card">UID: ${d.uid} - ${d.amount} - ${d.reason}</div>`;});
-  });
-}
-function loadWithdrawals(){
-  db.collection('transactions').where('type','==','withdraw').get().then(snap=>{
-    const list=document.getElementById('withdrawList'); if(!list) return; list.innerHTML='';
-    snap.forEach(doc=>{const d=doc.data(); list.innerHTML+=`<div class="card">UID: ${d.uid} - ${d.amount}</div>`;});
-  });
-}
-function loadAllMessages(){
-  db.collection('messages').orderBy('date').get().then(snap=>{
-    const list=document.getElementById('allMessages'); if(!list) return; list.innerHTML='';
-    snap.forEach(doc=>{const d=doc.data(); list.innerHTML+=`<div class="card">UID: ${d.uid} - ${d.text}</div>`;});
-  });
-}
+function generateQR(uid){document.getElementById('clientQR').innerHTML=''; qr=new QRCode('clientQR',{text:uid,width:150,height:150});}
+function downloadQR(){const img=document.querySelector('#clientQR img').src; const a=document.createElement('a'); a.href=img; a.download='QR.png'; a.click();}
 </script>
-
+</main>
 </body>
 </html>
