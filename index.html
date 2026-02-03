@@ -9,8 +9,10 @@
 <style>
 body{margin:0;font-family:Roboto;background:#061e1c;color:#e6fffa}
 header{background:#012b28;padding:12px 20px;display:flex;justify-content:space-between;align-items:center}
+.logo-wrap{display:flex;align-items:center;gap:10px}
+.logo-wrap img{height:40px}
+.logo-text{font-size:20px;font-weight:700;color:#5eead4}
 .menu-btn{font-size:28px;cursor:pointer}
-
 .menu{display:none;position:absolute;top:60px;right:20px;background:#043837;border-radius:12px;overflow:hidden;z-index:100}
 .menu a{display:block;padding:12px 18px;color:#5eead4;text-decoration:none;cursor:pointer}
 .menu a:hover{background:#065f5b}
@@ -19,32 +21,28 @@ main{max-width:1000px;margin:auto;padding:20px}
 .panel{background:#043837;padding:20px;border-radius:18px;margin-top:20px}
 .hidden{display:none}
 
-/* CARTE BANCAIRE 3D PRO */
 .card{
-background:linear-gradient(135deg,#0f766e,#022c2a);
-border-radius:22px;
-padding:26px;
-box-shadow:0 25px 50px rgba(0,0,0,.6);
-transition:transform .6s;
-perspective:1000px;
+background:linear-gradient(135deg,#0b3c39,#021f1d);
+border-radius:20px;padding:22px;box-shadow:0 20px 40px rgba(0,0,0,.6);
+cursor:pointer;transition:.6s;transform-style:preserve-3d;position:relative;
 }
-.card:hover{transform:rotateY(10deg) rotateX(5deg)}
-.card h2{margin:0;font-size:15px;font-weight:500;opacity:.9}
-.card-number{font-size:22px;letter-spacing:4px;margin:20px 0;font-weight:700}
+.card img.card-logo{height:32px;position:absolute;top:20px;right:20px;}
+.card h2{margin:0;font-size:16px;font-weight:500;opacity:.9}
+.card-number{font-size:20px;letter-spacing:3px;margin:18px 0}
 .card-row{display:flex;justify-content:space-between;font-size:13px;opacity:.9}
 
 .actions{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:20px}
 .action{background:#14b8a6;padding:15px;border-radius:14px;text-align:center;font-weight:700;cursor:pointer}
 .action:hover{background:#2dd4bf}
 
-input,button{width:100%;padding:10px;margin-top:10px;border-radius:10px;border:none}
+input,button,select{width:100%;padding:10px;margin-top:10px;border-radius:10px;border:none;font-family:Roboto}
 button{background:#14b8a6;font-weight:700;cursor:pointer}
 button:hover{background:#2dd4bf}
 
 .tx{background:#065f5b;padding:10px;border-radius:10px;margin-bottom:8px;font-size:14px}
 
-footer{text-align:center;margin-top:30px;font-size:14px;opacity:.8}
-footer a{color:#5eead4;text-decoration:none;margin:0 6px;cursor:pointer}
+footer{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;text-align:center;margin-top:30px;font-size:14px;opacity:.8}
+footer a{color:#5eead4;text-decoration:none;cursor:pointer}
 footer a:hover{text-decoration:underline}
 </style>
 
@@ -57,7 +55,10 @@ footer a:hover{text-decoration:underline}
 <body>
 
 <header>
-<strong>GoPay Africa</strong>
+<div class="logo-wrap">
+<img src="A_logo_for_&quot;GoPay_Africa&quot;_is_displayed_on_a_dark_b.png" alt="GoPay Africa">
+<div class="logo-text">GoPay Africa</div>
+</div>
 <div class="menu-btn" onclick="toggleMenu()">☰</div>
 </header>
 
@@ -66,17 +67,18 @@ footer a:hover{text-decoration:underline}
 <a onclick="show('login')">Connexion</a>
 <a onclick="show('register')">Créer un compte</a>
 <a onclick="logout()">Déconnexion</a>
+<a onclick="show('kyc')">KYC</a>
 </div>
 
 <main>
-
 <div id="home" class="panel">
 <h2>Payments for a Connected Africa</h2>
-<p>Paiements digitaux sécurisés et professionnels.</p>
+<p>Paiements digitaux sécurisés et fiables.</p>
+<div id="home-qrcode"></div>
 </div>
 
 <div id="login" class="panel hidden">
-<h3>Connexion rapide</h3>
+<h3>Connexion</h3>
 <input id="lEmail" placeholder="Email">
 <input id="lPass" type="password" placeholder="Mot de passe">
 <button onclick="login()">Se connecter</button>
@@ -91,38 +93,68 @@ footer a:hover{text-decoration:underline}
 </div>
 
 <div id="dash" class="hidden">
-<div class="card">
-<h2>GoPay Africa • Virtual Card</h2>
+<div class="card" id="card">
+<h2>GoPay • Virtual Card</h2>
+<img class="card-logo" src="A_logo_for_&quot;GoPay_Africa&quot;_is_displayed_on_a_dark_b.png" alt="Logo">
 <div class="card-number" id="cardId"></div>
 <div class="card-row"><span>TITULAIRE</span><span>EXP</span></div>
 <div class="card-row"><strong id="cardName"></strong><strong>12/29</strong></div>
-<p>SOLDE : <b><span id="balance"></span> USD</b></p>
+<p>SOLDE : <b><span id="balance"></span> <span id="currency">USD</span></b></p>
+<select id="currencySelect" onchange="updateBalance()">
+<option value="USD">USD</option>
+<option value="CDF">CDF</option>
+</select>
 </div>
 
 <div class="actions">
 <div class="action" onclick="openP('pay')">💳 Paiement</div>
-<div class="action" onclick="openP('cashin')">➕ Cash‑in</div>
-<div class="action" onclick="openP('cashout')">➖ Cash‑out</div>
+<div class="action" onclick="openP('cashin')">➕ Cash-in</div>
+<div class="action" onclick="openP('cashout')">➖ Cash-out</div>
+</div>
+
+<div id="pay" class="panel hidden">
+<input id="payId" placeholder="ID GoPay destinataire" oninput="fetchRecipientName('pay')">
+<input id="payName" disabled placeholder="Nom destinataire">
+<input id="payAmount" type="number" placeholder="Montant">
+<button onclick="pay()">Confirmer</button>
+<div id="payQR"></div>
+</div>
+
+<div id="cashin" class="panel hidden">
+<input id="cinAmount" type="number" placeholder="Montant">
+<button onclick="cashin()">Valider</button>
+</div>
+
+<div id="cashout" class="panel hidden">
+<input id="coutId" placeholder="ID GoPay destinataire" oninput="fetchRecipientName('cout')">
+<input id="coutName" disabled placeholder="Nom destinataire">
+<input id="coutAmount" type="number" placeholder="Montant">
+<button onclick="cashout()">Confirmer</button>
+</div>
+
+<div id="kyc" class="panel hidden">
+<h3>KYC – Vérification légère</h3>
+<select id="kycDocType">
+<option value="">Sélectionner type document</option>
+<option value="CNI">CNI</option>
+<option value="Passport">Passport</option>
+<option value="Permis">Permis</option>
+</select>
+<input id="kycDocNumber" placeholder="Numéro document">
+<button onclick="submitKYC()">Soumettre KYC</button>
+<p>Status KYC : <span id="kycStatus">none</span></p>
 </div>
 
 <div class="panel">
-<h3>Mes activités récentes</h3>
+<h3>Activités récentes</h3>
 <div id="myTx"></div>
 
-<h3 style="margin-top:20px">Activités globales</h3>
+<h3 style="margin-top:20px">Activités publiques</h3>
 <div id="marketTx"></div>
 </div>
-</div>
-
-<!-- PAGES LEGALES -->
-<div id="legal" class="panel hidden"><h3>Qui sommes‑nous</h3><p>GoPay Africa est une plateforme panafricaine de paiement digital sécurisé.</p></div>
-<div id="faq" class="panel hidden"><h3>FAQ</h3><p>Transactions instantanées, sécurité bancaire, support 24/7.</p></div>
-<div id="services" class="panel hidden"><h3>Nos services</h3><p>Paiement, Cash‑in, Cash‑out, Carte virtuelle.</p></div>
-<div id="privacy" class="panel hidden"><h3>Confidentialité</h3><p>Données protégées selon standards financiers.</p></div>
-<div id="contact" class="panel hidden"><h3>Contact</h3><p>Email : support@gopay.africa</p></div>
 
 <footer>
-<a onclick="show('legal')">Qui sommes‑nous</a> |
+<a onclick="show('legal')">Qui sommes-nous</a> |
 <a onclick="show('faq')">FAQ</a> |
 <a onclick="show('services')">Nos services</a> |
 <a onclick="show('privacy')">Confidentialité</a> |
@@ -139,51 +171,160 @@ firebase.initializeApp({
 });
 const auth=firebase.auth(),db=firebase.firestore();
 
+/* NAVIGATION */
 function toggleMenu(){menu.style.display=menu.style.display==="block"?"none":"block"}
 function show(id){
  document.querySelectorAll(".panel,#dash").forEach(d=>d.classList.add("hidden"));
  document.getElementById(id)?.classList.remove("hidden");
  menu.style.display="none";
 }
-function openP(id){["pay","cashin","cashout"].forEach(x=>document.getElementById(x)?.classList.add("hidden"));}
+function openP(id){
+ ["pay","cashin","cashout"].forEach(x=>document.getElementById(x).classList.add("hidden"));
+ document.getElementById(id).classList.remove("hidden");
+}
 
+/* UTIL */
 function genId(){return "GP-"+Math.random().toString(36).substr(2,8).toUpperCase()}
 
+/* AUTH */
 function register(){
  auth.createUserWithEmailAndPassword(rEmail.value,rPass.value).then(c=>{
-  db.collection("users").doc(c.user.uid).set({name:rName.value,gid:genId(),balance:50});
-  alert("Compte créé");
+  db.collection("users").doc(c.user.uid).set({
+   name:rName.value,
+   gid:genId(),
+   balance:{USD:50,CDF:150000},
+   kyc:{status:"none"}
+  }).then(()=>alert("Compte créé"));
  });
 }
 
 async function login(){
+ if(!lEmail.value || !lPass.value){alert("Remplissez tous les champs");return;}
+ const cred=await auth.signInWithEmailAndPassword(lEmail.value,lPass.value);
  const snap=await db.collection("users").doc(auth.currentUser.uid).get();
  const d=snap.data();
  cardName.textContent=d.name;
  cardId.textContent=d.gid;
- balance.textContent=d.balance.toFixed(2);
+ balance.textContent=d.balance.USD.toFixed(2);
+ document.getElementById("currencySelect").value="USD";
+ document.getElementById("kycStatus").textContent=d.kyc.status;
  show("dash");
- loadMyTx();
+generateQRCode(d.gid);
+loadMyTx();
+updateBalance();
 }
 
+/* CARD CLICK */
+const card=document.getElementById("card");
+card.onclick=()=>card.classList.toggle("flip");
+
+/* BALANCE & MULTI-DEVISE */
+function updateBalance(){
+ const cur=document.getElementById("currencySelect").value;
+ document.getElementById("currency").textContent=cur;
+ db.collection("users").doc(auth.currentUser.uid).get().then(snap=>{
+   const d=snap.data();
+   balance.textContent=d.balance[cur].toFixed(2);
+ });
+}
+
+/* PAYMENTS */
+async function fetchRecipientName(t){
+ const id=t==="pay"?payId.value:coutId.value;
+ const f=t==="pay"?payName:coutName;
+ if(!id){f.value="";return;}
+ const q=await db.collection("users").where("gid","==",id).get();
+ f.value=q.empty?"ID invalide":q.docs[0].data().name;
+}
+
+async function pay(){
+ const cur=document.getElementById("currencySelect").value;
+ const amt=parseFloat(payAmount.value);
+ const me=await db.collection("users").doc(auth.currentUser.uid).get();
+ const dest=await db.collection("users").where("gid","==",payId.value).get();
+ if(dest.empty||me.data().balance[cur]<amt) return alert("Erreur ou limite dépassée");
+ // Vérification limite KYC
+ const status=me.data().kyc.status;
+ const limits={USD:{none:100,verified:5000},CDF:{none:300000,verified:10000000}};
+ if(amt>limits[cur][status]) return alert("Limite de transaction dépassée pour votre statut KYC");
+ await db.collection("users").doc(auth.currentUser.uid).update({
+   [`balance.${cur}`]:firebase.firestore.FieldValue.increment(-amt)
+ });
+ await db.collection("users").doc(dest.docs[0].id).update({
+   [`balance.${cur}`]:firebase.firestore.FieldValue.increment(amt)
+ });
+ await db.collection("tx").add({from:me.data().gid,to:payId.value,type:"Paiement",amount:amt,currency:cur,date:new Date()});
+ loadMyTx();
+ generateQRCode(payId.value);
+ updateBalance();
+}
+
+async function cashin(){
+ const cur=document.getElementById("currencySelect").value;
+ const amt=parseFloat(cinAmount.value);
+ await db.collection("users").doc(auth.currentUser.uid).update({
+   [`balance.${cur}`]:firebase.firestore.FieldValue.increment(amt)
+ });
+ await db.collection("tx").add({type:"Cash-in",amount:amt,currency:cur,date:new Date()});
+ loadMyTx();
+ updateBalance();
+}
+
+async function cashout(){
+ const cur=document.getElementById("currencySelect").value;
+ const amt=parseFloat(coutAmount.value);
+ const me=await db.collection("users").doc(auth.currentUser.uid).get();
+ const dest=await db.collection("users").where("gid","==",coutId.value).get();
+ if(dest.empty||me.data().balance[cur]<amt) return alert("Erreur ou limite dépassée");
+ await db.collection("users").doc(auth.currentUser.uid).update({
+   [`balance.${cur}`]:firebase.firestore.FieldValue.increment(-amt)
+ });
+ await db.collection("users").doc(dest.docs[0].id).update({
+   [`balance.${cur}`]:firebase.firestore.FieldValue.increment(amt)
+ });
+ await db.collection("tx").add({from:me.data().gid,to:coutId.value,type:"Cash-out",amount:amt,currency:cur,date:new Date()});
+ loadMyTx();
+ updateBalance();
+}
+
+/* ACTIVITES RECENTES */
 async function loadMyTx(){
  myTx.innerHTML="";
- const snap=await db.collection("tx")
- .where("from","==",cardId.textContent)
- .orderBy("date","desc").limit(6).get();
- snap.forEach(d=>{const t=d.data();myTx.innerHTML+=`<div class="tx">${t.type} • ${t.amount} USD</div>`});
+ const snap=await db.collection("tx").where("from","==",cardId.textContent).orderBy("date","desc").limit(5).get();
+ snap.forEach(d=>{const t=d.data(); myTx.innerHTML+=`<div class="tx">${t.type} • ${t.amount} ${t.currency}</div>`});
 }
 
-/* BINANCE STYLE */
-const names=["Ali M.","Sarah L.","Jean K.","Fatou B.","Chris T.","David R.","Linda S."];
-setInterval(()=>{
+/* ACTIVITES PUBLIQUES BINANCE-LIKE */
+const names=["Ali M.","Sarah L.","Jean K.","Mohamed A.","Linda S.","David R.","Fatou B.","Chris T."];
+function marketFlow(){
  const tx=document.createElement("div");
  tx.className="tx";
- tx.innerHTML=`${names[Math.floor(Math.random()*names.length)]} • ${(Math.random()>0.5?"Paiement":"Cash‑out")} • ${(Math.random()*800+50).toFixed(2)} USD`;
+ const cur=Math.random()>0.5?"USD":"CDF";
+ tx.innerHTML=`${names[Math.floor(Math.random()*names.length)]} • ${Math.random()>0.5?"Paiement":"Cash-out"} • ${(Math.random()*900+20).toFixed(2)} ${cur}`;
  marketTx.prepend(tx);
- if(marketTx.children.length>6)marketTx.lastChild.remove();
-},2500);
+ if(marketTx.children.length>6) marketTx.removeChild(marketTx.lastChild);
+}
+setInterval(marketFlow,3000);
 
+/* QR CODE */
+function generateQRCode(id){
+ const container=payQR;
+ container.innerHTML="";
+ QRCode.toCanvas(container,id,{width:150,height:150},function(err){if(err)console.error(err)});
+}
+
+/* KYC LIGHT */
+function submitKYC(){
+ const docType=document.getElementById("kycDocType").value;
+ const docNum=document.getElementById("kycDocNumber").value;
+ if(!docType || !docNum) return alert("Remplissez tous les champs KYC");
+ db.collection("users").doc(auth.currentUser.uid).update({
+   kyc:{status:"pending",docType:docType,docNum:docNum}
+ }).then(()=>alert("KYC soumis pour validation admin"));
+ document.getElementById("kycStatus").textContent="pending";
+}
+
+/* LOGOUT */
 function logout(){auth.signOut();show("home")}
 </script>
 
