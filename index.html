@@ -34,6 +34,21 @@ header{background:#012b28;padding:12px 20px;display:flex;justify-content:space-b
 
 footer{margin-top:30px;padding:20px;text-align:center;font-size:14px;opacity:.9;}
 footer h4{color:#5eead4;margin-bottom:6px;}
+  .btn-3d{
+  background: linear-gradient(145deg,#00c6ff,#0072ff);
+  border:none;
+  padding:12px 20px;
+  border-radius:12px;
+  color:white;
+  font-weight:bold;
+  box-shadow:0 6px 15px rgba(0,0,0,0.3);
+  transition:0.3s;
+}
+
+.btn-3d:hover{
+  transform:translateY(-3px);
+  box-shadow:0 10px 20px rgba(0,0,0,0.4);
+}
 </style>
 </head>
 
@@ -288,6 +303,107 @@ function logout(){
 auth.signOut();
 document.body.style.background="#061e1c";
 show("home");
+}
+  /* ===== SESSION BANCAIRE PERSISTANTE ===== */
+
+firebase.auth().onAuthStateChanged(user => {
+  if(user){
+    loadUserData(user.uid);
+    show("dashboard");
+  }
+});
+
+/* ===== GENERATION ID UNIQUE UTILISATEUR ===== */
+
+function generateUserID(){
+  return "GP" + Math.floor(100000 + Math.random()*900000);
+}
+
+/* ===== AVATAR AUTOMATIQUE ===== */
+
+function generateAvatar(name){
+  return `https://ui-avatars.com/api/?name=${name}&background=0D8ABC&color=fff`;
+}
+
+/* ===== CARTE BIOMETRIQUE ===== */
+
+function generateCard(){
+  return {
+    cardNumber: "5314 " + Math.floor(1000+Math.random()*9000) + " " + Math.floor(1000+Math.random()*9000) + " " + Math.floor(1000+Math.random()*9000),
+    biometricCode: Math.floor(100000 + Math.random()*900000)
+  }
+}
+
+/* ===== MULTI DEVISE ===== */
+
+const exchangeRates = {
+  USD: 1,
+  CDF: 2800
+};
+
+function convertCurrency(amount, from, to){
+  return (amount/exchangeRates[from]) * exchangeRates[to];
+}
+
+/* ===== DOUBLE SIGNATURE WALLET ===== */
+
+function verifyDoubleSignature(pin, otp){
+  if(pin.length === 4 && otp.length === 6){
+    return true;
+  }
+  return false;
+}
+
+/* ===== NOTIFICATION TRANSACTION ===== */
+
+function notifyUser(message){
+  alert("Notification GoPay : " + message);
+}
+
+/* ===== HISTORIQUE TRANSACTION REEL ===== */
+
+function saveTransaction(userId, type, amount){
+  db.collection("transactions").add({
+    userId,
+    type,
+    amount,
+    date: new Date()
+  });
+}
+
+/* ===== KYC SIMPLIFIE ===== */
+
+function submitKYC(userId, docURL){
+  db.collection("kyc").doc(userId).set({
+    document: docURL,
+    status: "pending"
+  });
+}
+
+/* ===== ROLE UTILISATEUR ===== */
+
+function assignRole(email){
+  if(email.includes("admin")){
+    return "admin";
+  }
+  if(email.includes("agent")){
+    return "agent";
+  }
+  return "client";
+}
+
+/* ===== DASHBOARD ANALYTICS ADMIN ===== */
+
+function loadAdminAnalytics(){
+  db.collection("transactions").get().then(snapshot=>{
+    document.getElementById("totalTransactions").innerText = snapshot.size;
+  });
+}
+
+/* ===== API AGENT SIMULE ===== */
+
+function agentDeposit(agentID, clientID, amount){
+  notifyUser("Agent " + agentID + " a crédité " + amount);
 }
 </script>
 
