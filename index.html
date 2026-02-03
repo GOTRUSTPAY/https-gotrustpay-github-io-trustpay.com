@@ -1,216 +1,359 @@
-<!DOCTYPE html><html lang="fr">
+<!DOCTYPE html>
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
 <title>GoPay Africa PRO</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet"><style>
+
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+
+<style>
 body{margin:0;font-family:Roboto;background:#061e1c;color:#e6fffa;}
 header{background:#012b28;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;}
 .logo-text{font-size:24px;font-weight:700;color:#5eead4;}
 .menu-btn{font-size:28px;cursor:pointer;}
+
 .menu{display:none;position:absolute;top:60px;right:20px;background:#043837;border-radius:12px;overflow:hidden;z-index:100;}
 .menu a{display:block;padding:12px;color:#5eead4;text-decoration:none;cursor:pointer;}
 .menu a:hover{background:#065f5b;}
+
 main{max-width:1000px;margin:auto;padding:20px;}
 .panel{background:#043837;padding:20px;border-radius:18px;margin-top:20px;}
 .hidden{display:none;}
 
-.card{background:linear-gradient(135deg,#0b3c39,#021f1d);border-radius:22px;padding:22px;box-shadow:0 20px 40px rgba(0,0,0,.6);cursor:pointer;transition:.6s;transform-style:preserve-3d;position:relative;height:220px;}
-.card-inner{position:relative;width:100%;height:100%;transition:0.6s;transform-style:preserve-3d;}
-.card.flip .card-inner{transform:rotateY(180deg);}
-.card-front,.card-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:22px;}
-.card-back{transform:rotateY(180deg);display:flex;justify-content:center;align-items:center;}
+.card{
+background:linear-gradient(135deg,#0b3c39,#021f1d);
+border-radius:22px;
+padding:22px;
+box-shadow:0 20px 40px rgba(0,0,0,.6);
+cursor:pointer;
+transition:.6s;
+position:relative;
+height:220px;
+}
+
+.card-number{font-size:18px;margin-top:20px;letter-spacing:2px;}
 
 .actions{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:20px;}
-.action{background:#14b8a6;padding:15px;border-radius:14px;text-align:center;font-weight:700;cursor:pointer;}
-.action:hover{background:#2dd4bf;}
 
-.tx{background:#065f5b;padding:10px;border-radius:10px;margin-bottom:8px;font-size:14px;}
-</style><script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script><script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script></head>
-<body><header>
+.action{
+background:#14b8a6;
+padding:15px;
+border-radius:14px;
+text-align:center;
+font-weight:700;
+cursor:pointer;
+}
+
+input,select,button{
+width:100%;
+padding:10px;
+margin-top:10px;
+border-radius:10px;
+border:none;
+}
+
+button{background:#14b8a6;font-weight:700;cursor:pointer;}
+
+.tx{
+background:#065f5b;
+padding:10px;
+border-radius:10px;
+margin-bottom:8px;
+}
+</style>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+</head>
+
+<body>
+
+<header>
 <div class="logo-text">GoPay Africa PRO</div>
 <div class="menu-btn" onclick="toggleMenu()">☰</div>
-</header><div class="menu" id="menu">
+</header>
+
+<div class="menu" id="menu">
 <a onclick="show('home')">Accueil</a>
 <a onclick="show('login')">Connexion</a>
-<a id="adminLink" onclick="show('admin')">Admin</a>
+<a id="adminLink" onclick="show('admin')">Admin Panel</a>
 <a id="agentLink" onclick="show('agentPanel')">Agent Panel</a>
 <a onclick="logout()">Déconnexion</a>
-</div><main><div id="home" class="panel">
+</div>
+
+<main>
+
+<div id="home" class="panel">
 <h2>Paiements Digitaux Africains</h2>
 <div id="homeQR"></div>
-</div><div id="login" class="panel hidden">
+</div>
+
+<div id="login" class="panel hidden">
 <h3>Connexion</h3>
 <input id="lEmail" placeholder="Email">
 <input id="lPass" type="password" placeholder="Mot de passe">
 <button onclick="login()">Connexion</button>
-<button onclick="show('register')">Créer un compte</button>
-</div><div id="register" class="panel hidden">
-<h3>Créer un compte</h3>
+<button onclick="show('register')">Créer compte</button>
+</div>
+
+<div id="register" class="panel hidden">
+<h3>Créer compte</h3>
 <input id="rName" placeholder="Nom complet">
 <input id="rEmail" placeholder="Email">
 <input id="rPass" type="password" placeholder="Mot de passe">
+
 <select id="rRole">
 <option value="client">Client</option>
 <option value="agent">Agent</option>
 </select>
-<input type="file" id="rPhoto">
-<button onclick="register()">Créer le compte</button>
-</div><div id="dash" class="hidden">
-<div class="card" id="card">
-<div class="card-inner">
-<div class="card-front">
-<h3>Carte VISA / Master Simulation</h3>
+
+<button onclick="register()">Créer compte</button>
+</div>
+
+<div id="dash" class="hidden">
+
+<div class="card">
+<h3>Carte VISA GoPay</h3>
 <div id="cardName"></div>
-<div id="cardId"></div>
-<p>Solde : <b id="balance">0</b></p>
+<div id="cardNumber" class="card-number"></div>
+<div>IBAN: <span id="cardIban"></span></div>
+<p>Solde : <b id="balance">0</b> USD</p>
 </div>
-<div class="card-back">
-<div id="cardQR"></div>
-</div>
-</div>
-</div><div class="actions">
+
+<div class="actions">
 <div class="action" onclick="openP('pay')">Paiement</div>
-<div class="action" onclick="openP('wallets')">Wallets</div>
-<div class="action" onclick="openP('kyc')">KYC</div>
-</div><div id="wallets" class="panel hidden">
-<h3>Multi Wallet</h3>
-<div id="walletList"></div>
-</div><div id="kyc" class="panel hidden">
-<h3>KYC Upload</h3>
-<input type="file" id="kycFile">
-<button onclick="uploadKYC()">Envoyer</button>
-</div><div class="panel">
+<div class="action" onclick="openP('cashin')">Cash‑in</div>
+<div class="action" onclick="openP('crypto')">USDT</div>
+</div>
+
+<div id="pay" class="panel hidden">
+<input id="payId" placeholder="ID destinataire">
+<input id="payAmount" type="number" placeholder="Montant">
+<button onclick="pay()">Envoyer</button>
+</div>
+
+<div id="cashin" class="panel hidden">
+<input id="cinAmount" type="number">
+<button onclick="cashin()">Valider</button>
+</div>
+
+<div id="crypto" class="panel hidden">
+<button onclick="buyUSDT()">Acheter USDT</button>
+</div>
+
+<div class="panel">
 <h3>Historique</h3>
 <div id="myTx"></div>
+
 <h3>Activités publiques</h3>
 <div id="marketTx"></div>
 </div>
-</div><div id="admin" class="panel hidden">
-<h3>Admin Analytics</h3>
-<div id="adminStats"></div>
+
+</div>
+
+<div id="admin" class="panel hidden">
+<h3>Dashboard Admin</h3>
+<button onclick="loadAnalytics()">Voir Analytics</button>
 <table id="usersTable"></table>
-</div><div id="agentPanel" class="panel hidden">
-<h3>Agent Panel</h3>
+</div>
+
+<div id="agentPanel" class="panel hidden">
+<h3>Clients Agent</h3>
 <div id="agentClients"></div>
-</div></main><script>
+</div>
+
+</main>
+
+<script>
+
+// FIREBASE
 firebase.initializeApp({
 apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
 authDomain:"gotrustpay-e6524.firebaseapp.com",
-projectId:"gotrustpay-e6524",
-storageBucket:"gotrustpay-e6524.appspot.com"
+projectId:"gotrustpay-e6524"
 });
 
 const auth=firebase.auth();
 const db=firebase.firestore();
-const storage=firebase.storage();
 
-function toggleMenu(){menu.style.display=(menu.style.display==='block')?'none':'block';}
+// NAVIGATION
+function toggleMenu(){menu.style.display=menu.style.display==="block"?"none":"block";}
 
 function show(id){
-document.querySelectorAll('.panel,#dash').forEach(x=>x.classList.add('hidden'));
-document.getElementById(id)?.classList.remove('hidden');
+document.querySelectorAll(".panel,#dash").forEach(e=>e.classList.add("hidden"));
+document.getElementById(id)?.classList.remove("hidden");
+menu.style.display="none";
 }
 
-function genId(){return 'GP-'+Math.random().toString(36).substring(2,8).toUpperCase();}
+// UTIL
+function genId(){return "GP-"+Math.random().toString(36).substr(2,8).toUpperCase();}
+function generateOTP(){return Math.floor(100000+Math.random()*900000);}
+function generateCard(){return {
+number:"4"+Math.floor(Math.random()*1e15),
+iban:"GP"+Math.floor(Math.random()*1e9)
+};}
 
-function genIBAN(){return 'AF'+Math.floor(Math.random()*9999999999999999);}
-
+// REGISTER
 async function register(){
+
+const card=generateCard();
+
 const cred=await auth.createUserWithEmailAndPassword(rEmail.value,rPass.value);
-await db.collection('users').doc(cred.user.uid).set({
+
+await db.collection("users").doc(cred.user.uid).set({
 name:rName.value,
 email:rEmail.value,
-role:rRole.value,
-balance:50,
-wallets:{USD:50,RWF:0,CDF:0,USDT:0},
 gid:genId(),
-iban:genIBAN(),
-kyc:'none'
+balance:50,
+wallet:{USD:50,USDT:0},
+card:card,
+role:rRole.value
 });
-alert('Compte créé');
-show('login');
+
+alert("Bienvenue chez GoPay Africa");
+
+rName.value="";
+rEmail.value="";
+rPass.value="";
+
+login();
 }
 
+// LOGIN
 async function login(){
+
 const cred=await auth.signInWithEmailAndPassword(lEmail.value,lPass.value);
-const snap=await db.collection('users').doc(cred.user.uid).get();
+const snap=await db.collection("users").doc(auth.currentUser.uid).get();
 const d=snap.data();
+
 cardName.textContent=d.name;
-cardId.textContent=d.gid+' / '+d.iban;
-balance.textContent=d.balance;
-QRCode.toCanvas(cardQR,d.gid);
-loadWallets();
+cardNumber.textContent=d.card.number;
+cardIban.textContent=d.card.iban;
+balance.textContent=d.balance.toFixed(2);
+
+if(d.role==="admin"){show("admin");loadAdmin();}
+else if(d.role==="agent"){show("agentPanel");loadAgentClients();}
+else show("dash");
+
+lEmail.value="";
+lPass.value="";
+}
+
+// PAY
+async function pay(){
+
+const otp=generateOTP();
+if(prompt("OTP:"+otp)!=otp) return;
+
+const amt=parseFloat(payAmount.value);
+
+const me=await db.collection("users").doc(auth.currentUser.uid).get();
+const dest=await db.collection("users").where("gid","==",payId.value).get();
+
+if(dest.empty||me.data().balance<amt)return alert("Erreur");
+
+await db.collection("users").doc(auth.currentUser.uid)
+.update({balance:firebase.firestore.FieldValue.increment(-amt)});
+
+await db.collection("users").doc(dest.docs[0].id)
+.update({balance:firebase.firestore.FieldValue.increment(amt)});
+
+await db.collection("tx").add({
+from:me.data().gid,
+to:payId.value,
+type:"Paiement",
+amount:amt,
+date:new Date()
+});
+
 loadMyTx();
-if(d.role==='admin'){show('admin');loadAdmin();}
-else if(d.role==='agent'){show('agentPanel');loadAgentClients();}
-else show('dash');
 }
 
-async function loadWallets(){
-const snap=await db.collection('users').doc(auth.currentUser.uid).get();
-const w=snap.data().wallets;
-walletList.innerHTML='';
-Object.keys(w).forEach(k=>{
-walletList.innerHTML+=`<div class="tx">${k} : ${w[k]}</div>`;
+// CASHIN
+async function cashin(){
+const amt=parseFloat(cinAmount.value);
+
+await db.collection("users").doc(auth.currentUser.uid)
+.update({balance:firebase.firestore.FieldValue.increment(amt)});
+
+await db.collection("tx").add({
+type:"Cash-in",
+amount:amt,
+date:new Date()
 });
+
+loadMyTx();
 }
 
-async function uploadKYC(){
-const file=kycFile.files[0];
-const ref=storage.ref().child('kyc/'+auth.currentUser.uid);
-await ref.put(file);
-await db.collection('users').doc(auth.currentUser.uid).update({kyc:'pending'});
-alert('KYC envoyé');
-}
+// CRYPTO
+function buyUSDT(){alert("USDT acheté (simulation)");}
 
+// HISTORIQUE
 async function loadMyTx(){
-myTx.innerHTML='';
-const snap=await db.collection('tx').limit(10).get();
+myTx.innerHTML="";
+const snap=await db.collection("tx")
+.orderBy("date","desc")
+.limit(5).get();
+
 snap.forEach(d=>{
-myTx.innerHTML+=`<div class="tx">${d.data().type} - ${d.data().amount}</div>`;
+const t=d.data();
+myTx.innerHTML+=`<div class="tx">${t.type} • ${t.amount} USD</div>`;
 });
 }
 
-const usedNames=new Set();
-const allNames=['Ali','Jean','Fatou','Amina','Chris','Linda','Kofi','Sarah','Emma','David','Yann','Moussa'];
+// ADMIN
+async function loadAdmin(){
+const users=await db.collection("users").get();
+usersTable.innerHTML="<tr><th>Nom</th><th>Email</th><th>Solde</th></tr>";
+
+users.forEach(doc=>{
+const u=doc.data();
+usersTable.innerHTML+=`<tr><td>${u.name}</td><td>${u.email}</td><td>${u.balance}</td></tr>`;
+});
+}
+
+// AGENT
+async function loadAgentClients(){
+agentClients.innerHTML="";
+const snap=await db.collection("users").where("role","==","client").get();
+snap.forEach(doc=>{
+const u=doc.data();
+agentClients.innerHTML+=`<div class="tx">${u.name} • ${u.balance} USD</div>`;
+});
+}
+
+// ANALYTICS
+async function loadAnalytics(){
+const users=await db.collection("users").get();
+const tx=await db.collection("tx").get();
+alert("Users:"+users.size+" Transactions:"+tx.size);
+}
+
+// PUBLIC ACTIVITY UNIQUE
+let names=["Ali M","Sarah L","Jean K","Mohamed A","Grace U","Patrick N"];
+function uniqueName(){
+if(names.length===0) names=["Client Premium"];
+return names.splice(Math.floor(Math.random()*names.length),1)[0];
+}
 
 function marketFlow(){
-let name;
-do{name=allNames[Math.floor(Math.random()*allNames.length)];}
-while(usedNames.has(name));
-usedNames.add(name);
-
-const div=document.createElement('div');
-div.className='tx';
-div.innerHTML=name+' Paiement '+(Math.random()*500).toFixed(2);
-marketTx.prepend(div);
-if(marketTx.children.length>6)marketTx.removeChild(marketTx.lastChild);
+marketTx.innerHTML=`<div class="tx">${uniqueName()} • Paiement ${(Math.random()*900).toFixed(2)} USD</div>`+marketTx.innerHTML;
 }
-setInterval(marketFlow,3000);
+setInterval(marketFlow,4000);
 
-async function loadAdmin(){
-const table=document.getElementById('usersTable');
-table.innerHTML='<tr><th>Nom</th><th>Email</th><th>KYC</th></tr>';
-const users=await db.collection('users').get();
-users.forEach(doc=>{
-const u=doc.data();
-table.innerHTML+=`<tr><td>${u.name}</td><td>${u.email}</td><td>${u.kyc}</td></tr>`;
-});
+// QR HOME
+QRCode.toCanvas(homeQR,"GoPay Africa");
+
+// LOGOUT
+function logout(){
+auth.signOut();
+show("home");
 }
 
-async function loadAgentClients(){
-const box=document.getElementById('agentClients');
-box.innerHTML='';
-const users=await db.collection('users').where('role','==','client').get();
-users.forEach(doc=>{
-const u=doc.data();
-box.innerHTML+=`<div class="tx">${u.name} - ${u.balance}</div>`;
-});
-}
-
-function logout(){auth.signOut();show('home');}
-
-QRCode.toCanvas(homeQR,'GoPay Africa');
-</script></body>
+</script>
+</body>
 </html>
