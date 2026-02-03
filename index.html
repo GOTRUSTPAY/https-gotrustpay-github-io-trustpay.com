@@ -5,6 +5,7 @@
 <title>GoPay Africa</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
 <style>
 body{margin:0;font-family:Roboto;background:#061e1c;color:#e6fffa}
 header{background:#012b28;padding:12px 20px;display:flex;justify-content:space-between;align-items:center}
@@ -12,15 +13,16 @@ header{background:#012b28;padding:12px 20px;display:flex;justify-content:space-b
 .logo-wrap img{height:40px}
 .logo-text{font-size:20px;font-weight:700;color:#5eead4}
 .menu-btn{font-size:28px;cursor:pointer}
+
 .menu{display:none;position:absolute;top:60px;right:20px;background:#043837;border-radius:12px;overflow:hidden;z-index:100}
-.menu a{display:block;padding:12px 18px;color:#5eead4;text-decoration:none}
+.menu a{display:block;padding:12px 18px;color:#5eead4;text-decoration:none;cursor:pointer}
 .menu a:hover{background:#065f5b}
 
 main{max-width:1000px;margin:auto;padding:20px}
 .panel{background:#043837;padding:20px;border-radius:18px;margin-top:20px}
 .hidden{display:none}
 
-/* Card style pro bancaire */
+/* Card style bancaire pro */
 .card{
 background:linear-gradient(135deg,#0b3c39,#021f1d);
 border-radius:20px;padding:22px;box-shadow:0 20px 40px rgba(0,0,0,.6);
@@ -41,15 +43,17 @@ button:hover{background:#2dd4bf}
 
 .tx{background:#065f5b;padding:10px;border-radius:10px;margin-bottom:8px;font-size:14px}
 
-footer{text-align:center;margin-top:30px;font-size:14px;opacity:.8;display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
-footer a{color:#5eead4;text-decoration:none}
+footer{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;text-align:center;margin-top:30px;font-size:14px;opacity:.8}
+footer a{color:#5eead4;text-decoration:none;cursor:pointer}
 footer a:hover{text-decoration:underline}
 </style>
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 </head>
+
 <body>
 
 <header>
@@ -133,8 +137,7 @@ footer a:hover{text-decoration:underline}
 <div id="marketTx"></div>
 </div>
 
-</main>
-
+<!-- Footer avec pages légales -->
 <footer>
 <a onclick="show('legal')">Qui sommes-nous</a> |
 <a onclick="show('faq')">FAQ</a> |
@@ -142,6 +145,8 @@ footer a:hover{text-decoration:underline}
 <a onclick="show('privacy')">Confidentialité</a> |
 <a onclick="show('contact')">Contact</a>
 </footer>
+
+</main>
 
 <script>
 firebase.initializeApp({
@@ -151,7 +156,7 @@ firebase.initializeApp({
 });
 const auth=firebase.auth(),db=firebase.firestore();
 
-/* NAV */
+/* NAVIGATION */
 function toggleMenu(){menu.style.display=menu.style.display==="block"?"none":"block"}
 function show(id){
  document.querySelectorAll(".panel,#dash").forEach(d=>d.classList.add("hidden"));
@@ -169,9 +174,8 @@ function genId(){return "GP-"+Math.random().toString(36).substr(2,8).toUpperCase
 /* AUTH */
 function register(){
  auth.createUserWithEmailAndPassword(rEmail.value,rPass.value).then(c=>{
-  db.collection("users").doc(c.user.uid).set({
-   name:rName.value,gid:genId(),balance:50
-  }).then(()=>alert("Compte créé"));
+  db.collection("users").doc(c.user.uid).set({name:rName.value,gid:genId(),balance:50})
+  .then(()=>alert("Compte créé"));
  });
 }
 
@@ -231,17 +235,14 @@ async function cashout(){
  loadMyTx();
 }
 
-/* RECENT ACTIVITIES */
+/* ACTIVITES RECENTES */
 async function loadMyTx(){
  myTx.innerHTML="";
  const snap=await db.collection("tx").where("from","==",cardId.textContent).orderBy("date","desc").limit(5).get();
- snap.forEach(d=>{
-  const t=d.data();
-  myTx.innerHTML+=`<div class="tx">${t.type} • ${t.amount} USD</div>`;
- });
+ snap.forEach(d=>{const t=d.data(); myTx.innerHTML+=`<div class="tx">${t.type} • ${t.amount} USD</div>`});
 }
 
-/* PUBLIC MARKET TX */
+/* ACTIVITES PUBLIQUES BINANCE-LIKE */
 const names=["Ali M.","Sarah L.","Jean K.","Mohamed A.","Linda S.","David R.","Fatou B.","Chris T."];
 function marketFlow(){
  const tx=document.createElement("div");
@@ -255,9 +256,12 @@ setInterval(marketFlow,3000);
 /* QR CODE */
 function generateQRCode(id){
  const container=payQR;
-container.innerHTML="";
-QRCode.toCanvas(container,id,{width:150,height:150},function(err){if(err)console.error(err)});
+ container.innerHTML="";
+ QRCode.toCanvas(container,id,{width:150,height:150},function(err){if(err)console.error(err)});
 }
+
+function logout(){auth.signOut();show("home")}
 </script>
+
 </body>
 </html>
