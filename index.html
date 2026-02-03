@@ -14,30 +14,39 @@ header{background:#012b28;padding:12px 20px;display:flex;justify-content:space-b
 .menu{display:none;position:absolute;top:60px;right:20px;background:#043837;border-radius:12px;overflow:hidden;z-index:100}
 .menu a{display:block;padding:12px 18px;color:#5eead4;text-decoration:none;cursor:pointer}
 .menu a:hover{background:#065f5b}
-
 main{max-width:1000px;margin:auto;padding:20px}
 .panel{background:#043837;padding:20px;border-radius:18px;margin-top:20px}
 .hidden{display:none}
-
 /* Card pro bancaire 3D */
-.card{background:linear-gradient(135deg,#0b3c39,#021f1d);border-radius:20px;padding:22px;box-shadow:0 20px 40px rgba(0,0,0,.6);cursor:pointer;transition:.6s;transform-style:preserve-3d;position:relative;}
+.card{background:linear-gradient(135deg,#0b3c39,#021f1d);border-radius:20px;padding:22px;box-shadow:0 20px 40px rgba(0,0,0,.6);cursor:pointer;transition:.6s;transform-style:preserve-3d;position:relative;perspective:1000px;}
+.card-inner{transition:.6s;transform-style:preserve-3d;position:relative;}
+.card.flip .card-inner{transform:rotateY(180deg);}
+.card-front,.card-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:20px;}
+.card-back{transform:rotateY(180deg);display:flex;justify-content:center;align-items:center;font-size:14px;color:#5eead4}
 .card h2{margin:0;font-size:16px;font-weight:500;opacity:.9}
 .card-number{font-size:20px;letter-spacing:3px;margin:18px 0}
 .card-row{display:flex;justify-content:space-between;font-size:13px;opacity:.9}
+.card-avatar{width:50px;height:50px;border-radius:50%;background:#e6fffa;margin-right:10px;object-fit:cover;}
 
+/* Actions */
 .actions{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:20px}
 .action{background:#14b8a6;padding:15px;border-radius:14px;text-align:center;font-weight:700;cursor:pointer}
 .action:hover{background:#2dd4bf}
 
+/* Inputs & Buttons */
 input,select,button{width:100%;padding:10px;margin-top:10px;border-radius:10px;border:none;font-family:Roboto}
 button{background:#14b8a6;font-weight:700;cursor:pointer}
 button:hover{background:#2dd4bf}
 
+/* Transactions */
 .tx{background:#065f5b;padding:10px;border-radius:10px;margin-bottom:8px;font-size:14px}
 
+/* Footer */
 footer{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;text-align:center;margin-top:30px;font-size:14px;opacity:.8}
 footer a{color:#5eead4;text-decoration:none;cursor:pointer}
 footer a:hover{text-decoration:underline}
+
+/* Table admin */
 table{width:100%;border-collapse:collapse;margin-top:15px}
 th,td{padding:10px;text-align:left;border-bottom:1px solid #065f5b}
 button.admin-btn{padding:5px 8px;margin-left:5px;font-size:12px}
@@ -45,10 +54,10 @@ button.admin-btn{padding:5px 8px;margin-left:5px;font-size:12px}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 </head>
 <body>
-
 <header>
 <div class="logo-wrap">
 <div class="logo-text">GoPay Africa</div>
@@ -91,17 +100,28 @@ button.admin-btn{padding:5px 8px;margin-left:5px;font-size:12px}
 <option value="client">Client</option>
 <option value="agent">Agent</option>
 </select>
+<input type="file" id="rPhoto" accept="image/*">
 <button onclick="register()">Créer un compte</button>
 </div>
 
 <!-- DASHBOARD USER -->
 <div id="dash" class="hidden">
 <div class="card" id="card">
+<div class="card-inner">
+<div class="card-front">
 <h2>GoPay • Virtual Card</h2>
+<div style="display:flex;align-items:center;">
+<img id="cardAvatar" class="card-avatar" src="">
 <div class="card-number" id="cardId"></div>
+</div>
 <div class="card-row"><span>TITULAIRE</span><span>EXP</span></div>
 <div class="card-row"><strong id="cardName"></strong><strong>12/29</strong></div>
 <p>SOLDE : <b><span id="balance"></span> <span id="currency">USD</span></b></p>
+</div>
+<div class="card-back">
+<div id="cardQR"></div>
+</div>
+</div>
 </div>
 
 <div class="actions">
@@ -156,41 +176,57 @@ button.admin-btn{padding:5px 8px;margin-left:5px;font-size:12px}
 <div id="agentClients"></div>
 </div>
 
+<!-- FAQ exemple -->
+<div id="faq" class="panel hidden">
+<h3>FAQ</h3>
+<p><b>Q:</b> Comment créer un compte ?<br><b>R:</b> Remplir le formulaire d'inscription et cliquer sur créer un compte.</p>
+<p><b>Q:</b> Comment faire un paiement ?<br><b>R:</b> Depuis votre tableau de bord, cliquez sur Paiement et suivez les instructions.</p>
+</div>
+
 <footer>
-<a onclick="show('legal')">Qui sommes-nous</a> |
+<a onclick="show('home')">Qui sommes-nous</a> |
 <a onclick="show('faq')">FAQ</a> |
 <a onclick="show('services')">Nos services</a> |
 <a onclick="show('privacy')">Confidentialité</a> |
 <a onclick="show('contact')">Contact</a>
 </footer>
-</main>
 
 <script>
+// Firebase config
 firebase.initializeApp({
  apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
  authDomain:"gotrustpay-e6524.firebaseapp.com",
- projectId:"gotrustpay-e6524"
+ projectId:"gotrustpay-e6524",
+ storageBucket:"gotrustpay-e6524.appspot.com"
 });
-const auth=firebase.auth(),db=firebase.firestore();
+const auth=firebase.auth(),db=firebase.firestore(),storage=firebase.storage();
 
-/* NAVIGATION */
+// Navigation
 function toggleMenu(){menu.style.display=menu.style.display==="block"?"none":"block"}
 function show(id){
  document.querySelectorAll(".panel,#dash").forEach(d=>d.classList.add("hidden"));
  document.getElementById(id)?.classList.remove("hidden");
+ localStorage.setItem('currentPage',id);
  menu.style.display="none";
 }
-function openP(id){
- ["pay","cashin","cashout"].forEach(x=>document.getElementById(x).classList.add("hidden"));
- document.getElementById(id).classList.remove("hidden");
+window.onload=function(){
+ const page=localStorage.getItem('currentPage')||'home';
+ show(page);
 }
 
-/* UTIL */
+// Util
 function genId(){return "GP-"+Math.random().toString(36).substr(2,8).toUpperCase()}
 
-/* AUTH */
+// Register
 async function register(){
  const role=rRole.value;
+ const file = rPhoto.files[0];
+ let photoURL = 'https://i.pravatar.cc/150?img=65'; // avatar par défaut
+ if(file){
+  const ref = storage.ref().child('profiles/'+Date.now()+'_'+file.name);
+  await ref.put(file);
+  photoURL = await ref.getDownloadURL();
+ }
  const cred = await auth.createUserWithEmailAndPassword(rEmail.value,rPass.value);
  await db.collection("users").doc(cred.user.uid).set({
   name:rName.value,
@@ -198,11 +234,13 @@ async function register(){
   gid:genId(),
   balance:50,
   kyc: role==='client'?'none':'verified',
-  role:role
+  role:role,
+  photo:photoURL
  });
  alert("Compte créé ✅");
 }
 
+// Login
 async function login(){
  if(!lEmail.value || !lPass.value){alert("Remplissez tous les champs");return;}
  const cred=await auth.signInWithEmailAndPassword(lEmail.value,lPass.value);
@@ -211,17 +249,18 @@ async function login(){
  cardName.textContent=d.name;
  cardId.textContent=d.gid;
  balance.textContent=d.balance.toFixed(2);
- if(d.role==='admin'){document.getElementById('adminLink').style.display='block'; document.getElementById('agentLink').style.display='none'; show('admin');}
- else if(d.role==='agent'){document.getElementById('agentLink').style.display='block'; document.getElementById('adminLink').style.display='none'; show('agentPanel'); loadAgentClients();}
+ cardAvatar.src=d.photo;
+ generateQRCode(d.gid,'cardQR');
+ loadMyTx();
+ if(d.role==='admin'){document.getElementById('adminLink').style.display='block'; document.getElementById('agentLink').style.display='none'; loadAdminKYC(); show('admin');}
+ else if(d.role==='agent'){document.getElementById('agentLink').style.display='block'; document.getElementById('adminLink').style.display='none'; loadAgentClients(); show('agentPanel');}
  else{document.getElementById('adminLink').style.display='none'; document.getElementById('agentLink').style.display='none'; show('dash');}
- generateQRCode(d.gid); loadMyTx();
 }
 
-/* CARD CLICK */
-const card=document.getElementById("card");
+// Card flip
 card.onclick=()=>card.classList.toggle("flip");
 
-/* TRANSACTION CHECK KYC */
+// Transaction KYC
 async function canTransact(uid, amount){
  const snap = await db.collection("users").doc(uid).get();
  const u = snap.data();
@@ -230,7 +269,7 @@ async function canTransact(uid, amount){
  return true;
 }
 
-/* PAYMENTS */
+// Fetch recipient
 async function fetchRecipientName(t){
  const id=t==="pay"?payId.value:coutId.value;
  const f=t==="pay"?payName:coutName;
@@ -239,6 +278,7 @@ async function fetchRecipientName(t){
  f.value=q.empty?"ID invalide":q.docs[0].data().name;
 }
 
+// Pay / Cash-in / Cash-out
 async function pay(){
  const amt=parseFloat(payAmount.value);
  if(!(await canTransact(auth.currentUser.uid, amt))){alert("KYC insuffisant"); return;}
@@ -248,9 +288,9 @@ async function pay(){
  await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});
  await db.collection("users").doc(dest.docs[0].id).update({balance:firebase.firestore.FieldValue.increment(amt)});
  await db.collection("tx").add({from:me.data().gid,to:payId.value,type:"Paiement",amount:amt,date:new Date()});
- loadMyTx(); generateQRCode(payId.value);
+ loadMyTx();
+ generateQRCode(payId.value,'payQR');
 }
-
 async function cashin(){
  const amt=parseFloat(cinAmount.value);
  if(!(await canTransact(auth.currentUser.uid, amt))){alert("KYC insuffisant"); return;}
@@ -258,7 +298,6 @@ async function cashin(){
  await db.collection("tx").add({type:"Cash-in",amount:amt,date:new Date()});
  loadMyTx();
 }
-
 async function cashout(){
  const amt=parseFloat(coutAmount.value);
  if(!(await canTransact(auth.currentUser.uid, amt))){alert("KYC insuffisant"); return;}
@@ -271,14 +310,14 @@ async function cashout(){
  loadMyTx();
 }
 
-/* ACTIVITES RECENTES */
+// Transactions récentes
 async function loadMyTx(){
  myTx.innerHTML="";
  const snap=await db.collection("tx").where("from","==",cardId.textContent).orderBy("date","desc").limit(5).get();
- snap.forEach(d=>{const t=d.data(); myTx.innerHTML+=`<div class="tx">${t.type} • ${t.amount} USD/CDF</div>`});
+ snap.forEach(d=>{const t=d.data(); myTx.innerHTML+=`<div class="tx">${t.type} • ${t.amount.toFixed(2)} USD/CDF</div>`});
 }
 
-/* PUBLIC MARKET TX */
+// Activités publiques
 const names=["Ali M.","Sarah L.","Jean K.","Mohamed A.","Linda S.","David R.","Fatou B.","Chris T."];
 function marketFlow(){
  const tx=document.createElement("div");
@@ -289,14 +328,14 @@ function marketFlow(){
 }
 setInterval(marketFlow,3000);
 
-/* QR CODE */
-function generateQRCode(id){
- const container=payQR;
+// QR Code
+function generateQRCode(id,containerId){
+ const container=document.getElementById(containerId);
  container.innerHTML="";
  QRCode.toCanvas(container,id,{width:150,height:150},function(err){if(err)console.error(err)});
 }
 
-/* ADMIN KYC */
+// Admin KYC
 async function loadAdminKYC(){
  const table=document.getElementById("usersTable");
  table.innerHTML="<tr><th>Nom</th><th>Email</th><th>Solde</th><th>KYC</th><th>Rôle</th><th>Actions</th></tr>";
@@ -304,29 +343,42 @@ async function loadAdminKYC(){
  users.forEach(doc=>{
   const u=doc.data();
   const row=document.createElement("tr");
-  row.innerHTML=`<td>${u.name}</td><td>${u.email||'-'}</td><td>${u.balance}</td><td>${u.kyc||'none'}</td><td>${u.role}</td>
-  <td>
-   ${u.kyc!=='verified'?`<button class="admin-btn" onclick="verifyKYC('${doc.id}')">✔️ Valider</button>`:''}
-   ${u.kyc==='pending'?`<button class="admin-btn" onclick="rejectKYC('${doc.id}')">❌ Refuser</button>`:''}
-  </td>`;
+  row.innerHTML=`<td>${u.name}</td><td>${u.email||'-'}</td><td>${u.balance.toFixed(2)}</td><td>${u.kyc||'none'}</td><td>${u.role}</td>
+  <td>${u.kyc!=='verified'?`<button class="admin-btn" onclick="verifyKYC('${doc.id}')">✔️ Valider</button>`:''} ${u.kyc==='pending'?`<button class="admin-btn" onclick="rejectKYC('${doc.id}')">❌ Refuser</button>`:''}</td>`;
   table.appendChild(row);
- });
+ });// Valider KYC
+async function verifyKYC(uid){
+    await db.collection("users").doc(uid).update({kyc:'verified'});
+    alert("KYC validé ✅");
+    loadAdminKYC(); // rafraîchir la table
 }
-async function verifyKYC(uid){await db.collection("users").doc(uid).update({kyc:'verified'}); loadAdminKYC(); alert("KYC validé ✅");}
-async function rejectKYC(uid){await db.collection("users").doc(uid).update({kyc:'none'}); loadAdminKYC(); alert("KYC refusé ❌");}
 
-/* AGENT PANEL */
+// Refuser KYC
+async function rejectKYC(uid){
+    await db.collection("users").doc(uid).update({kyc:'none'});
+    alert("KYC refusé ❌");
+    loadAdminKYC(); // rafraîchir la table
+}
+
+// Agent Panel
 async function loadAgentClients(){
- const container=document.getElementById("agentClients");
- container.innerHTML="";
- const users=await db.collection("users").where("role","==","client").get();
- users.forEach(doc=>{
-  const u=doc.data();
-  container.innerHTML+=`<div class="tx">${u.name} • ${u.gid} • Solde: ${u.balance} • KYC: ${u.kyc}</div>`;
- });
+    const container=document.getElementById("agentClients");
+    container.innerHTML="";
+    const users=await db.collection("users").where("role","==","client").get();
+    users.forEach(doc=>{
+        const u=doc.data();
+        container.innerHTML+=`<div class="tx"><strong>${u.name}</strong> • ${u.gid} • Solde: ${u.balance.toFixed(2)} • KYC: ${u.kyc}</div>`;
+    });
 }
 
-function logout(){auth.signOut();show("home"); document.getElementById('adminLink').style.display='none'; document.getElementById('agentLink').style.display='none';}
+// Déconnexion
+function logout(){
+    auth.signOut();
+    show("home");
+    document.getElementById('adminLink').style.display='none';
+    document.getElementById('agentLink').style.display='none';
+}
+
 </script>
 </body>
 </html>
