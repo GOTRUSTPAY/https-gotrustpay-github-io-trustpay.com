@@ -5,15 +5,13 @@
 <title>GoPay Africa</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-
 <style>
 body{margin:0;font-family:Roboto;background:#061e1c;color:#e6fffa}
 header{background:#012b28;padding:12px 20px;display:flex;justify-content:space-between;align-items:center}
 .logo-wrap{display:flex;align-items:center;gap:10px}
-.logo-wrap img{height:36px}
-.logo-text{font-size:20px;font-weight:700}
+.logo-wrap img{height:40px}
+.logo-text{font-size:20px;font-weight:700;color:#5eead4}
 .menu-btn{font-size:28px;cursor:pointer}
-
 .menu{display:none;position:absolute;top:60px;right:20px;background:#043837;border-radius:12px;overflow:hidden;z-index:100}
 .menu a{display:block;padding:12px 18px;color:#5eead4;text-decoration:none}
 .menu a:hover{background:#065f5b}
@@ -22,15 +20,13 @@ main{max-width:1000px;margin:auto;padding:20px}
 .panel{background:#043837;padding:20px;border-radius:18px;margin-top:20px}
 .hidden{display:none}
 
-/* CARD – BANK STYLE */
+/* Card style pro bancaire */
 .card{
 background:linear-gradient(135deg,#0b3c39,#021f1d);
-border-radius:18px;
-padding:22px;
-box-shadow:0 20px 40px rgba(0,0,0,.6);
+border-radius:20px;padding:22px;box-shadow:0 20px 40px rgba(0,0,0,.6);
+cursor:pointer;transition:.6s;transform-style:preserve-3d;position:relative;
 }
-.card-top{display:flex;justify-content:space-between;align-items:center}
-.card-top img{height:32px}
+.card img.card-logo{height:32px;position:absolute;top:20px;right:20px;}
 .card h2{margin:0;font-size:16px;font-weight:500;opacity:.9}
 .card-number{font-size:20px;letter-spacing:3px;margin:18px 0}
 .card-row{display:flex;justify-content:space-between;font-size:13px;opacity:.9}
@@ -39,26 +35,26 @@ box-shadow:0 20px 40px rgba(0,0,0,.6);
 .action{background:#14b8a6;padding:15px;border-radius:14px;text-align:center;font-weight:700;cursor:pointer}
 .action:hover{background:#2dd4bf}
 
-input,button{
-width:100%;padding:10px;margin-top:10px;
-border-radius:10px;border:none;font-family:Roboto
-}
+input,button{width:100%;padding:10px;margin-top:10px;border-radius:10px;border:none;font-family:Roboto}
 button{background:#14b8a6;font-weight:700;cursor:pointer}
 button:hover{background:#2dd4bf}
 
-footer{text-align:center;margin-top:30px;font-size:14px;opacity:.8}
-</style>
+.tx{background:#065f5b;padding:10px;border-radius:10px;margin-bottom:8px;font-size:14px}
 
+footer{text-align:center;margin-top:30px;font-size:14px;opacity:.8;display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+footer a{color:#5eead4;text-decoration:none}
+footer a:hover{text-decoration:underline}
+</style>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 </head>
-
 <body>
 
 <header>
 <div class="logo-wrap">
-<img src="logo-gopay-africa.png" alt="GoPay Africa">
+<img src="A_logo_for_&quot;GoPay_Africa&quot;_is_displayed_on_a_dark_b.png" alt="GoPay Africa">
 <div class="logo-text">GoPay Africa</div>
 </div>
 <div class="menu-btn" onclick="toggleMenu()">☰</div>
@@ -72,10 +68,10 @@ footer{text-align:center;margin-top:30px;font-size:14px;opacity:.8}
 </div>
 
 <main>
-
 <div id="home" class="panel">
 <h2>Payments for a Connected Africa</h2>
 <p>Paiements digitaux sécurisés et fiables.</p>
+<div id="home-qrcode"></div>
 </div>
 
 <div id="login" class="panel hidden">
@@ -94,12 +90,9 @@ footer{text-align:center;margin-top:30px;font-size:14px;opacity:.8}
 </div>
 
 <div id="dash" class="hidden">
-
-<div class="card">
-<div class="card-top">
+<div class="card" id="card">
 <h2>GoPay • Virtual Card</h2>
-<img src="logo-gopay-africa.png">
-</div>
+<img class="card-logo" src="A_logo_for_&quot;GoPay_Africa&quot;_is_displayed_on_a_dark_b.png" alt="Logo">
 <div class="card-number" id="cardId"></div>
 <div class="card-row"><span>TITULAIRE</span><span>EXP</span></div>
 <div class="card-row"><strong id="cardName"></strong><strong>12/29</strong></div>
@@ -117,6 +110,7 @@ footer{text-align:center;margin-top:30px;font-size:14px;opacity:.8}
 <input id="payName" disabled placeholder="Nom destinataire">
 <input id="payAmount" type="number" placeholder="Montant USD">
 <button onclick="pay()">Confirmer</button>
+<div id="payQR"></div>
 </div>
 
 <div id="cashin" class="panel hidden">
@@ -131,10 +125,23 @@ footer{text-align:center;margin-top:30px;font-size:14px;opacity:.8}
 <button onclick="cashout()">Confirmer</button>
 </div>
 
+<div class="panel">
+<h3>Activités récentes</h3>
+<div id="myTx"></div>
+
+<h3 style="margin-top:20px">Activités publiques</h3>
+<div id="marketTx"></div>
 </div>
+
 </main>
 
-<footer>© 2026 GoPay Africa</footer>
+<footer>
+<a onclick="show('legal')">Qui sommes-nous</a> |
+<a onclick="show('faq')">FAQ</a> |
+<a onclick="show('services')">Nos services</a> |
+<a onclick="show('privacy')">Confidentialité</a> |
+<a onclick="show('contact')">Contact</a>
+</footer>
 
 <script>
 firebase.initializeApp({
@@ -144,18 +151,22 @@ firebase.initializeApp({
 });
 const auth=firebase.auth(),db=firebase.firestore();
 
+/* NAV */
 function toggleMenu(){menu.style.display=menu.style.display==="block"?"none":"block"}
 function show(id){
  document.querySelectorAll(".panel,#dash").forEach(d=>d.classList.add("hidden"));
- document.getElementById(id).classList.remove("hidden");
+ document.getElementById(id)?.classList.remove("hidden");
  menu.style.display="none";
 }
 function openP(id){
  ["pay","cashin","cashout"].forEach(x=>document.getElementById(x).classList.add("hidden"));
  document.getElementById(id).classList.remove("hidden");
 }
+
+/* UTIL */
 function genId(){return "GP-"+Math.random().toString(36).substr(2,8).toUpperCase()}
 
+/* AUTH */
 function register(){
  auth.createUserWithEmailAndPassword(rEmail.value,rPass.value).then(c=>{
   db.collection("users").doc(c.user.uid).set({
@@ -164,19 +175,24 @@ function register(){
  });
 }
 
-function login(){
- auth.signInWithEmailAndPassword(lEmail.value,lPass.value).then(async ()=>{
-  const snap=await db.collection("users").doc(auth.currentUser.uid).get();
-  const d=snap.data();
-  cardName.textContent=d.name;
-  cardId.textContent=d.gid;
-  balance.textContent=d.balance.toFixed(2);
-  show("dash");
- });
+async function login(){
+ if(!lEmail.value || !lPass.value){alert("Remplissez tous les champs");return;}
+ const cred=await auth.signInWithEmailAndPassword(lEmail.value,lPass.value);
+ const snap=await db.collection("users").doc(auth.currentUser.uid).get();
+ const d=snap.data();
+ cardName.textContent=d.name;
+ cardId.textContent=d.gid;
+ balance.textContent=d.balance.toFixed(2);
+ show("dash");
+generateQRCode(d.gid);
+loadMyTx();
 }
 
-function logout(){auth.signOut();show("home")}
+/* CARD CLICK */
+const card=document.getElementById("card");
+card.onclick=()=>card.classList.toggle("flip");
 
+/* PAYMENTS */
 async function fetchRecipientName(t){
  const id=t==="pay"?payId.value:coutId.value;
  const f=t==="pay"?payName:coutName;
@@ -189,28 +205,59 @@ async function pay(){
  const amt=parseFloat(payAmount.value);
  const me=await db.collection("users").doc(auth.currentUser.uid).get();
  const dest=await db.collection("users").where("gid","==",payId.value).get();
- if(dest.empty||me.data().balance<amt)return;
- await db.collection("users").doc(auth.currentUser.uid)
- .update({balance:firebase.firestore.FieldValue.increment(-amt)});
- await db.collection("users").doc(dest.docs[0].id)
- .update({balance:firebase.firestore.FieldValue.increment(amt)});
+ if(dest.empty||me.data().balance<amt)return alert("Erreur");
+ await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});
+ await db.collection("users").doc(dest.docs[0].id).update({balance:firebase.firestore.FieldValue.increment(amt)});
+ await db.collection("tx").add({from:me.data().gid,to:payId.value,type:"Paiement",amount:amt,date:new Date()});
+ loadMyTx();
+ generateQRCode(payId.value);
 }
+
 async function cashin(){
  const amt=parseFloat(cinAmount.value);
- await db.collection("users").doc(auth.currentUser.uid)
- .update({balance:firebase.firestore.FieldValue.increment(amt)});
+ await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(amt)});
+ await db.collection("tx").add({type:"Cash-in",amount:amt,date:new Date()});
+ loadMyTx();
 }
+
 async function cashout(){
  const amt=parseFloat(coutAmount.value);
  const me=await db.collection("users").doc(auth.currentUser.uid).get();
  const dest=await db.collection("users").where("gid","==",coutId.value).get();
- if(dest.empty||me.data().balance<amt)return;
- await db.collection("users").doc(auth.currentUser.uid)
- .update({balance:firebase.firestore.FieldValue.increment(-amt)});
- await db.collection("users").doc(dest.docs[0].id)
- .update({balance:firebase.firestore.FieldValue.increment(amt)});
+ if(dest.empty||me.data().balance<amt)return alert("Erreur");
+ await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});
+ await db.collection("users").doc(dest.docs[0].id).update({balance:firebase.firestore.FieldValue.increment(amt)});
+ await db.collection("tx").add({from:me.data().gid,to:coutId.value,type:"Cash-out",amount:amt,date:new Date()});
+ loadMyTx();
+}
+
+/* RECENT ACTIVITIES */
+async function loadMyTx(){
+ myTx.innerHTML="";
+ const snap=await db.collection("tx").where("from","==",cardId.textContent).orderBy("date","desc").limit(5).get();
+ snap.forEach(d=>{
+  const t=d.data();
+  myTx.innerHTML+=`<div class="tx">${t.type} • ${t.amount} USD</div>`;
+ });
+}
+
+/* PUBLIC MARKET TX */
+const names=["Ali M.","Sarah L.","Jean K.","Mohamed A.","Linda S.","David R.","Fatou B.","Chris T."];
+function marketFlow(){
+ const tx=document.createElement("div");
+ tx.className="tx";
+ tx.innerHTML=`${names[Math.floor(Math.random()*names.length)]} • ${Math.random()>0.5?"Paiement":"Cash-out"} • ${(Math.random()*900+20).toFixed(2)} USD`;
+ marketTx.prepend(tx);
+ if(marketTx.children.length>6)marketTx.removeChild(marketTx.lastChild);
+}
+setInterval(marketFlow,3000);
+
+/* QR CODE */
+function generateQRCode(id){
+ const container=payQR;
+container.innerHTML="";
+QRCode.toCanvas(container,id,{width:150,height:150},function(err){if(err)console.error(err)});
 }
 </script>
-
 </body>
 </html>
