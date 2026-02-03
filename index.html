@@ -10,8 +10,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
 <style>
 body{margin:0;font-family:Roboto;background:#061e1c;color:#e6fffa;}
@@ -25,24 +23,10 @@ header{background:#012b28;padding:12px 20px;display:flex;justify-content:space-b
 .panel{background:#043837;padding:20px;border-radius:18px;margin:20px;}
 .hidden{display:none;}
 
-.card{background:linear-gradient(135deg,#0b3c39,#021f1d);border-radius:22px;padding:22px;cursor:pointer;}
 .actions{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:20px;}
 .action{background:#14b8a6;padding:15px;border-radius:14px;text-align:center;font-weight:700;cursor:pointer;}
 
 .tx{background:#065f5b;padding:10px;border-radius:10px;margin-bottom:8px;}
-
-input,select,button{
-width:100%;
-padding:10px;
-margin-top:10px;
-border-radius:10px;
-border:none;
-}
-
-button{background:#14b8a6;font-weight:700;cursor:pointer;}
-
-footer{margin-top:30px;padding:20px;text-align:center;font-size:14px;opacity:.9;}
-footer h4{color:#5eead4;margin-bottom:6px;}
 </style>
 </head>
 
@@ -54,15 +38,15 @@ footer h4{color:#5eead4;margin-bottom:6px;}
 </header>
 
 <div class="menu" id="menu">
-<a onclick="menuClick('home')">Accueil</a>
-<a onclick="menuClick('login')">Connexion</a>
+<a onclick="nav('home')">Accueil</a>
+<a onclick="nav('login')">Connexion</a>
+<a id="adminBtn" class="hidden" onclick="nav('admin')">Admin</a>
 <a onclick="logout()">Déconnexion</a>
 </div>
 
 <!-- HOME -->
 <div id="home" class="panel">
 <h2>Banque Digitale Africaine</h2>
-<div id="homeQR"></div>
 </div>
 
 <!-- LOGIN -->
@@ -70,8 +54,8 @@ footer h4{color:#5eead4;margin-bottom:6px;}
 <h3>Connexion</h3>
 <input id="lEmail" placeholder="Email">
 <input id="lPass" type="password" placeholder="Mot de passe">
-<button id="loginBtn" onclick="login()">Connexion</button>
-<button onclick="show('register')">Créer compte</button>
+<button onclick="login()">Connexion</button>
+<button onclick="nav('register')">Créer compte</button>
 </div>
 
 <!-- REGISTER -->
@@ -80,10 +64,13 @@ footer h4{color:#5eead4;margin-bottom:6px;}
 <input id="rName" placeholder="Nom">
 <input id="rEmail" placeholder="Email">
 <input id="rPass" type="password" placeholder="Mot de passe">
+
 <select id="rRole">
 <option value="client">Client</option>
 <option value="agent">Agent</option>
+<option value="admin">Admin</option>
 </select>
+
 <button onclick="register()">Créer</button>
 </div>
 
@@ -94,32 +81,9 @@ footer h4{color:#5eead4;margin-bottom:6px;}
 <p>Solde : <b id="balance"></b> USD</p>
 
 <div class="actions">
-<div class="action" onclick="openCashin()">Cash-in</div>
-<div class="action" onclick="openCashout()">Cash-out</div>
-<div class="action" onclick="openPay()">Paiement</div>
-</div>
-
-<!-- FORMULAIRES TRANSACTIONS -->
-<div id="cashinForm" class="panel hidden">
-<h4>Cash-in</h4>
-<input id="cinAmount" type="number" placeholder="Montant">
-<button onclick="cashin()">Confirmer</button>
-</div>
-
-<div id="cashoutForm" class="panel hidden">
-<h4>Cash-out</h4>
-<input id="coutName" placeholder="Nom destinataire">
-<input id="coutId" placeholder="ID destinataire">
-<input id="coutAmount" type="number" placeholder="Montant">
-<button onclick="cashout()">Confirmer</button>
-</div>
-
-<div id="payForm" class="panel hidden">
-<h4>Paiement</h4>
-<input id="payId" placeholder="ID destinataire">
-<input id="payName" placeholder="Nom destinataire">
-<input id="payAmount" type="number" placeholder="Montant">
-<button onclick="pay()">Confirmer</button>
+<div class="action" onclick="cashin()">Cash-in</div>
+<div class="action" onclick="cashout()">Cash-out</div>
+<div class="action" onclick="pay()">Paiement</div>
 </div>
 
 <h4>Historique</h4>
@@ -128,191 +92,167 @@ footer h4{color:#5eead4;margin-bottom:6px;}
 
 <!-- ADMIN -->
 <div id="admin" class="panel hidden">
-<h3>Admin Panel</h3>
-<button onclick="loadAgents()">Voir Agents</button>
-<div id="agentList"></div>
+<h3>Liste Agents</h3>
+<table id="usersTable"></table>
 </div>
 
-<!-- FOOTER -->
-<footer>
-<h4>Qui sommes-nous</h4>
-GoPay Africa est une néobanque panafricaine offrant des solutions financières digitales sécurisées.
-
-<h4>FAQ</h4>
-Transactions instantanées • KYC sécurisé • Multi-devises
-
-<h4>Confidentialité</h4>
-Vos données sont protégées via chiffrement bancaire.
-
-<h4>Contact</h4>
-@gopapay.info
-
-<h4>Mentions légales</h4>
-GoPay Africa Digital Finance Ltd © 2026
-</footer>
-
 <script>
+
 firebase.initializeApp({
 apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
 authDomain:"gotrustpay-e6524.firebaseapp.com",
-projectId:"gotrustpay-e6524",
+projectId:"gotrustpay-e6524"
 });
 
 const auth=firebase.auth();
 const db=firebase.firestore();
 
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+// NAVIGATION
 function toggleMenu(){
 menu.style.display = menu.style.display==="block"?"none":"block";
 }
 
-function menuClick(panel){
-show(panel);
+function nav(id){
+show(id);
 menu.style.display="none";
 }
 
 function show(id){
 document.querySelectorAll(".panel").forEach(p=>p.classList.add("hidden"));
-document.getElementById(id)?.classList.remove("hidden");
+document.getElementById(id).classList.remove("hidden");
 }
 
 // REGISTER
 async function register(){
 try{
+
 const cred = await auth.createUserWithEmailAndPassword(rEmail.value,rPass.value);
+
+const gid = "GP"+Math.random().toString(36).substr(2,6).toUpperCase();
+
 await db.collection("users").doc(cred.user.uid).set({
 name:rName.value,
 email:rEmail.value,
-gid:"GP"+Math.random().toString(36).substr(2,6).toUpperCase(),
+gid:gid,
 balance:50,
-role:rRole.value,
-kyc:"verified"
+role:rRole.value
 });
-rName.value="";
-rEmail.value="";
-rPass.value="";
-await loginAuto();
-}catch(e){
-alert(e.message);
-}
-}
 
-// LOGIN
-async function login(){
-const btn = document.getElementById("loginBtn");
-btn.disabled = true;
-btn.innerText = "Connexion...";
-if(!lEmail.value || !lPass.value){
-alert("Veuillez remplir tous les champs !");
-btn.disabled = false;
-btn.innerText = "Connexion";
-return;
-}
-try{
-const cred = await auth.signInWithEmailAndPassword(lEmail.value,lPass.value);
-const snap = await db.collection("users").doc(cred.user.uid).get();
-const d = snap.data();
-cardName.innerText = d.name;
-cardId.innerText = d.gid;
-balance.innerText = d.balance.toFixed(2);
-btn.style.display = "none";
-show("dash");
-lEmail.value=""; lPass.value="";
-loadMyTx();
-if(d.role==="admin") { document.getElementById("admin").classList.remove("hidden"); }
-}catch(e){
-alert("Connexion refusée : "+e.message);
-btn.disabled = false;
-btn.innerText = "Connexion";
-}
+await loginAuto();
+
+}catch(e){alert(e.message);}
 }
 
 async function loginAuto(){
 const user=auth.currentUser;
-const snap=await db.collection("users").doc(user.uid).get();
-loadUser(snap.data());
+const doc=await db.collection("users").doc(user.uid).get();
+loadUser(doc.data());
 }
 
+// LOGIN
+async function login(){
+try{
+
+const cred = await auth.signInWithEmailAndPassword(lEmail.value,lPass.value);
+const doc = await db.collection("users").doc(cred.user.uid).get();
+
+if(!doc.exists){ alert("Compte introuvable"); return; }
+
+loadUser(doc.data());
+
+lEmail.value="";
+lPass.value="";
+
+}catch(e){alert("Connexion refusée");}
+}
+
+// LOAD USER
 function loadUser(d){
-cardName.innerText=d.name;
-cardId.innerText=d.gid;
-balance.innerText=d.balance.toFixed(2);
+
+if(!d) return;
+
+cardName.innerText=d.name || "Client";
+cardId.innerText=d.gid || "GP-000000";
+balance.innerText=Number(d.balance||0).toFixed(2);
+
+if(d.role==="admin"){
+adminBtn.classList.remove("hidden");
+loadAdmin();
+}else{
+adminBtn.classList.add("hidden");
+}
+
 show("dash");
 loadMyTx();
 }
 
-// CASH-IN / CASH-OUT / PAY FORMS
-function openCashin(){show("cashinForm");}
-function openCashout(){show("cashoutForm");}
-function openPay(){show("payForm");}
-
+// CASHIN
 async function cashin(){
-let amt=parseFloat(document.getElementById("cinAmount").value);
-if(isNaN(amt) || amt<=0){alert("Montant invalide"); return;}
-await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(amt)});
-alert("Cash-in confirmé !");
-document.getElementById("cinAmount").value="";
-show("dash");
+let amt=parseFloat(prompt("Montant"));
+if(!amt || amt<=0) return;
+
+await db.collection("users").doc(auth.currentUser.uid)
+.update({balance:firebase.firestore.FieldValue.increment(amt)});
+
 loadMyTx();
 }
 
+// CASHOUT
 async function cashout(){
-let amt=parseFloat(document.getElementById("coutAmount").value);
-let idDest=document.getElementById("coutId").value.trim();
-let nameDest=document.getElementById("coutName").value.trim();
-if(!idDest || !nameDest || isNaN(amt) || amt<=0){alert("Veuillez remplir tous les champs correctement"); return;}
-let me=await db.collection("users").doc(auth.currentUser.uid).get();
-if(me.data().balance<amt){alert("Solde insuffisant"); return;}
-await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});
-alert("Cash-out confirmé !");
-document.getElementById("coutAmount").value="";
-document.getElementById("coutId").value="";
-document.getElementById("coutName").value="";
-show("dash");
+let amt=parseFloat(prompt("Montant"));
+if(!amt || amt<=0) return;
+
+await db.collection("users").doc(auth.currentUser.uid)
+.update({balance:firebase.firestore.FieldValue.increment(-amt)});
+
 loadMyTx();
 }
 
+// PAY
 async function pay(){
-let amt=parseFloat(document.getElementById("payAmount").value);
-let idDest=document.getElementById("payId").value.trim();
-let nameDest=document.getElementById("payName").value.trim();
-if(!idDest || !nameDest || isNaN(amt) || amt<=0){alert("Veuillez remplir tous les champs correctement"); return;}
-let me=await db.collection("users").doc(auth.currentUser.uid).get();
-if(me.data().balance<amt){alert("Solde insuffisant"); return;}
-await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});
-alert("Paiement confirmé !");
-document.getElementById("payAmount").value="";
-document.getElementById("payId").value="";
-document.getElementById("payName").value="";
-show("dash");
-loadMyTx();
+alert("Paiement simulé");
 }
 
 // HISTORIQUE
 async function loadMyTx(){
-const snap = await db.collection("users").doc(auth.currentUser.uid).get();
-balance.innerText=snap.data().balance.toFixed(2);
+const snap=await db.collection("users").doc(auth.currentUser.uid).get();
+balance.innerText=Number(snap.data().balance||0).toFixed(2);
 }
 
-// ADMIN
-async function loadAgents(){
-document.getElementById("agentList").innerHTML="";
-const snap=await db.collection("users").where("role","==","agent").get();
-snap.forEach(doc=>{
-let u=doc.data();
-document.getElementById("agentList").innerHTML+=`<div class="tx">${u.name} • ${u.email} • Solde: ${u.balance}</div>`;
+// ADMIN = VOIR AGENTS
+async function loadAdmin(){
+
+usersTable.innerHTML="<tr><th>Nom</th><th>Email</th><th>Solde</th></tr>";
+
+const agents=await db.collection("users").where("role","==","agent").get();
+
+agents.forEach(doc=>{
+const u=doc.data();
+usersTable.innerHTML+=`
+<tr>
+<td>${u.name}</td>
+<td>${u.email}</td>
+<td>${u.balance}</td>
+</tr>`;
 });
 }
+
+// SESSION WATCH
+auth.onAuthStateChanged(async user=>{
+if(user){
+const doc=await db.collection("users").doc(user.uid).get();
+if(doc.exists) loadUser(doc.data());
+}
+});
 
 // LOGOUT
 function logout(){
 auth.signOut();
 show("home");
-document.getElementById("loginBtn").style.display="inline-block";
-menu.style.display="none";
 }
 
-QRCode.toCanvas(homeQR,"GoPay Africa");
 </script>
-
 </body>
 </html>
