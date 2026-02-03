@@ -39,20 +39,16 @@ transform-style:preserve-3d
 
 .tx{background:#065f5b;padding:10px;border-radius:10px;margin-bottom:8px;font-size:14px}
 
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{border:1px solid #065f5b;padding:8px}
-th{background:#0d9488}
-
 input,button{
-width:100%;
-padding:10px;
-margin-top:10px;
-border-radius:10px;
-border:none;
-font-family:Roboto
+width:100%;padding:10px;margin-top:10px;
+border-radius:10px;border:none;font-family:Roboto
 }
 button{background:#14b8a6;font-weight:700;cursor:pointer}
 button:hover{background:#2dd4bf}
+
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{border:1px solid #065f5b;padding:8px}
+th{background:#0d9488}
 
 footer{text-align:center;margin-top:30px;font-size:14px;opacity:.8}
 footer a{color:#5eead4;cursor:pointer}
@@ -104,12 +100,8 @@ footer a{color:#5eead4;cursor:pointer}
 <div class="card" id="card">
 <h2>GoPay • VIRTUAL</h2>
 <div class="card-number" id="cardId"></div>
-<div class="card-row">
-<span>TITULAIRE</span><span>EXP</span>
-</div>
-<div class="card-row">
-<strong id="cardName"></strong><strong>12/29</strong>
-</div>
+<div class="card-row"><span>TITULAIRE</span><span>EXP</span></div>
+<div class="card-row"><strong id="cardName"></strong><strong>12/29</strong></div>
 <p>SOLDE : <b><span id="balance"></span> USD</b></p>
 </div>
 
@@ -121,7 +113,7 @@ footer a{color:#5eead4;cursor:pointer}
 
 <div id="pay" class="panel hidden">
 <input id="payId" placeholder="ID GoPay destinataire" oninput="fetchRecipientName('pay')">
-<input id="payName" placeholder="Nom destinataire" disabled>
+<input id="payName" disabled placeholder="Nom destinataire">
 <input id="payAmount" type="number" placeholder="Montant USD">
 <button onclick="pay()">Confirmer</button>
 </div>
@@ -133,14 +125,17 @@ footer a{color:#5eead4;cursor:pointer}
 
 <div id="cashout" class="panel hidden">
 <input id="coutId" placeholder="ID GoPay destinataire" oninput="fetchRecipientName('cout')">
-<input id="coutName" placeholder="Nom destinataire" disabled>
+<input id="coutName" disabled placeholder="Nom destinataire">
 <input id="coutAmount" type="number" placeholder="Montant USD">
 <button onclick="cashout()">Confirmer</button>
 </div>
 
 <div class="panel">
-<h3>Activités récentes</h3>
+<h3>Mes activités</h3>
 <div id="myTx"></div>
+
+<h3 style="margin-top:20px">Activités publiques</h3>
+<div id="marketTx"></div>
 </div>
 
 <div id="admin" class="panel hidden">
@@ -148,27 +143,13 @@ footer a{color:#5eead4;cursor:pointer}
 <table id="usersTable">
 <tr><th>Nom</th><th>Rôle</th><th>Solde</th><th>Actif</th></tr>
 </table>
-<h4>Activités globales</h4>
-<div id="globalTx"></div>
-</div>
-
-<div id="legal" class="panel hidden">
-<h3>Mentions légales</h3>
-<p>GoPay Africa – plateforme de paiement digital sécurisé.</p>
-</div>
-
-<div id="privacy" class="panel hidden">
-<h3>Politique de confidentialité</h3>
-<p>Les données utilisateurs sont strictement protégées.</p>
 </div>
 
 </div>
 </main>
 
 <footer>
-© 2026 GoPay Africa —
-<a onclick="show('legal')">Mentions légales</a> |
-<a onclick="show('privacy')">Politique de confidentialité</a>
+© 2026 GoPay Africa
 </footer>
 
 <script>
@@ -179,33 +160,24 @@ firebase.initializeApp({
 });
 const auth=firebase.auth(),db=firebase.firestore();
 
-function toggleMenu(){
- menu.style.display=menu.style.display==="block"?"none":"block";
-}
-
+/* NAV */
+function toggleMenu(){menu.style.display=menu.style.display==="block"?"none":"block"}
 function show(id){
- document.querySelectorAll(".panel,#dash,#admin,#legal,#privacy")
+ document.querySelectorAll(".panel,#dash,#admin")
  .forEach(d=>d.classList.add("hidden"));
- const el=document.getElementById(id);
- if(el) el.classList.remove("hidden");
+ document.getElementById(id).classList.remove("hidden");
  menu.style.display="none";
 }
-
 function openP(id){
- ["pay","cashin","cashout"].forEach(x=>{
-  const e=document.getElementById(x);
-  if(e) e.classList.add("hidden");
- });
+ ["pay","cashin","cashout"].forEach(x=>document.getElementById(x).classList.add("hidden"));
  document.getElementById(id).classList.remove("hidden");
 }
 
-function genId(){
- return "GP-"+Math.random().toString(36).substr(2,8).toUpperCase();
-}
+/* UTIL */
+function genId(){return "GP-"+Math.random().toString(36).substr(2,8).toUpperCase()}
 
+/* AUTH */
 function register(){
- if(!rName.value||!rEmail.value||!rPass.value)
-  return alert("Veuillez remplir tous les champs");
  auth.createUserWithEmailAndPassword(rEmail.value,rPass.value).then(c=>{
   db.collection("users").doc(c.user.uid).set({
    name:rName.value,
@@ -213,95 +185,78 @@ function register(){
    role:"user",
    balance:50,
    active:true
-  }).then(()=>alert("Compte créé avec succès"));
+  }).then(()=>alert("Compte créé"));
  });
 }
 
 function login(){
  auth.signInWithEmailAndPassword(lEmail.value,lPass.value).then(async ()=>{
   const snap=await db.collection("users").doc(auth.currentUser.uid).get();
-  updateCard(snap.data());
+  const d=snap.data();
+  updateCard(d);
   show("dash");
   loadMyTx();
+
+  if(d.role==="admin" && d.adminKey===true){
+   document.getElementById("admin").classList.remove("hidden");
+   loadAdmin();
+  }
  });
 }
 
-function logout(){
- auth.signOut();
- show("home");
-}
+function logout(){auth.signOut();show("home")}
 
+/* CARD */
 function updateCard(d){
  cardName.textContent=d.name;
  cardId.textContent=d.gid;
  balance.textContent=d.balance.toFixed(2);
 }
+card.onclick=()=>card.classList.toggle("flip");
 
-document.getElementById("card").onclick=()=>{
- document.getElementById("card").classList.toggle("flip");
-};
-
-async function fetchRecipientName(type){
- const id=(type==="pay")?payId.value:coutId.value;
- const field=(type==="pay")?payName:coutName;
- if(!id){field.value="";return;}
+/* PAYMENTS */
+async function fetchRecipientName(t){
+ const id=t==="pay"?payId.value:coutId.value;
+ const f=t==="pay"?payName:coutName;
+ if(!id){f.value="";return;}
  const q=await db.collection("users").where("gid","==",id).get();
- field.value=q.empty?"ID invalide":q.docs[0].data().name;
+ f.value=q.empty?"ID invalide":q.docs[0].data().name;
 }
 
 async function pay(){
- const amount=parseFloat(payAmount.value);
- if(amount<=0)return;
- const dest=await db.collection("users").where("gid","==",payId.value).get();
- if(dest.empty)return alert("ID invalide");
+ const amt=parseFloat(payAmount.value);
  const me=await db.collection("users").doc(auth.currentUser.uid).get();
- if(me.data().balance<amount)return alert("Solde insuffisant");
-
+ const dest=await db.collection("users").where("gid","==",payId.value).get();
+ if(dest.empty||me.data().balance<amt)return;
  await db.collection("users").doc(auth.currentUser.uid)
- .update({balance:firebase.firestore.FieldValue.increment(-amount)});
+ .update({balance:firebase.firestore.FieldValue.increment(-amt)});
  await db.collection("users").doc(dest.docs[0].id)
- .update({balance:firebase.firestore.FieldValue.increment(amount)});
+ .update({balance:firebase.firestore.FieldValue.increment(amt)});
  await db.collection("tx").add({
-  from:me.data().gid,
-  to:payId.value,
-  type:"Paiement",
-  amount:amount,
-  date:new Date()
+  from:me.data().gid,to:payId.value,type:"Paiement",amount:amt,date:new Date()
  });
  loadMyTx();
 }
 
 async function cashin(){
- const amount=parseFloat(cinAmount.value);
- if(amount<=0)return;
+ const amt=parseFloat(cinAmount.value);
  await db.collection("users").doc(auth.currentUser.uid)
- .update({balance:firebase.firestore.FieldValue.increment(amount)});
- await db.collection("tx").add({
-  type:"Cash-in",
-  amount:amount,
-  date:new Date()
- });
+ .update({balance:firebase.firestore.FieldValue.increment(amt)});
+ await db.collection("tx").add({type:"Cash-in",amount:amt,date:new Date()});
  loadMyTx();
 }
 
 async function cashout(){
- const amount=parseFloat(coutAmount.value);
- if(amount<=0)return;
- const dest=await db.collection("users").where("gid","==",coutId.value).get();
- if(dest.empty)return alert("ID invalide");
+ const amt=parseFloat(coutAmount.value);
  const me=await db.collection("users").doc(auth.currentUser.uid).get();
- if(me.data().balance<amount)return alert("Solde insuffisant");
-
+ const dest=await db.collection("users").where("gid","==",coutId.value).get();
+ if(dest.empty||me.data().balance<amt)return;
  await db.collection("users").doc(auth.currentUser.uid)
- .update({balance:firebase.firestore.FieldValue.increment(-amount)});
+ .update({balance:firebase.firestore.FieldValue.increment(-amt)});
  await db.collection("users").doc(dest.docs[0].id)
- .update({balance:firebase.firestore.FieldValue.increment(amount)});
+ .update({balance:firebase.firestore.FieldValue.increment(amt)});
  await db.collection("tx").add({
-  from:me.data().gid,
-  to:coutId.value,
-  type:"Cash-out",
-  amount:amount,
-  date:new Date()
+  from:me.data().gid,to:coutId.value,type:"Cash-out",amount:amt,date:new Date()
  });
  loadMyTx();
 }
@@ -310,13 +265,35 @@ async function loadMyTx(){
  myTx.innerHTML="";
  const snap=await db.collection("tx")
  .where("from","==",cardId.textContent)
- .orderBy("date","desc")
- .limit(5).get();
+ .orderBy("date","desc").limit(5).get();
  snap.forEach(d=>{
   const t=d.data();
   myTx.innerHTML+=`<div class="tx">${t.type} • ${t.amount} USD</div>`;
  });
 }
+
+/* ADMIN */
+async function loadAdmin(){
+ usersTable.innerHTML="<tr><th>Nom</th><th>Rôle</th><th>Solde</th><th>Actif</th></tr>";
+ const u=await db.collection("users").get();
+ u.forEach(d=>{
+  const x=d.data();
+  usersTable.innerHTML+=`<tr><td>${x.name}</td><td>${x.role}</td><td>${x.balance}</td><td>${x.active?"Oui":"Non"}</td></tr>`;
+ });
+}
+
+/* BINANCE STYLE PUBLIC ACTIVITY */
+const names=["Ali M.","Sarah L.","Jean K.","Mohamed A.","Linda S.","David R.","Fatou B.","Chris T."];
+function marketFlow(){
+ const tx=document.createElement("div");
+ tx.className="tx";
+ tx.innerHTML=`${names[Math.floor(Math.random()*names.length)]}
+ • ${Math.random()>0.5?"Paiement":"Cash-out"}
+ • ${(Math.random()*900+20).toFixed(2)} USD`;
+ marketTx.prepend(tx);
+ if(marketTx.children.length>6)marketTx.removeChild(marketTx.lastChild);
+}
+setInterval(marketFlow,3000);
 </script>
 
 </body>
