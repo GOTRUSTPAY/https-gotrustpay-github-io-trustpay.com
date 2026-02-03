@@ -5,7 +5,6 @@
 <title>GoPay Africa</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-
 <style>
 body{margin:0;font-family:Roboto;background:#061e1c;color:#e6fffa}
 header{background:#012b28;padding:12px 20px;display:flex;justify-content:space-between;align-items:center}
@@ -16,47 +15,39 @@ header{background:#012b28;padding:12px 20px;display:flex;justify-content:space-b
 .menu{display:none;position:absolute;top:60px;right:20px;background:#043837;border-radius:12px;overflow:hidden;z-index:100}
 .menu a{display:block;padding:12px 18px;color:#5eead4;text-decoration:none;cursor:pointer}
 .menu a:hover{background:#065f5b}
-
 main{max-width:1000px;margin:auto;padding:20px}
 .panel{background:#043837;padding:20px;border-radius:18px;margin-top:20px}
 .hidden{display:none}
-
-.card{
-background:linear-gradient(135deg,#0b3c39,#021f1d);
-border-radius:20px;padding:22px;box-shadow:0 20px 40px rgba(0,0,0,.6);
-cursor:pointer;transition:.6s;transform-style:preserve-3d;position:relative;
-}
+/* Card style pro bancaire */
+.card{background:linear-gradient(135deg,#0b3c39,#021f1d);border-radius:20px;padding:22px;box-shadow:0 20px 40px rgba(0,0,0,.6);cursor:pointer;transition:.6s;transform-style:preserve-3d;position:relative;}
 .card img.card-logo{height:32px;position:absolute;top:20px;right:20px;}
 .card h2{margin:0;font-size:16px;font-weight:500;opacity:.9}
 .card-number{font-size:20px;letter-spacing:3px;margin:18px 0}
 .card-row{display:flex;justify-content:space-between;font-size:13px;opacity:.9}
-
 .actions{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:20px}
 .action{background:#14b8a6;padding:15px;border-radius:14px;text-align:center;font-weight:700;cursor:pointer}
 .action:hover{background:#2dd4bf}
-
-input,button,select{width:100%;padding:10px;margin-top:10px;border-radius:10px;border:none;font-family:Roboto}
+input,button{width:100%;padding:10px;margin-top:10px;border-radius:10px;border:none;font-family:Roboto}
 button{background:#14b8a6;font-weight:700;cursor:pointer}
 button:hover{background:#2dd4bf}
-
 .tx{background:#065f5b;padding:10px;border-radius:10px;margin-bottom:8px;font-size:14px}
-
 footer{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;text-align:center;margin-top:30px;font-size:14px;opacity:.8}
 footer a{color:#5eead4;text-decoration:none;cursor:pointer}
 footer a:hover{text-decoration:underline}
+table{width:100%;border-collapse:collapse;margin-top:15px}
+th,td{padding:10px;text-align:left;border-bottom:1px solid #065f5b}
+button.admin-btn{padding:5px 8px;margin-left:5px;font-size:12px}
 </style>
-
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 </head>
-
 <body>
 
 <header>
 <div class="logo-wrap">
-<img src="A_logo_for_&quot;GoPay_Africa&quot;_is_displayed_on_a_dark_b.png" alt="GoPay Africa">
+<img src="logo-gopay-africa.png" alt="GoPay Africa">
 <div class="logo-text">GoPay Africa</div>
 </div>
 <div class="menu-btn" onclick="toggleMenu()">☰</div>
@@ -66,17 +57,19 @@ footer a:hover{text-decoration:underline}
 <a onclick="show('home')">Accueil</a>
 <a onclick="show('login')">Connexion</a>
 <a onclick="show('register')">Créer un compte</a>
+<a onclick="show('admin')">Admin KYC</a>
 <a onclick="logout()">Déconnexion</a>
-<a onclick="show('kyc')">KYC</a>
 </div>
 
 <main>
+<!-- HOME -->
 <div id="home" class="panel">
 <h2>Payments for a Connected Africa</h2>
 <p>Paiements digitaux sécurisés et fiables.</p>
 <div id="home-qrcode"></div>
 </div>
 
+<!-- LOGIN -->
 <div id="login" class="panel hidden">
 <h3>Connexion</h3>
 <input id="lEmail" placeholder="Email">
@@ -84,6 +77,7 @@ footer a:hover{text-decoration:underline}
 <button onclick="login()">Se connecter</button>
 </div>
 
+<!-- REGISTER -->
 <div id="register" class="panel hidden">
 <h3>Inscription</h3>
 <input id="rName" placeholder="Nom complet">
@@ -92,18 +86,15 @@ footer a:hover{text-decoration:underline}
 <button onclick="register()">Créer un compte</button>
 </div>
 
+<!-- DASHBOARD USER -->
 <div id="dash" class="hidden">
 <div class="card" id="card">
 <h2>GoPay • Virtual Card</h2>
-<img class="card-logo" src="A_logo_for_&quot;GoPay_Africa&quot;_is_displayed_on_a_dark_b.png" alt="Logo">
+<img class="card-logo" src="logo-gopay-africa.png" alt="Logo">
 <div class="card-number" id="cardId"></div>
 <div class="card-row"><span>TITULAIRE</span><span>EXP</span></div>
 <div class="card-row"><strong id="cardName"></strong><strong>12/29</strong></div>
 <p>SOLDE : <b><span id="balance"></span> <span id="currency">USD</span></b></p>
-<select id="currencySelect" onchange="updateBalance()">
-<option value="USD">USD</option>
-<option value="CDF">CDF</option>
-</select>
 </div>
 
 <div class="actions">
@@ -112,45 +103,44 @@ footer a:hover{text-decoration:underline}
 <div class="action" onclick="openP('cashout')">➖ Cash-out</div>
 </div>
 
+<!-- PAY -->
 <div id="pay" class="panel hidden">
 <input id="payId" placeholder="ID GoPay destinataire" oninput="fetchRecipientName('pay')">
 <input id="payName" disabled placeholder="Nom destinataire">
-<input id="payAmount" type="number" placeholder="Montant">
+<input id="payAmount" type="number" placeholder="Montant USD/CDF">
+<select id="payCurrency"><option value="USD">USD</option><option value="CDF">CDF</option></select>
 <button onclick="pay()">Confirmer</button>
 <div id="payQR"></div>
 </div>
 
+<!-- CASH-IN -->
 <div id="cashin" class="panel hidden">
-<input id="cinAmount" type="number" placeholder="Montant">
+<input id="cinAmount" type="number" placeholder="Montant USD/CDF">
+<select id="cinCurrency"><option value="USD">USD</option><option value="CDF">CDF</option></select>
 <button onclick="cashin()">Valider</button>
 </div>
 
+<!-- CASH-OUT -->
 <div id="cashout" class="panel hidden">
 <input id="coutId" placeholder="ID GoPay destinataire" oninput="fetchRecipientName('cout')">
 <input id="coutName" disabled placeholder="Nom destinataire">
-<input id="coutAmount" type="number" placeholder="Montant">
+<input id="coutAmount" type="number" placeholder="Montant USD/CDF">
+<select id="coutCurrency"><option value="USD">USD</option><option value="CDF">CDF</option></select>
 <button onclick="cashout()">Confirmer</button>
 </div>
 
-<div id="kyc" class="panel hidden">
-<h3>KYC – Vérification légère</h3>
-<select id="kycDocType">
-<option value="">Sélectionner type document</option>
-<option value="CNI">CNI</option>
-<option value="Passport">Passport</option>
-<option value="Permis">Permis</option>
-</select>
-<input id="kycDocNumber" placeholder="Numéro document">
-<button onclick="submitKYC()">Soumettre KYC</button>
-<p>Status KYC : <span id="kycStatus">none</span></p>
-</div>
-
+<!-- HISTORIQUE & ACTIVITÉS -->
 <div class="panel">
 <h3>Activités récentes</h3>
 <div id="myTx"></div>
-
 <h3 style="margin-top:20px">Activités publiques</h3>
 <div id="marketTx"></div>
+</div>
+
+<!-- ADMIN KYC -->
+<div id="admin" class="panel hidden">
+<h3>ADMIN – Gestion KYC</h3>
+<table id="usersTable"></table>
 </div>
 
 <footer>
@@ -190,10 +180,11 @@ function genId(){return "GP-"+Math.random().toString(36).substr(2,8).toUpperCase
 function register(){
  auth.createUserWithEmailAndPassword(rEmail.value,rPass.value).then(c=>{
   db.collection("users").doc(c.user.uid).set({
-   name:rName.value,
-   gid:genId(),
-   balance:{USD:50,CDF:150000},
-   kyc:{status:"none"}
+    name:rName.value,
+    email:rEmail.value,
+    gid:genId(),
+    balance:50,
+    kyc:"none"
   }).then(()=>alert("Compte créé"));
  });
 }
@@ -205,27 +196,23 @@ async function login(){
  const d=snap.data();
  cardName.textContent=d.name;
  cardId.textContent=d.gid;
- balance.textContent=d.balance.USD.toFixed(2);
- document.getElementById("currencySelect").value="USD";
- document.getElementById("kycStatus").textContent=d.kyc.status;
+ balance.textContent=d.balance.toFixed(2);
  show("dash");
 generateQRCode(d.gid);
 loadMyTx();
-updateBalance();
 }
 
 /* CARD CLICK */
 const card=document.getElementById("card");
 card.onclick=()=>card.classList.toggle("flip");
 
-/* BALANCE & MULTI-DEVISE */
-function updateBalance(){
- const cur=document.getElementById("currencySelect").value;
- document.getElementById("currency").textContent=cur;
- db.collection("users").doc(auth.currentUser.uid).get().then(snap=>{
-   const d=snap.data();
-   balance.textContent=d.balance[cur].toFixed(2);
- });
+/* TRANSACTION CHECK KYC */
+async function canTransact(uid, amount){
+  const snap = await db.collection("users").doc(uid).get();
+  const u = snap.data();
+  if(u.kyc==='none') return false;
+  if(u.kyc==='pending' && amount > 100) return false;
+  return true;
 }
 
 /* PAYMENTS */
@@ -238,71 +225,53 @@ async function fetchRecipientName(t){
 }
 
 async function pay(){
- const cur=document.getElementById("currencySelect").value;
  const amt=parseFloat(payAmount.value);
+ if(!(await canTransact(auth.currentUser.uid, amt))){alert("Transaction non autorisée : KYC insuffisant"); return;}
  const me=await db.collection("users").doc(auth.currentUser.uid).get();
  const dest=await db.collection("users").where("gid","==",payId.value).get();
- if(dest.empty||me.data().balance[cur]<amt) return alert("Erreur ou limite dépassée");
- // Vérification limite KYC
- const status=me.data().kyc.status;
- const limits={USD:{none:100,verified:5000},CDF:{none:300000,verified:10000000}};
- if(amt>limits[cur][status]) return alert("Limite de transaction dépassée pour votre statut KYC");
- await db.collection("users").doc(auth.currentUser.uid).update({
-   [`balance.${cur}`]:firebase.firestore.FieldValue.increment(-amt)
- });
- await db.collection("users").doc(dest.docs[0].id).update({
-   [`balance.${cur}`]:firebase.firestore.FieldValue.increment(amt)
- });
- await db.collection("tx").add({from:me.data().gid,to:payId.value,type:"Paiement",amount:amt,currency:cur,date:new Date()});
+ if(dest.empty||me.data().balance<amt)return alert("Erreur");
+ await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});
+ await db.collection("users").doc(dest.docs[0].id).update({balance:firebase.firestore.FieldValue.increment(amt)});
+ await db.collection("tx").add({from:me.data().gid,to:payId.value,type:"Paiement",amount:amt,date:new Date()});
  loadMyTx();
  generateQRCode(payId.value);
- updateBalance();
 }
 
 async function cashin(){
- const cur=document.getElementById("currencySelect").value;
  const amt=parseFloat(cinAmount.value);
- await db.collection("users").doc(auth.currentUser.uid).update({
-   [`balance.${cur}`]:firebase.firestore.FieldValue.increment(amt)
- });
- await db.collection("tx").add({type:"Cash-in",amount:amt,currency:cur,date:new Date()});
+ if(!(await canTransact(auth.currentUser.uid, amt))){alert("Transaction non autorisée : KYC insuffisant"); return;}
+ await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(amt)});
+ await db.collection("tx").add({type:"Cash-in",amount:amt,date:new Date()});
  loadMyTx();
- updateBalance();
 }
 
 async function cashout(){
- const cur=document.getElementById("currencySelect").value;
  const amt=parseFloat(coutAmount.value);
+ if(!(await canTransact(auth.currentUser.uid, amt))){alert("Transaction non autorisée : KYC insuffisant"); return;}
  const me=await db.collection("users").doc(auth.currentUser.uid).get();
  const dest=await db.collection("users").where("gid","==",coutId.value).get();
- if(dest.empty||me.data().balance[cur]<amt) return alert("Erreur ou limite dépassée");
- await db.collection("users").doc(auth.currentUser.uid).update({
-   [`balance.${cur}`]:firebase.firestore.FieldValue.increment(-amt)
- });
- await db.collection("users").doc(dest.docs[0].id).update({
-   [`balance.${cur}`]:firebase.firestore.FieldValue.increment(amt)
- });
- await db.collection("tx").add({from:me.data().gid,to:coutId.value,type:"Cash-out",amount:amt,currency:cur,date:new Date()});
+ if(dest.empty||me.data().balance<amt)return alert("Erreur");
+ await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});
+ await db.collection("users").doc(dest.docs[0].id).update({balance:firebase.firestore.FieldValue.increment(amt)});
+ await db.collection("tx").add({from:me.data().gid,to:coutId.value,type:"Cash-out",amount:amt,date:new Date()});
  loadMyTx();
- updateBalance();
 }
 
 /* ACTIVITES RECENTES */
 async function loadMyTx(){
  myTx.innerHTML="";
  const snap=await db.collection("tx").where("from","==",cardId.textContent).orderBy("date","desc").limit(5).get();
- snap.forEach(d=>{const t=d.data(); myTx.innerHTML+=`<div class="tx">${t.type} • ${t.amount} ${t.currency}</div>`});
+ snap.forEach(d=>{const t=d.data(); myTx.innerHTML+=`<div class="tx">${t.type} • ${t.amount} USD</div>`});
 }
 
-/* ACTIVITES PUBLIQUES BINANCE-LIKE */
+/* PUBLIC MARKET TX */
 const names=["Ali M.","Sarah L.","Jean K.","Mohamed A.","Linda S.","David R.","Fatou B.","Chris T."];
 function marketFlow(){
  const tx=document.createElement("div");
  tx.className="tx";
- const cur=Math.random()>0.5?"USD":"CDF";
- tx.innerHTML=`${names[Math.floor(Math.random()*names.length)]} • ${Math.random()>0.5?"Paiement":"Cash-out"} • ${(Math.random()*900+20).toFixed(2)} ${cur}`;
+ tx.innerHTML=`${names[Math.floor(Math.random()*names.length)]} • ${Math.random()>0.5?"Paiement":"Cash-out"} • ${(Math.random()*900+20).toFixed(2)} USD`;
  marketTx.prepend(tx);
- if(marketTx.children.length>6) marketTx.removeChild(marketTx.lastChild);
+ if(marketTx.children.length>6)marketTx.removeChild(marketTx.lastChild);
 }
 setInterval(marketFlow,3000);
 
@@ -313,20 +282,26 @@ function generateQRCode(id){
  QRCode.toCanvas(container,id,{width:150,height:150},function(err){if(err)console.error(err)});
 }
 
-/* KYC LIGHT */
-function submitKYC(){
- const docType=document.getElementById("kycDocType").value;
- const docNum=document.getElementById("kycDocNumber").value;
- if(!docType || !docNum) return alert("Remplissez tous les champs KYC");
- db.collection("users").doc(auth.currentUser.uid).update({
-   kyc:{status:"pending",docType:docType,docNum:docNum}
- }).then(()=>alert("KYC soumis pour validation admin"));
- document.getElementById("kycStatus").textContent="pending";
+/* ADMIN KYC */
+async function loadAdminKYC(){
+ const table=document.getElementById("usersTable");
+ table.innerHTML="<tr><th>Nom</th><th>Email</th><th>Solde</th><th>KYC</th><th>Actions</th></tr>";
+ const users=await db.collection("users").get();
+ users.forEach(doc=>{
+  const u=doc.data();
+  const row=document.createElement("tr");
+  row.innerHTML=`<td>${u.name}</td><td>${u.email||'-'}</td><td>${u.balance}</td><td>${u.kyc||'none'}</td>
+  <td>
+   ${u.kyc!=='verified'?`<button class="admin-btn" onclick="verifyKYC('${doc.id}')">✔️ Valider</button>`:''}
+   ${u.kyc==='pending'?`<button class="admin-btn" onclick="rejectKYC('${doc.id}')">❌ Refuser</button>`:''}
+  </td>`;
+  table.appendChild(row);
+ });
 }
+async function verifyKYC(uid){await db.collection("users").doc(uid).update({kyc:'verified'}); loadAdminKYC(); alert("KYC validé ✅");}
+async function rejectKYC(uid){await db.collection("users").doc(uid).update({kyc:'none'}); loadAdminKYC(); alert("KYC refusé ❌");}
 
-/* LOGOUT */
 function logout(){auth.signOut();show("home")}
 </script>
-
 </body>
 </html>
