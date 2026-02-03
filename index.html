@@ -1,4 +1,4 @@
-<!-- GOPAY AFRICA PRO – VERSION FINALE SÉCURISÉE -->
+<!-- GOPAY AFRICA PRO – VERSION AVEC COMMISSIONS ET RÔLES SÉPARÉS -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -48,7 +48,6 @@ header{background:#012b28;padding:12px 20px;display:flex;justify-content:space-b
 
 .avatar{width:60px;height:60px;border-radius:50%;margin-bottom:10px;}
 
-/* Footer */
 footer{margin-top:30px;padding:20px;text-align:center;font-size:14px;opacity:.9;}
 footer h4{color:#5eead4;margin-bottom:6px;}
 </style>
@@ -123,9 +122,9 @@ footer h4{color:#5eead4;margin-bottom:6px;}
 </div>
 
 <div class="dashboard-actions">
-<button class="btn-3d" onclick="cashin()">Cash-in</button>
-<button class="btn-3d" onclick="cashout()">Cash-out</button>
-<button class="btn-3d" onclick="pay()">Paiement</button>
+<button class="btn-3d" onclick="initCashin()">Cash-in</button>
+<button class="btn-3d" onclick="initCashout()">Cash-out</button>
+<button class="btn-3d" onclick="initPay()">Paiement</button>
 <button class="btn-3d" onclick="logout()">Déconnexion</button>
 </div>
 
@@ -158,9 +157,9 @@ apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
 authDomain:"gotrustpay-e6524.firebaseapp.com",
 projectId:"gotrustpay-e6524",
 });
+
 const auth=firebase.auth();
 const db=firebase.firestore();
-
 let currentUser=null;
 let defaultAvatar="https://via.placeholder.com/60";
 let sessionToken=null;
@@ -213,7 +212,12 @@ document.getElementById("currency").innerText=d.currency;
 document.getElementById("avatarDash").src=d.avatar || defaultAvatar;
 generateQRCode(d.gid);
 
+/* Affichage admin seulement pour admin */
 if(d.role==="admin"){adminBtn.style.display="block";} else{adminBtn.style.display="none";}
+
+/* Séparer agent et client */
+if(d.role==="agent"){document.getElementById("dash").querySelector(".dashboard-actions").style.display="grid";}
+if(d.role==="client"){document.getElementById("dash").querySelector(".dashboard-actions").style.display="grid";}
 
 loadHistory();
 show("dash");
@@ -222,27 +226,57 @@ show("dash");
 /* QR CODE */
 function generateQRCode(id){QRCode.toCanvas(document.getElementById("qrCode"),id,{width:70},function(err){if(err)console.error(err);});}
 
-/* MULTI DEVISE */
-const exchangeRates={USD:1,CDF:2800};
-function convertCurrency(amount,from,to){return(amount/exchangeRates[from])*exchangeRates[to];}
+/* TRANSACTIONS AVEC DESTINATAIRE AUTOMATIQUE ET CONFIRMATION */
+async function initCashin(){
+let amt=parseFloat(prompt("Montant Cash-in"));
+if(!amt) return;
+let recipientId=prompt("ID du destinataire");
+if(!recipientId) return;
+const snap=await db.collection("users").doc(recipientId).get();
+if(!snap.exists){alert("Utilisateur introuvable"); return;}
+const recipient=snap.data();
+if(!confirm(`Confirmer Cash-in de ${amt} à ${recipient.name} (${recipient.gid}) ?`)) return;
+await db.collection("users").doc(recipientId).update({balance:firebase.firestore.FieldValue.increment(amt)});
+saveTransaction(recipient.gid,"cashin",amt);
+alert(`Cash-in de ${amt} USD effectué pour ${recipient.name}`);
+loadUser(currentUser);
+}
 
-/* DOUBLE SIGNATURE */
-function verifyDoubleSignature(pin,otp){return pin.length===4 && otp.length===6;}
+async function initCashout(){
+let amt=parseFloat(prompt("Montant Cash-out"));
+if(!amt) return;
+let pin=prompt("PIN 4 chiffres");
+let otp=prompt("OTP 6 chiffres");
+if(!verifyDoubleSignature(pin,otp)){alert("Double signature invalide"); return;}
+if(!confirm(`Confirmer Cash-out de ${amt} USD ?`)) return;
+await db.collection("users").doc(currentUser.gid).update({balance:firebase.firestore.FieldValue.increment(-amt)});
+saveTransaction(currentUser.gid,"cashout",amt);
+alert(`Cash-out de ${amt} USD effectué`);
+loadUser(currentUser);
+}
 
-/* NOTIFICATIONS */
-function notifyUser(msg){alert("Notification GoPay : "+msg);}
-
-/* TRANSACTIONS */
-async function cashin(){let amt=parseFloat(prompt("Montant Cash-in")); if(!amt) return; await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(amt)}); saveTransaction(currentUser.gid,"cashin",amt); loadUser(currentUser);}
-async function cashout(){let amt=parseFloat(prompt("Montant Cash-out")); if(!amt) return; let pin=prompt("PIN 4 chiffres"); let otp=prompt("OTP 6 chiffres"); if(!verifyDoubleSignature(pin,otp)){alert("Double signature invalide"); return;} await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)}); saveTransaction(currentUser.gid,"cashout",amt); loadUser(currentUser);}
-async function pay(){let amt=parseFloat(prompt("Montant paiement")); if(!amt) return; let pin=prompt("PIN 4 chiffres"); let otp=prompt("OTP 6 chiffres"); if(!verifyDoubleSignature(pin,otp)){alert("Double signature invalide"); return;} await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)}); saveTransaction(currentUser.gid,"pay",amt); loadUser(currentUser);}
+async function initPay(){
+let amt=parseFloat(prompt("Montant paiement"));
+if(!amt) return;
+let recipientId=prompt("ID destinataire");
+if(!recipientId) return;
+let snap=await db.collection("users").doc(recipientId).get();
+if(!snap.exists){alert("Utilisateur introuvable"); return;}
+let recipient=snap.data();
+let pin=prompt("PIN 4 chiffres");
+let otp=prompt("OTP 6 chiffres");
+if(!verifyDoubleSignature(pin,otp)){alert("Double signature invalide"); return;}
+if(!confirm(`Confirmer paiement de ${amt} à ${recipient.name} (${recipient.gid}) ?`)) return;
+await db.collection("users").doc(currentUser.gid).update({balance:firebase.firestore.FieldValue.increment(-amt)});
+await db.collection("users").doc(recipientId).update({balance:firebase.firestore.FieldValue.increment(amt)});
+saveTransaction(currentUser.gid,"pay",amt);
+alert(`Paiement de ${amt} USD effectué vers ${recipient.name}`);
+loadUser(currentUser);
+}
 
 /* HISTORIQUE */
 function saveTransaction(userId,type,amount){db.collection("transactions").add({userId,type,amount,date:new Date()});}
 function loadHistory(){history.innerHTML=`<p>Dernières transactions simulées...</p>`;}
-
-/* KYC */
-function submitKYC(userId,docURL){db.collection("kyc").doc(userId).set({document:docURL,status:"pending"});}
 
 /* SESSION MULTI-APPAREIL */
 async function loadUserData(uid){const snap=await db.collection("users").doc(uid).get(); currentUser=snap.data(); if(currentUser.sessionToken && currentUser.sessionToken!==uid){alert("Session active sur un autre appareil");logout();} else{await db.collection("users").doc(uid).update({sessionToken:uid}); loadUser(currentUser);}}
@@ -250,10 +284,15 @@ async function loadUserData(uid){const snap=await db.collection("users").doc(uid
 /* ADMIN */
 async function openAdmin(){
 show("admin");
-usersTable.innerHTML="<tr><th>Nom</th><th>Email</th><th>Solde</th><th>Role</th></tr>";
+usersTable.innerHTML="<tr><th>Nom</th><th>Email</th><th>Solde</th><th>Role</th><th>Commission</th></tr>";
 const users=await db.collection("users").get();
 let totalClients=0,totalAgents=0;
-users.forEach(doc=>{const u=doc.data(); usersTable.innerHTML+=`<tr><td>${u.name}</td><td>${u.email}</td><td>${u.balance}</td><td>${u.role}</td></tr>`; if(u.role==="client") totalClients++; if(u.role==="agent") totalAgents++;});
+users.forEach(doc=>{
+const u=doc.data();
+let commission=u.balance*0.01; // exemple 1% commission
+usersTable.innerHTML+=`<tr><td>${u.name}</td><td>${u.email}</td><td>${u.balance}</td><td>${u.role}</td><td>${commission.toFixed(2)}</td></tr>`;
+if(u.role==="client") totalClients++; if(u.role==="agent") totalAgents++;
+});
 document.getElementById("totalTransactions").innerText=await db.collection("transactions").get().then(s=>s.size);
 document.getElementById("totalClients").innerText=totalClients;
 document.getElementById("totalAgents").innerText=totalAgents;
@@ -263,16 +302,15 @@ document.getElementById("totalAgents").innerText=totalAgents;
 function generateAvatar(name){return `https://ui-avatars.com/api/?name=${name}&background=0D8ABC&color=fff`;}
 function generateCard(){return {cardNumber:"5314 "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000),biometricCode:Math.floor(100000 + Math.random()*900000)};}
 
-/* ROLE UTILISATEUR */
-function assignRole(email){if(email.includes("admin")) return "admin"; if(email.includes("agent")) return "agent"; return "client";}
-
-/* API AGENT SIMULE */
-function agentDeposit(agentID,clientID,amount){notifyUser("Agent "+agentID+" a crédité "+amount);}
-
 /* AUTH WATCH */
 auth.onAuthStateChanged(user=>{if(user){db.collection("users").doc(user.uid).get().then(s=>{loadUser(s.data());});}});
-
 function logout(){auth.signOut();document.body.style.background="#061e1c";show("home");}
+
+/* UTILS */
+const exchangeRates={USD:1,CDF:2800};
+function convertCurrency(amount,from,to){return(amount/exchangeRates[from])*exchangeRates[to];}
+function verifyDoubleSignature(pin,otp){return pin.length===4 && otp.length===6;}
+function notifyUser(msg){alert("Notification GoPay : "+msg);}
 </script>
 </body>
 </html>
