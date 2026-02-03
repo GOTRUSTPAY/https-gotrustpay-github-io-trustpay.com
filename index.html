@@ -2,257 +2,324 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>GoPay Africa</title>
+<title>GoPay Premium</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 <style>
-body{margin:0;font-family:Roboto;background:#061e1c;color:#e6fffa;}
-header{background:#012b28;padding:12px 20px;display:flex;justify-content:space-between;}
-.logo-text{font-size:22px;font-weight:700;color:#5eead4;}
-.menu-btn{font-size:28px;cursor:pointer;}
-.menu{display:none;position:absolute;top:60px;right:20px;background:#043837;border-radius:12px;}
-.menu a{display:block;padding:12px;color:#5eead4;cursor:pointer;}
-.menu a:hover{background:#065f5b;}
+body{
+margin:0;
+font-family:Roboto;
+background:#06121c;
+color:white;
+}
 
-.panel{background:#043837;padding:20px;border-radius:18px;margin:20px;}
-.hidden{display:none;}
+header{
+background:#081c2b;
+padding:15px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
 
-.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:20px;}
-.action{background:#14b8a6;padding:15px;border-radius:14px;text-align:center;font-weight:700;cursor:pointer;}
+.menu{
+cursor:pointer;
+font-size:25px;
+}
 
-.tx{background:#065f5b;padding:10px;border-radius:10px;margin-bottom:8px;}
+.dropdown{
+display:none;
+position:absolute;
+right:10px;
+top:60px;
+background:#081c2b;
+border-radius:10px;
+padding:10px;
+}
+
+.dropdown a{
+display:block;
+padding:8px;
+color:white;
+text-decoration:none;
+}
+
+.container{
+padding:20px;
+}
+
+.card{
+background:#0c2537;
+padding:20px;
+margin:10px 0;
+border-radius:15px;
+}
+
+button{
+padding:12px;
+border:none;
+border-radius:10px;
+background:#00aaff;
+color:white;
+width:100%;
+margin-top:10px;
+cursor:pointer;
+}
+
+input{
+width:100%;
+padding:10px;
+margin-top:10px;
+border-radius:10px;
+border:none;
+}
+
+footer{
+margin-top:50px;
+padding:20px;
+background:#081c2b;
+text-align:center;
+}
 </style>
 </head>
 
 <body>
 
 <header>
-<div class="logo-text">GoPay Africa</div>
-<div class="menu-btn" onclick="toggleMenu()">☰</div>
+<h2>GOPAY</h2>
+<div class="menu" onclick="toggleMenu()">☰</div>
 </header>
 
-<div class="menu" id="menu">
-<a onclick="nav('home')">Accueil</a>
-<a onclick="nav('login')">Connexion</a>
-<a id="adminBtn" class="hidden" onclick="nav('admin')">Admin</a>
-<a onclick="logout()">Déconnexion</a>
+<div class="dropdown" id="menuBox">
+<a onclick="showPage('home')">Accueil</a>
+<a onclick="showPage('login')">Connexion</a>
 </div>
 
 <!-- HOME -->
-<div id="home" class="panel">
-<h2>Banque Digitale Africaine</h2>
+<div id="home" class="container">
+<h3>Qui sommes-nous</h3>
+<p>GoPay Premium est une solution financière digitale africaine.</p>
+
+<h3>Confidentialité</h3>
+<p>Protection maximale des données clients.</p>
+
+<h3>Contact</h3>
+<p>Email : support@gopay.africa</p>
+
+<h3>FAQ</h3>
+<p>Questions fréquentes utilisateurs.</p>
+
+<h3>Mentions légales</h3>
+<p>Entreprise FinTech enregistrée.</p>
 </div>
 
 <!-- LOGIN -->
-<div id="login" class="panel hidden">
+<div id="login" class="container" style="display:none;">
 <h3>Connexion</h3>
-<input id="lEmail" placeholder="Email">
-<input id="lPass" type="password" placeholder="Mot de passe">
-<button onclick="login()">Connexion</button>
-<button onclick="nav('register')">Créer compte</button>
-</div>
 
-<!-- REGISTER -->
-<div id="register" class="panel hidden">
-<h3>Créer compte</h3>
-<input id="rName" placeholder="Nom">
-<input id="rEmail" placeholder="Email">
-<input id="rPass" type="password" placeholder="Mot de passe">
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Mot de passe">
 
-<select id="rRole">
-<option value="client">Client</option>
-<option value="agent">Agent</option>
-<option value="admin">Admin</option>
-</select>
-
-<button onclick="register()">Créer</button>
+<button onclick="login()">Se connecter</button>
 </div>
 
 <!-- DASHBOARD -->
-<div id="dash" class="panel hidden">
-<h3 id="cardName"></h3>
-<p>ID : <span id="cardId"></span></p>
-<p>Solde : <b id="balance"></b> USD</p>
+<div id="dashboard" class="container" style="display:none;">
 
-<div class="actions">
-<div class="action" onclick="cashin()">Cash-in</div>
-<div class="action" onclick="cashout()">Cash-out</div>
-<div class="action" onclick="pay()">Paiement</div>
+<h2>GOPAY</h2>
+<p>ID : <span id="userId"></span></p>
+<p>Solde : <span id="balance"></span> USD</p>
+
+<div class="card">
+<button onclick="showTransaction('cashin')">Cash-in</button>
+<button onclick="showTransaction('cashout')">Cash-out</button>
+<button onclick="showTransaction('pay')">Paiement</button>
+<button onclick="logout()">Déconnexion</button>
+
+<div id="adminBtn" style="display:none;">
+<button onclick="showPage('admin')">Admin Panel</button>
+</div>
 </div>
 
-<h4>Historique</h4>
-<div id="myTx"></div>
+</div>
+
+<!-- CASHIN -->
+<div id="cashin" class="container" style="display:none;">
+<h3>Cash-in</h3>
+<input id="cashinAmount" placeholder="Montant">
+<button onclick="cashIn()">Confirmer</button>
+</div>
+
+<!-- CASHOUT -->
+<div id="cashout" class="container" style="display:none;">
+<h3>Cash-out</h3>
+<input id="cashoutId" placeholder="ID Destinataire">
+<input id="cashoutName" placeholder="Nom Destinataire">
+<input id="cashoutAmount" placeholder="Montant">
+<button onclick="cashOut()">Confirmer</button>
+</div>
+
+<!-- PAYMENT -->
+<div id="pay" class="container" style="display:none;">
+<h3>Paiement</h3>
+<input id="payId" placeholder="ID Destinataire">
+<input id="payName" placeholder="Nom Destinataire">
+<input id="payAmount" placeholder="Montant">
+<button onclick="pay()">Confirmer</button>
 </div>
 
 <!-- ADMIN -->
-<div id="admin" class="panel hidden">
-<h3>Liste Agents</h3>
-<table id="usersTable"></table>
+<div id="admin" class="container" style="display:none;">
+<h3>Panel Admin</h3>
+<p>Liste des agents :</p>
+<ul id="agentList"></ul>
 </div>
+
+<footer>
+© 2026 GoPay Premium
+</footer>
 
 <script>
 
-firebase.initializeApp({
-apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
-authDomain:"gotrustpay-e6524.firebaseapp.com",
-projectId:"gotrustpay-e6524"
-});
+let currentUser = null;
 
-const auth=firebase.auth();
-const db=firebase.firestore();
-
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-
-// NAVIGATION
 function toggleMenu(){
-menu.style.display = menu.style.display==="block"?"none":"block";
+let m = document.getElementById("menuBox");
+m.style.display = m.style.display === "block" ? "none" : "block";
 }
 
-function nav(id){
-show(id);
-menu.style.display="none";
-}
+function showPage(page){
 
-function show(id){
-document.querySelectorAll(".panel").forEach(p=>p.classList.add("hidden"));
-document.getElementById(id).classList.remove("hidden");
-}
+document.getElementById("menuBox").style.display="none";
 
-// REGISTER
-async function register(){
-try{
-
-const cred = await auth.createUserWithEmailAndPassword(rEmail.value,rPass.value);
-
-const gid = "GP"+Math.random().toString(36).substr(2,6).toUpperCase();
-
-await db.collection("users").doc(cred.user.uid).set({
-name:rName.value,
-email:rEmail.value,
-gid:gid,
-balance:50,
-role:rRole.value
+["home","login","dashboard","cashin","cashout","pay","admin"].forEach(p=>{
+document.getElementById(p).style.display="none";
 });
 
-await loginAuto();
-
-}catch(e){alert(e.message);}
+document.getElementById(page).style.display="block";
 }
 
-async function loginAuto(){
-const user=auth.currentUser;
-const doc=await db.collection("users").doc(user.uid).get();
-loadUser(doc.data());
+function generateID(){
+return "GP" + Math.floor(Math.random()*1000000);
 }
 
-// LOGIN
-async function login(){
-try{
+function login(){
 
-const cred = await auth.signInWithEmailAndPassword(lEmail.value,lPass.value);
-const doc = await db.collection("users").doc(cred.user.uid).get();
+let email = document.getElementById("email").value;
 
-if(!doc.exists){ alert("Compte introuvable"); return; }
+if(!email) return;
 
-loadUser(doc.data());
+let user = JSON.parse(localStorage.getItem(email));
 
-lEmail.value="";
-lPass.value="";
+if(!user){
 
-}catch(e){alert("Connexion refusée");}
+user = {
+email:email,
+id:generateID(),
+balance:0,
+role: email==="admin@gopay.africa" ? "admin" : "agent"
+};
+
+localStorage.setItem(email, JSON.stringify(user));
 }
 
-// LOAD USER
-function loadUser(d){
+currentUser=user;
 
-if(!d) return;
+sessionStorage.setItem("session",email);
 
-cardName.innerText=d.name || "Client";
-cardId.innerText=d.gid || "GP-000000";
-balance.innerText=Number(d.balance||0).toFixed(2);
-
-if(d.role==="admin"){
-adminBtn.classList.remove("hidden");
-loadAdmin();
-}else{
-adminBtn.classList.add("hidden");
+loadDashboard();
 }
 
-show("dash");
-loadMyTx();
+function loadDashboard(){
+
+document.getElementById("userId").innerText=currentUser.id;
+document.getElementById("balance").innerText=currentUser.balance;
+
+if(currentUser.role==="admin"){
+document.getElementById("adminBtn").style.display="block";
+loadAgents();
 }
 
-// CASHIN
-async function cashin(){
-let amt=parseFloat(prompt("Montant"));
-if(!amt || amt<=0) return;
-
-await db.collection("users").doc(auth.currentUser.uid)
-.update({balance:firebase.firestore.FieldValue.increment(amt)});
-
-loadMyTx();
+showPage("dashboard");
 }
 
-// CASHOUT
-async function cashout(){
-let amt=parseFloat(prompt("Montant"));
-if(!amt || amt<=0) return;
-
-await db.collection("users").doc(auth.currentUser.uid)
-.update({balance:firebase.firestore.FieldValue.increment(-amt)});
-
-loadMyTx();
-}
-
-// PAY
-async function pay(){
-alert("Paiement simulé");
-}
-
-// HISTORIQUE
-async function loadMyTx(){
-const snap=await db.collection("users").doc(auth.currentUser.uid).get();
-balance.innerText=Number(snap.data().balance||0).toFixed(2);
-}
-
-// ADMIN = VOIR AGENTS
-async function loadAdmin(){
-
-usersTable.innerHTML="<tr><th>Nom</th><th>Email</th><th>Solde</th></tr>";
-
-const agents=await db.collection("users").where("role","==","agent").get();
-
-agents.forEach(doc=>{
-const u=doc.data();
-usersTable.innerHTML+=`
-<tr>
-<td>${u.name}</td>
-<td>${u.email}</td>
-<td>${u.balance}</td>
-</tr>`;
-});
-}
-
-// SESSION WATCH
-auth.onAuthStateChanged(async user=>{
-if(user){
-const doc=await db.collection("users").doc(user.uid).get();
-if(doc.exists) loadUser(doc.data());
-}
-});
-
-// LOGOUT
 function logout(){
-auth.signOut();
-show("home");
+sessionStorage.clear();
+currentUser=null;
+showPage("home");
 }
 
+function showTransaction(type){
+showPage(type);
+}
+
+function cashIn(){
+
+let amount=parseFloat(document.getElementById("cashinAmount").value);
+if(!amount) return;
+
+currentUser.balance+=amount;
+
+saveUser();
+loadDashboard();
+}
+
+function cashOut(){
+
+let amount=parseFloat(document.getElementById("cashoutAmount").value);
+if(!amount) return;
+
+if(currentUser.balance < amount){
+alert("Solde insuffisant");
+return;
+}
+
+currentUser.balance-=amount;
+saveUser();
+loadDashboard();
+}
+
+function pay(){
+cashOut();
+}
+
+function saveUser(){
+localStorage.setItem(currentUser.email, JSON.stringify(currentUser));
+}
+
+function loadAgents(){
+
+let list=document.getElementById("agentList");
+list.innerHTML="";
+
+for(let i=0;i<localStorage.length;i++){
+
+let key=localStorage.key(i);
+let user=JSON.parse(localStorage.getItem(key));
+
+if(user.role==="agent"){
+let li=document.createElement("li");
+li.innerText=user.email+" - "+user.id;
+list.appendChild(li);
+}
+
+}
+}
+
+window.onload=function(){
+
+let session=sessionStorage.getItem("session");
+
+if(session){
+currentUser=JSON.parse(localStorage.getItem(session));
+loadDashboard();
+}else{
+showPage("home");
+}
+
+}
 </script>
+
 </body>
 </html>
