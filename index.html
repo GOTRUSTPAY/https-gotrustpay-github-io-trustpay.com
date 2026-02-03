@@ -48,7 +48,9 @@ button.admin-btn{padding:5px 8px;margin-left:5px;font-size:12px}
 </head>
 <body>
 <header>
-<div class="logo-wrap"><div class="logo-text">GoPay Africa</div></div>
+<div class="logo-wrap">
+<div class="logo-text">GoPay Africa</div>
+</div>
 <div class="menu-btn" onclick="toggleMenu()">☰</div>
 </header>
 
@@ -62,14 +64,12 @@ button.admin-btn{padding:5px 8px;margin-left:5px;font-size:12px}
 </div>
 
 <main>
-<!-- HOME -->
 <div id="home" class="panel">
 <h2>Payments for a Connected Africa</h2>
 <p>Paiements digitaux sécurisés et fiables.</p>
 <div id="home-qrcode"></div>
 </div>
 
-<!-- LOGIN -->
 <div id="login" class="panel hidden">
 <h3>Connexion</h3>
 <input id="lEmail" placeholder="Email">
@@ -77,7 +77,6 @@ button.admin-btn{padding:5px 8px;margin-left:5px;font-size:12px}
 <button onclick="login()">Se connecter</button>
 </div>
 
-<!-- REGISTER -->
 <div id="register" class="panel hidden">
 <h3>Inscription</h3>
 <input id="rName" placeholder="Nom complet">
@@ -91,7 +90,6 @@ button.admin-btn{padding:5px 8px;margin-left:5px;font-size:12px}
 <button onclick="register()">Créer un compte</button>
 </div>
 
-<!-- DASHBOARD USER -->
 <div id="dash" class="hidden">
 <div class="card" id="card">
 <div class="card-inner">
@@ -105,7 +103,9 @@ button.admin-btn{padding:5px 8px;margin-left:5px;font-size:12px}
 <div class="card-row"><strong id="cardName"></strong><strong>12/29</strong></div>
 <p>SOLDE : <b><span id="balance"></span> <span id="currency">USD</span></b></p>
 </div>
-<div class="card-back"><div id="cardQR"></div></div>
+<div class="card-back">
+<div id="cardQR"></div>
+</div>
 </div>
 </div>
 
@@ -115,7 +115,6 @@ button.admin-btn{padding:5px 8px;margin-left:5px;font-size:12px}
 <div class="action" onclick="openP('cashout')">➖ Cash-out</div>
 </div>
 
-<!-- PAY -->
 <div id="pay" class="panel hidden">
 <input id="payId" placeholder="ID GoPay destinataire" oninput="fetchRecipientName('pay')">
 <input id="payName" disabled placeholder="Nom destinataire">
@@ -125,14 +124,12 @@ button.admin-btn{padding:5px 8px;margin-left:5px;font-size:12px}
 <div id="payQR"></div>
 </div>
 
-<!-- CASH-IN -->
 <div id="cashin" class="panel hidden">
 <input id="cinAmount" type="number" placeholder="Montant USD/CDF">
 <select id="cinCurrency"><option value="USD">USD</option><option value="CDF">CDF</option></select>
 <button onclick="cashin()">Valider</button>
 </div>
 
-<!-- CASH-OUT -->
 <div id="cashout" class="panel hidden">
 <input id="coutId" placeholder="ID GoPay destinataire" oninput="fetchRecipientName('cout')">
 <input id="coutName" disabled placeholder="Nom destinataire">
@@ -141,7 +138,6 @@ button.admin-btn{padding:5px 8px;margin-left:5px;font-size:12px}
 <button onclick="cashout()">Confirmer</button>
 </div>
 
-<!-- HISTORIQUE -->
 <div class="panel">
 <h3>Activités récentes</h3>
 <div id="myTx"></div>
@@ -149,13 +145,11 @@ button.admin-btn{padding:5px 8px;margin-left:5px;font-size:12px}
 <div id="marketTx"></div>
 </div>
 
-<!-- ADMIN KYC -->
 <div id="admin" class="panel hidden">
 <h3>ADMIN – Gestion KYC</h3>
 <table id="usersTable"></table>
 </div>
 
-<!-- AGENT PANEL -->
 <div id="agentPanel" class="panel hidden">
 <h3>Agent Panel – Suivi clients</h3>
 <div id="agentClients"></div>
@@ -170,7 +164,7 @@ button.admin-btn{padding:5px 8px;margin-left:5px;font-size:12px}
 </footer>
 
 <script>
-// Firebase init
+// Firebase
 firebase.initializeApp({
  apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
  authDomain:"gotrustpay-e6524.firebaseapp.com",
@@ -187,20 +181,17 @@ function show(id){
  localStorage.setItem('currentPage',id);
  menu.style.display="none";
 }
-window.onload=function(){
- const page=localStorage.getItem('currentPage')||'home';
- show(page);
-}
+window.onload=function(){show(localStorage.getItem('currentPage')||'home')}
 
-// Util
+// Utils
 function genId(){return "GP-"+Math.random().toString(36).substr(2,8).toUpperCase()}
 
 // Register
 async function register(){
  const role=rRole.value;
- const file=rPhoto.files[0];
- let photoURL='https://i.pravatar.cc/150?img=65';
- if(file){ const ref=storage.ref('profiles/'+Date.now()+'_'+file.name); await ref.put(file); photoURL=await ref.getDownloadURL(); }
+ const file = rPhoto.files[0];
+ let photoURL = 'https://i.pravatar.cc/150?img=65';
+ if(file){const ref=storage.ref('profiles/'+Date.now()+'_'+file.name); await ref.put(file); photoURL=await ref.getDownloadURL();}
  const cred=await auth.createUserWithEmailAndPassword(rEmail.value,rPass.value);
  await db.collection("users").doc(cred.user.uid).set({name:rName.value,email:rEmail.value,gid:genId(),balance:50,kyc:role==='client'?'none':'verified',role:role,photo:photoURL});
  alert("Compte créé ✅");
@@ -214,73 +205,47 @@ async function login(){
  const d=snap.data();
  cardName.textContent=d.name; cardId.textContent=d.gid; balance.textContent=d.balance.toFixed(2); cardAvatar.src=d.photo;
  generateQRCode(d.gid,'cardQR'); loadMyTx();
- if(d.role==='admin'){adminLink.style.display='block';agentLink.style.display='none'; loadAdminKYC(); show('admin');}
- else if(d.role==='agent'){agentLink.style.display='block';adminLink.style.display='none'; loadAgentClients(); show('agentPanel');}
- else{adminLink.style.display='none';agentLink.style.display='none'; show('dash');}
+ if(d.role==='admin'){document.getElementById('adminLink').style.display='block';document.getElementById('agentLink').style.display='none';loadAdminKYC();show('admin');}
+ else if(d.role==='agent'){document.getElementById('agentLink').style.display='block';document.getElementById('adminLink').style.display='none';loadAgentClients();show('agentPanel');}
+ else{document.getElementById('adminLink').style.display='none';document.getElementById('agentLink').style.display='none';show('dash');}
 }
 
 // Card flip
 card.onclick=()=>card.classList.toggle("flip");
 
-// Can transact
-async function canTransact(uid,amt){ const snap=await db.collection("users").doc(uid).get(); const u=snap.data(); if(u.kyc==='none') return false; if(u.kyc==='pending'&&amt>100) return false; return true; }
+// Transactions
+async function canTransact(uid, amt){const snap=await db.collection("users").doc(uid).get();const u=snap.data();return u.kyc!=='none'&&(u.kyc!=='pending'||amt<=100);}
+async function fetchRecipientName(t){const id=t==='pay'?payId.value:coutId.value;const f=t==='pay'?payName:coutName;if(!id){f.value='';return;}const q=await db.collection("users").where("gid","==",id).get();f.value=q.empty?'ID invalide':q.docs[0].data().name;}
+async function pay(){const amt=parseFloat(payAmount.value);if(!(await canTransact(auth.currentUser.uid,amt))){alert("KYC insuffisant");return;}const me=await db.collection("users").doc(auth.currentUser.uid).get();const dest=await db.collection("users").where("gid","==",payId.value).get();if(dest.empty||me.data().balance<amt)return alert("Erreur");await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});await db.collection("users").doc(dest.docs[0].id).update({balance:firebase.firestore.FieldValue.increment(amt)});await db.collection("tx").add({from:me.data().gid,to:payId.value,type:"Paiement",amount:amt,date:new Date()});loadMyTx();generateQRCode(payId.value,'payQR');}
+async function cashin(){const amt=parseFloat(cinAmount.value);if(!(await canTransact(auth.currentUser.uid,amt))){alert("KYC insuffisant");return;}await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(amt)});await db.collection("tx").add({type:"Cash-in",amount:amt,date:new Date()});loadMyTx();}
+async function cashout(){const amt=parseFloat(coutAmount.value);if(!(await canTransact(auth.currentUser.uid,amt))){alert("KYC insuffisant");return;}const me=await db.collection("users").doc(auth.currentUser.uid).get();const dest=await db.collection("users").where("gid","==",coutId.value).get();if(dest.empty||me.data().balance<amt)return alert("Erreur");await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});await db.collection("users").doc(dest.docs[0].id).update({balance:firebase.firestore.FieldValue.increment(amt)});await db.collection("tx").add({from:me.data().gid,to:coutId.value,type:"Cash-out",amount:amt,date:new Date()});loadMyTx();}
 
-// Fetch recipient
-async function fetchRecipientName(t){ const id=t==="pay"?payId.value:coutId.value; const f=t==="pay"?payName:coutName; if(!id){f.value="";return;} const q=await db.collection("users").where("gid","==",id).get(); f.value=q.empty?"ID invalide":q.docs[0].data().name; }
-
-// Pay / Cashin / Cashout
-async function pay(){ const amt=parseFloat(payAmount.value); if(!(await canTransact(auth.currentUser.uid,amt))){alert("KYC insuffisant");return;} const me=await db.collection("users").doc(auth.currentUser.uid).get(); const dest=await db.collection("users").where("gid","==",payId.value).get(); if(dest.empty||me.data().balance<amt)return alert("Erreur"); await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)}); await db.collection("users").doc(dest.docs[0].id).update({balance:firebase.firestore.FieldValue.increment(amt)}); await db.collection("tx").add({from:me.data().gid,to:payId.value,type:"Paiement",amount:amt,date:new Date()}); loadMyTx(); generateQRCode(payId.value,'payQR'); }
-async function cashin(){ const amt=parseFloat(cinAmount.value); if(!(await canTransact(auth.currentUser.uid,amt))){alert("KYC insuffisant");return;} await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(amt)}); await db.collection("tx").add({type:"Cash-in",amount:amt,date:new Date()}); loadMyTx(); }
-async function cashout(){ const amt=parseFloat(coutAmount.value); if(!(await canTransact(auth.currentUser.uid,amt))){alert("KYC insuffisant");return;} const me=await db.collection("users").doc(auth.currentUser.uid).get(); const dest=await db.collection("users").where("gid","==",coutId.value).get(); if(dest.empty||me.data().balance<amt)return alert("Erreur"); await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)}); await db.collection("users").doc(dest.docs[0].id).update({balance:firebase.firestore.FieldValue.increment(amt)}); await db.collection("tx").add({from:me.data().gid,to:coutId.value,type:"Cash-out",amount:amt,date:new Date()}); loadMyTx(); }
-
-// Load My Tx
-async function loadMyTx(){ myTx.innerHTML=""; const snap=await db.collection("tx").where("from","==",cardId.textContent).orderBy("date","desc").limit(5).get(); snap.forEach(d=>{ const t=d.data(); myTx.innerHTML+=`<div class="tx">${t.type} • ${t.amount.toFixed(2)} USD/CDF</div>`; }); }
+// Load transactions
+async function loadMyTx(){myTx.innerHTML="";const snap=await db.collection("tx").where("from","==",cardId.textContent).orderBy("date","desc").limit(5).get();snap.forEach(d=>{const t=d.data();myTx.innerHTML+=`<div class="tx">${t.type} • ${t.amount.toFixed(2)} USD/CDF</div>`});}
 
 // Market flow
 const names=["Ali M.","Sarah L.","Jean K.","Mohamed A.","Linda S.","David R.","Fatou B.","Chris T."];
-function marketFlow(){ const tx=document.createElement("div"); tx.className="tx"; tx.innerHTML=`${names[Math.floor(Math.random()*names.length)]} • ${Math.random()>0.5?"Paiement":"Cash-out"} • ${(Math.random()*900+20).toFixed(2)} USD`; marketTx.prepend(tx); if(marketTx.children.length>6)marketTx.removeChild(marketTx.lastChild); }
+function marketFlow(){const tx=document.createElement("div");tx.className="tx";tx.innerHTML=`${names[Math.floor(Math.random()*names.length)]} • ${Math.random()>0.5?"Paiement":"Cash-out"} • ${(Math.random()*900+20).toFixed(2)} USD`;marketTx.prepend(tx);if(marketTx.children.length>6)marketTx.removeChild(marketTx.lastChild);}
 setInterval(marketFlow,3000);
 
 // QR Code
-function generateQRCode(id,cId){ const c=document.getElementById(cId); c.innerHTML=""; QRCode.toCanvas(c,id,{width:150,height:150},err=>{if(err)console.error(err)}); }
+function generateQRCode(id,containerId){const container=document.getElementById(containerId);container.innerHTML="";QRCode.toCanvas(container,id,{width:150,height:150},function(err){if(err)console.error(err)});}
 
 // Admin KYC
-async function loadAdminKYC(){
- const table=document.getElementById("usersTable");
- table.innerHTML="<tr><th>Nom</th><th>Email</th><th>Solde</th><th>KYC</th><th>Rôle</th><th>Actions</th></tr>";
- const users=await db.collection("users").get();
- users.forEach(doc=>{
-    const u=doc.data();
-    const row=document.createElement("tr");
-    row.innerHTML=`<td>${u.name}</td><td>${u.email||'-'}</td><td>${u.balance.toFixed(2)}</td><td>${u.kyc||'none'}</td><td>${u.role}</td>
-    <td>${u.kyc!=='verified'?`<button class="admin-btn" onclick="verifyKYC('${doc.id}')">✔️ Valider</button>`:''}${u.kyc==='pending'?`<button class="admin-btn" onclick="rejectKYC('${doc.id}')">❌ Refuser</button>`:''}</td>`;
-    table.appendChild(row);
- });
-}
+async function loadAdminKYC(){const table=document.getElementById("usersTable");table.innerHTML="<tr><th>Nom</th><th>Email</th><th>Solde</th><th>KYC</th><th>Rôle</th><th>Actions</th></tr>";const users=await db.collection("users").get();users.forEach(doc=>{const u=doc.data();const row=document.createElement("tr");row.innerHTML=`<td>${u.name}</td><td>${u.email||'-'}</td><td>${u.balance.toFixed(2)}</td><td>${u.kyc||'none'}</td><td>${u.role}</td><td>${u.kyc!=='verified'?`<button class="admin-btn" onclick="verifyKYC('${doc.id}')">✔️ Valider</button>`:''} ${u.kyc==='pending'?`<button class="admin-btn" onclick="rejectKYC('${doc.id}')">❌ Refuser</button>`:''}</td>`;table.appendChild(row);});}
+async function verifyKYC(uid){await db.collection("users").doc(uid).update({kyc:'verified'});alert("KYC validé ✅");loadAdminKYC();}
+async function rejectKYC(uid){await db.collection("users").doc(uid).update({kyc:'none'});alert("KYC refusé ❌");loadAdminKYC();}
 
-async function verifyKYC(uid){ await db.collection("users").doc(uid).update({kyc:'verified'}); alert("KYC validé ✅"); loadAdminKYC(); }
-async function rejectKYC(uid){ await db.collection("users").doc(uid).update({kyc:'none'}); alert("KYC refusé ❌"); loadAdminKYC(); }
+// Agent panel
+async function loadAgentClients(){const container=document.getElementById("agentClients");container.innerHTML="";const users=await db.collection("users").where("role","==","client").get();users.forEach(doc=>{const u=doc.data();container.innerHTML+=`<div class="tx"><strong>${u.name}</strong> • ${u.gid} • Solde: ${u.balance.toFixed(2)} • KYC: ${u.kyc}</div>`});}
 
-// Agent Panel
-async function loadAgentClients(){
- const container=document.getElementById("agentClients"); container.innerHTML="";
- const users=await db.collection("users").where("role","==","client").get();
- users.forEach(doc=>{ const u=doc.data(); container.innerHTML+=`<div class="tx"><strong>${u.name}</strong> • ${u.gid}• Solde: ${u.balance.toFixed(2)} • KYC: ${u.kyc}</div>`});
-}
+// Logout
+function logout(){auth.signOut();show("home");document.getElementById('adminLink').style.display='none';document.getElementById('agentLink').style.display='none';}
 
-// Déconnexion
-function logout(){
-    auth.signOut();
-    show("home");
-    document.getElementById('adminLink').style.display='none';
-    document.getElementById('agentLink').style.display='none';
-}
+// Panel switch
+function openP(id){document.querySelectorAll('#pay,#cashin,#cashout').forEach(d=>d.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');}
 
-// Ouvrir un panel d'action
-function openP(id){
-    document.querySelectorAll("#pay,#cashin,#cashout").forEach(d=>d.classList.add("hidden"));
-    document.getElementById(id).classList.remove("hidden");
-}
 </script>
 </body>
 </html>
+``
