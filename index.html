@@ -1,4 +1,4 @@
-<!-- VERSION CORRIGÉE GO PAY AFRICA PRO -->
+<!-- VERSION CORRIGÉE GO PAY AFRICA PRO (LOGIN SÉCURISÉ) -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -46,7 +46,7 @@ footer h4{color:#5eead4;margin-bottom:6px;}
 
 <div class="menu" id="menu">
 <a onclick="show('home')">Accueil</a>
-<a onclick="show('login')">Connexion</a>
+<a id="loginBtnMenu" onclick="show('login')">Connexion</a>
 <a id="adminBtn" class="hidden" onclick="show('admin')">Admin Panel</a>
 <a onclick="logout()">Déconnexion</a>
 </div>
@@ -62,7 +62,7 @@ footer h4{color:#5eead4;margin-bottom:6px;}
 <h3>Connexion</h3>
 <input id="lEmail" placeholder="Email">
 <input id="lPass" type="password" placeholder="Mot de passe">
-<button onclick="login()">Connexion</button>
+<button id="loginBtn" onclick="login(event)">Connexion</button>
 <button onclick="show('register')">Créer compte</button>
 </div>
 
@@ -139,13 +139,10 @@ document.querySelectorAll(".panel").forEach(p=>p.classList.add("hidden"));
 document.getElementById(id).classList.remove("hidden");
 }
 
-/* REGISTER FIX */
+/* REGISTER */
 async function register(){
-
 try{
-
 const cred = await auth.createUserWithEmailAndPassword(rEmail.value,rPass.value);
-
 await db.collection("users").doc(cred.user.uid).set({
 name:rName.value,
 email:rEmail.value,
@@ -154,15 +151,10 @@ balance:50,
 role:rRole.value,
 kyc:"verified"
 });
-
-/* RESET CHAMPS */
 rName.value="";
 rEmail.value="";
 rPass.value="";
-
-/* AUTO LOGIN */
 await loginAuto();
-
 }catch(e){
 alert(e.message);
 }
@@ -174,25 +166,50 @@ const snap=await db.collection("users").doc(user.uid).get();
 loadUser(snap.data());
 }
 
-/* LOGIN FIX */
-async function login(){
+/* LOGIN SÉCURISÉ */
+async function login(event){
+const btn = event.target;
+btn.disabled = true;
+btn.innerText = "Connexion...";
+
+// Bloquer navigation menu pendant login
+const oldToggleMenu = toggleMenu;
+toggleMenu = function() { alert("Connexion en cours, veuillez patienter..."); };
+
+// Vérification champs
+if(!lEmail.value || !lPass.value){
+alert("Veuillez remplir tous les champs !");
+btn.disabled=false;
+btn.innerText="Connexion";
+toggleMenu = oldToggleMenu;
+return;
+}
 
 try{
-
 const cred = await auth.signInWithEmailAndPassword(lEmail.value,lPass.value);
 const snap = await db.collection("users").doc(cred.user.uid).get();
 
+// Reset champs
 lEmail.value="";
 lPass.value="";
 
+// Charger dashboard
 loadUser(snap.data());
 
-}catch(e){alert("Connexion refusée");}
+// Bouton login disparaît après succès
+btn.style.display="none";
+toggleMenu = oldToggleMenu;
+
+}catch(e){
+alert("Connexion refusée : " + e.message);
+btn.disabled=false;
+btn.innerText="Connexion";
+toggleMenu = oldToggleMenu;
+}
 }
 
 /* LOAD USER */
 function loadUser(d){
-
 cardName.innerText=d.name;
 cardId.innerText=d.gid;
 balance.innerText=d.balance.toFixed(2);
@@ -234,11 +251,8 @@ balance.innerText=snap.data().balance.toFixed(2);
 
 /* ADMIN PANEL */
 async function loadAdmin(){
-
 usersTable.innerHTML="<tr><th>Nom</th><th>Email</th><th>Solde</th></tr>";
-
 const users=await db.collection("users").get();
-
 users.forEach(doc=>{
 const u=doc.data();
 usersTable.innerHTML+=`<tr>
@@ -261,6 +275,7 @@ loadUser(s.data());
 function logout(){
 auth.signOut();
 show("home");
+document.getElementById("loginBtn").style.display = "inline-block"; // remettre login
 }
 </script>
 
