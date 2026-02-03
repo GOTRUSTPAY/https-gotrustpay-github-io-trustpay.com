@@ -8,36 +8,36 @@
 
 <style>
 body{margin:0;font-family:Roboto;background:#061e1c;color:#e6fffa}
-header{background:#012b28;padding:15px 20px;display:flex;justify-content:space-between;align-items:center}
-.logo{font-size:22px;font-weight:700}
+header{background:#012b28;padding:12px 20px;display:flex;justify-content:space-between;align-items:center}
+.logo-wrap{display:flex;align-items:center;gap:10px}
+.logo-wrap img{height:36px}
+.logo-text{font-size:20px;font-weight:700}
 .menu-btn{font-size:28px;cursor:pointer}
+
 .menu{display:none;position:absolute;top:60px;right:20px;background:#043837;border-radius:12px;overflow:hidden;z-index:100}
-.menu a{display:block;padding:12px 18px;color:#5eead4;text-decoration:none;cursor:pointer}
+.menu a{display:block;padding:12px 18px;color:#5eead4;text-decoration:none}
 .menu a:hover{background:#065f5b}
 
 main{max-width:1000px;margin:auto;padding:20px}
 .panel{background:#043837;padding:20px;border-radius:18px;margin-top:20px}
 .hidden{display:none}
 
-/* CARD */
+/* CARD – BANK STYLE */
 .card{
-background:linear-gradient(135deg,#0f766e,#064e4b);
-border-radius:20px;padding:25px;
+background:linear-gradient(135deg,#0b3c39,#021f1d);
+border-radius:18px;
+padding:22px;
 box-shadow:0 20px 40px rgba(0,0,0,.6);
-cursor:pointer;
-transition:.6s;
-transform-style:preserve-3d
 }
-.card.flip{transform:rotateY(180deg)}
-.card h2{margin:0}
-.card-number{font-size:22px;letter-spacing:3px;margin:15px 0}
-.card-row{display:flex;justify-content:space-between;font-size:14px}
+.card-top{display:flex;justify-content:space-between;align-items:center}
+.card-top img{height:32px}
+.card h2{margin:0;font-size:16px;font-weight:500;opacity:.9}
+.card-number{font-size:20px;letter-spacing:3px;margin:18px 0}
+.card-row{display:flex;justify-content:space-between;font-size:13px;opacity:.9}
 
 .actions{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:20px}
 .action{background:#14b8a6;padding:15px;border-radius:14px;text-align:center;font-weight:700;cursor:pointer}
 .action:hover{background:#2dd4bf}
-
-.tx{background:#065f5b;padding:10px;border-radius:10px;margin-bottom:8px;font-size:14px}
 
 input,button{
 width:100%;padding:10px;margin-top:10px;
@@ -46,12 +46,7 @@ border-radius:10px;border:none;font-family:Roboto
 button{background:#14b8a6;font-weight:700;cursor:pointer}
 button:hover{background:#2dd4bf}
 
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th,td{border:1px solid #065f5b;padding:8px}
-th{background:#0d9488}
-
 footer{text-align:center;margin-top:30px;font-size:14px;opacity:.8}
-footer a{color:#5eead4;cursor:pointer}
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -62,7 +57,10 @@ footer a{color:#5eead4;cursor:pointer}
 <body>
 
 <header>
-<div class="logo">GoPay Africa</div>
+<div class="logo-wrap">
+<img src="logo-gopay-africa.png" alt="GoPay Africa">
+<div class="logo-text">GoPay Africa</div>
+</div>
 <div class="menu-btn" onclick="toggleMenu()">☰</div>
 </header>
 
@@ -97,8 +95,11 @@ footer a{color:#5eead4;cursor:pointer}
 
 <div id="dash" class="hidden">
 
-<div class="card" id="card">
-<h2>GoPay • VIRTUAL</h2>
+<div class="card">
+<div class="card-top">
+<h2>GoPay • Virtual Card</h2>
+<img src="logo-gopay-africa.png">
+</div>
 <div class="card-number" id="cardId"></div>
 <div class="card-row"><span>TITULAIRE</span><span>EXP</span></div>
 <div class="card-row"><strong id="cardName"></strong><strong>12/29</strong></div>
@@ -130,27 +131,10 @@ footer a{color:#5eead4;cursor:pointer}
 <button onclick="cashout()">Confirmer</button>
 </div>
 
-<div class="panel">
-<h3>Mes activités</h3>
-<div id="myTx"></div>
-
-<h3 style="margin-top:20px">Activités publiques</h3>
-<div id="marketTx"></div>
-</div>
-
-<div id="admin" class="panel hidden">
-<h3>ADMIN – Vue globale</h3>
-<table id="usersTable">
-<tr><th>Nom</th><th>Rôle</th><th>Solde</th><th>Actif</th></tr>
-</table>
-</div>
-
 </div>
 </main>
 
-<footer>
-© 2026 GoPay Africa
-</footer>
+<footer>© 2026 GoPay Africa</footer>
 
 <script>
 firebase.initializeApp({
@@ -160,11 +144,9 @@ firebase.initializeApp({
 });
 const auth=firebase.auth(),db=firebase.firestore();
 
-/* NAV */
 function toggleMenu(){menu.style.display=menu.style.display==="block"?"none":"block"}
 function show(id){
- document.querySelectorAll(".panel,#dash,#admin")
- .forEach(d=>d.classList.add("hidden"));
+ document.querySelectorAll(".panel,#dash").forEach(d=>d.classList.add("hidden"));
  document.getElementById(id).classList.remove("hidden");
  menu.style.display="none";
 }
@@ -172,19 +154,12 @@ function openP(id){
  ["pay","cashin","cashout"].forEach(x=>document.getElementById(x).classList.add("hidden"));
  document.getElementById(id).classList.remove("hidden");
 }
-
-/* UTIL */
 function genId(){return "GP-"+Math.random().toString(36).substr(2,8).toUpperCase()}
 
-/* AUTH */
 function register(){
  auth.createUserWithEmailAndPassword(rEmail.value,rPass.value).then(c=>{
   db.collection("users").doc(c.user.uid).set({
-   name:rName.value,
-   gid:genId(),
-   role:"user",
-   balance:50,
-   active:true
+   name:rName.value,gid:genId(),balance:50
   }).then(()=>alert("Compte créé"));
  });
 }
@@ -193,28 +168,15 @@ function login(){
  auth.signInWithEmailAndPassword(lEmail.value,lPass.value).then(async ()=>{
   const snap=await db.collection("users").doc(auth.currentUser.uid).get();
   const d=snap.data();
-  updateCard(d);
+  cardName.textContent=d.name;
+  cardId.textContent=d.gid;
+  balance.textContent=d.balance.toFixed(2);
   show("dash");
-  loadMyTx();
-
-  if(d.role==="admin" && d.adminKey===true){
-   document.getElementById("admin").classList.remove("hidden");
-   loadAdmin();
-  }
  });
 }
 
 function logout(){auth.signOut();show("home")}
 
-/* CARD */
-function updateCard(d){
- cardName.textContent=d.name;
- cardId.textContent=d.gid;
- balance.textContent=d.balance.toFixed(2);
-}
-card.onclick=()=>card.classList.toggle("flip");
-
-/* PAYMENTS */
 async function fetchRecipientName(t){
  const id=t==="pay"?payId.value:coutId.value;
  const f=t==="pay"?payName:coutName;
@@ -232,20 +194,12 @@ async function pay(){
  .update({balance:firebase.firestore.FieldValue.increment(-amt)});
  await db.collection("users").doc(dest.docs[0].id)
  .update({balance:firebase.firestore.FieldValue.increment(amt)});
- await db.collection("tx").add({
-  from:me.data().gid,to:payId.value,type:"Paiement",amount:amt,date:new Date()
- });
- loadMyTx();
 }
-
 async function cashin(){
  const amt=parseFloat(cinAmount.value);
  await db.collection("users").doc(auth.currentUser.uid)
  .update({balance:firebase.firestore.FieldValue.increment(amt)});
- await db.collection("tx").add({type:"Cash-in",amount:amt,date:new Date()});
- loadMyTx();
 }
-
 async function cashout(){
  const amt=parseFloat(coutAmount.value);
  const me=await db.collection("users").doc(auth.currentUser.uid).get();
@@ -255,45 +209,7 @@ async function cashout(){
  .update({balance:firebase.firestore.FieldValue.increment(-amt)});
  await db.collection("users").doc(dest.docs[0].id)
  .update({balance:firebase.firestore.FieldValue.increment(amt)});
- await db.collection("tx").add({
-  from:me.data().gid,to:coutId.value,type:"Cash-out",amount:amt,date:new Date()
- });
- loadMyTx();
 }
-
-async function loadMyTx(){
- myTx.innerHTML="";
- const snap=await db.collection("tx")
- .where("from","==",cardId.textContent)
- .orderBy("date","desc").limit(5).get();
- snap.forEach(d=>{
-  const t=d.data();
-  myTx.innerHTML+=`<div class="tx">${t.type} • ${t.amount} USD</div>`;
- });
-}
-
-/* ADMIN */
-async function loadAdmin(){
- usersTable.innerHTML="<tr><th>Nom</th><th>Rôle</th><th>Solde</th><th>Actif</th></tr>";
- const u=await db.collection("users").get();
- u.forEach(d=>{
-  const x=d.data();
-  usersTable.innerHTML+=`<tr><td>${x.name}</td><td>${x.role}</td><td>${x.balance}</td><td>${x.active?"Oui":"Non"}</td></tr>`;
- });
-}
-
-/* BINANCE STYLE PUBLIC ACTIVITY */
-const names=["Ali M.","Sarah L.","Jean K.","Mohamed A.","Linda S.","David R.","Fatou B.","Chris T."];
-function marketFlow(){
- const tx=document.createElement("div");
- tx.className="tx";
- tx.innerHTML=`${names[Math.floor(Math.random()*names.length)]}
- • ${Math.random()>0.5?"Paiement":"Cash-out"}
- • ${(Math.random()*900+20).toFixed(2)} USD`;
- marketTx.prepend(tx);
- if(marketTx.children.length>6)marketTx.removeChild(marketTx.lastChild);
-}
-setInterval(marketFlow,3000);
 </script>
 
 </body>
