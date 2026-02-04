@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>GoPay Africa</title>
+<title>GoPay Africa Premium</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
@@ -15,116 +15,90 @@
 
 <style>
 
-body{margin:0;font-family:Roboto;background:#e8f5e9;}
+body{margin:0;font-family:Roboto;background:#eef5f2}
 
 header{
-position:fixed;
-top:0;
-width:100%;
+position:fixed;top:0;width:100%;
 background:#0d1b2a;
-display:flex;
-justify-content:space-between;
-padding:12px 20px;
-z-index:1000;
+display:flex;justify-content:space-between;
+padding:12px 20px;z-index:1000;
 }
 
 .logo{
-color:white;
-font-weight:700;
-background:#2e7d32;
-padding:6px 14px;
-border-radius:8px;
+color:white;font-weight:700;
+background:#2e7d32;padding:6px 14px;border-radius:8px;
 }
 
-.menu a{
-color:white;
-margin:0 8px;
-cursor:pointer;
-text-decoration:none;
-}
+.menu a{color:white;margin:0 8px;text-decoration:none;cursor:pointer}
+.menu a:hover{color:#4caf50}
 
-section{padding:110px 20px;}
+section{padding:110px 20px}
 
 .hero{
-height:90vh;
-color:white;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
+height:90vh;color:white;
+display:flex;flex-direction:column;
+justify-content:center;align-items:center;
 background:
 linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),
 url("https://images.unsplash.com/photo-1556740749-887f6717d7e4");
-background-size:cover;
+background-size:cover
 }
 
 .hero button{
-background:#2e7d32;
-color:white;
-padding:14px 30px;
-border:none;
-border-radius:10px;
-cursor:pointer;
-font-size:18px;
+background:#2e7d32;color:white;
+padding:14px 30px;border:none;border-radius:10px;
+cursor:pointer;font-size:18px
 }
 
 .grid{
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-gap:20px;
+gap:20px
 }
 
 .card{
-background:white;
-padding:20px;
-border-radius:14px;
-box-shadow:0 6px 20px rgba(0,0,0,0.15);
+background:white;padding:20px;border-radius:14px;
+box-shadow:0 6px 20px rgba(0,0,0,0.15)
 }
 
-.card img{
-width:100%;
-border-radius:10px;
-margin-top:10px;
+.card img{width:100%;border-radius:10px;margin-top:10px}
+
+.iconTitle{
+display:flex;align-items:center;
+gap:10px;font-weight:700;font-size:20px
 }
 
 .modal{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
+position:fixed;top:0;left:0;width:100%;height:100%;
 background:rgba(0,0,0,0.7);
-display:none;
-justify-content:center;
-align-items:center;
-z-index:2000;
+display:none;justify-content:center;align-items:center;z-index:2000
 }
 
 .modal-box{
-background:white;
-padding:30px;
-border-radius:14px;
-width:320px;
+background:white;padding:30px;border-radius:14px;width:320px
 }
 
-.modal input,select{
-width:100%;
-padding:10px;
-margin:8px 0;
+.modal input,select{width:100%;padding:10px;margin:8px 0}
+
+.dashboard{display:none;padding:100px 20px}
+
+.finCard{
+background:linear-gradient(45deg,#0d1b2a,#2e7d32);
+color:white;border-radius:18px;padding:20px;margin-bottom:20px
 }
 
-button{
-background:#2e7d32;
-color:white;
-padding:12px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-width:100%;
-margin-top:8px;
+.menu3{
+position:fixed;top:80px;right:20px;
+background:#0d1b2a;color:white;padding:12px;border-radius:10px;
+cursor:pointer
 }
 
-.panel{display:none;padding:100px 20px;}
+.menuPanel{
+position:fixed;top:120px;right:20px;
+background:white;border-radius:14px;
+box-shadow:0 5px 20px rgba(0,0,0,0.2);
+display:none;padding:15px;width:200px
+}
 
 </style>
 </head>
@@ -139,109 +113,93 @@ margin-top:8px;
 <a href="#values">Valeurs</a>
 <a href="#mission">Mission</a>
 <a href="#partners">Partenaires</a>
-<a href="#realisations">Réalisations</a>
-<a href="#about">Qui sommes nous</a>
-<a href="#privacy">Confidentialité</a>
+<a href="#marketing">Réalisations</a>
 <a href="#contact">Contact</a>
 <a onclick="openLogin()">Connexion</a>
 </div>
 </header>
 
-<!-- HERO -->
 <section class="hero">
 <h1>Néobanque Africaine</h1>
 <p>Paiements rapides et sécurisés</p>
 <button onclick="openLogin()">Se connecter</button>
 </section>
 
-<!-- WHY -->
 <section id="why">
-<h2>Pourquoi nous rejoindre</h2>
+<div class="iconTitle"><i class='bx bx-bulb'></i> Innovation</div>
 <div class="grid">
-<div class="card"><img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c"><p>Innovation digitale</p></div>
-<div class="card"><img src="https://images.unsplash.com/photo-1605902711622-cfb43c4437b5"><p>Sécurité financière</p></div>
-<div class="card"><img src="https://images.unsplash.com/photo-1573164574390-9a2ed0c4cbbf"><p>Support 24/7</p></div>
+<div class="card">
+<img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c">
+<p>Innovation digitale</p>
+</div>
 </div>
 </section>
 
-<!-- SUCCESS -->
 <section id="success">
-<h2>Nos succès</h2>
+<div class="iconTitle"><i class='bx bx-trophy'></i> Succès</div>
 <div class="grid">
-<div class="card"><img src="https://images.unsplash.com/photo-1554224155-1696413565d3"><p>Femmes retirant argent</p></div>
-<div class="card"><img src="https://images.unsplash.com/photo-1521791136064-7986c2920216"><p>Clients heureux</p></div>
-<div class="card"><img src="https://images.unsplash.com/photo-1556745757-8d76bdb6984b"><p>Paiements mobiles</p></div>
+<div class="card">
+<img src="https://images.unsplash.com/photo-1554224155-1696413565d3">
+<p>Femmes retirant argent</p>
+</div>
 </div>
 </section>
 
 <section id="values">
-<h2>Nos valeurs</h2>
+<div class="iconTitle"><i class='bx bx-diamond'></i> Valeurs</div>
 <div class="grid">
 <div class="card">Fiabilité</div>
-<div class="card">Innovation</div>
 <div class="card">Inclusion financière</div>
 </div>
 </section>
 
 <section id="mission">
-<h2>Mission & Statistiques</h2>
-<p>Offrir services financiers accessibles à toute l’Afrique</p>
-</section>
-
-<section id="realisations">
-<h2>Nos Réalisations</h2>
-<div class="grid">
-<div class="card"><img src="https://images.unsplash.com/photo-1605902711622-cfb43c4437b5"><p>Plus de 200 000 paiements sécurisés</p></div>
-<div class="card"><img src="https://images.unsplash.com/photo-1573164574390-9a2ed0c4cbbf"><p>Inclusion financière rurale</p></div>
-</div>
-</section>
-
-<section id="about">
-<h2>Qui sommes nous</h2>
-<div class="card">
-<p>GoPay Africa modernise les paiements africains avec sécurité bancaire.</p>
-</div>
-</section>
-
-<section id="privacy">
-<h2>Confidentialité</h2>
-<div class="card">
-<p>Données protégées par cryptage bancaire.</p>
-</div>
+<div class="iconTitle"><i class='bx bx-target-lock'></i> Mission</div>
+<p>Offrir services financiers accessibles</p>
 </section>
 
 <section id="partners">
-<h2>Partenaires</h2>
+<div class="iconTitle"><i class='bx bx-group'></i> Partenaires</div>
 <div class="grid">
-<div class="card"><img src="https://images.unsplash.com/photo-1554224154-26032cdc5c6f"></div>
-<div class="card"><img src="https://images.unsplash.com/photo-1605902711622-cfb43c4437b5"></div>
+<div class="card">
+<img src="https://images.unsplash.com/photo-1554224154-26032cdc5c6f">
+</div>
+</div>
+</section>
+
+<section id="marketing">
+<div class="iconTitle"><i class='bx bx-line-chart'></i> Nos Réalisations</div>
+<div class="grid">
+<div class="card">
+<img src="https://images.unsplash.com/photo-1605902711622-cfb43c4437b5">
+<p>Expansion africaine</p>
+</div>
 </div>
 </section>
 
 <section id="contact">
-<h2>Contact</h2>
-<p>Email : support@gopay.africa</p>
+<div class="iconTitle"><i class='bx bx-envelope'></i> Contact</div>
+<p>support@gopay.africa</p>
 </section>
 
 <!-- LOGIN -->
 <div id="loginModal" class="modal">
 <div class="modal-box">
 <h3>Connexion</h3>
-<input id="lEmail" placeholder="Email">
-<input id="lPass" type="password" placeholder="Mot de passe">
+<input id="lEmail">
+<input id="lPass" type="password">
 <button onclick="login()">Connexion</button>
 <button onclick="showRegister()">Créer compte</button>
 <button onclick="closeLogin()">Fermer</button>
 </div>
 </div>
 
-<!-- REGISTER -->
 <div id="registerModal" class="modal">
 <div class="modal-box">
 <h3>Créer compte</h3>
-<input id="rName" placeholder="Nom">
-<input id="rEmail" placeholder="Email">
-<input id="rPass" type="password" placeholder="Mot de passe">
+<input id="rName">
+<input id="rEmail">
+<input id="rPass" type="password">
 
 <select id="rRole">
 <option value="client">Client</option>
@@ -249,23 +207,36 @@ margin-top:8px;
 </select>
 
 <button onclick="register()">Créer</button>
-<button onclick="closeRegister()">Fermer</button>
 </div>
 </div>
 
-<!-- DASHBOARD -->
-<div id="dashboard" class="panel">
-<h2>Dashboard</h2>
-<p>Nom : <span id="dName"></span></p>
-<p>Rôle : <span id="dRole"></span></p>
-<p>Solde : $<span id="dBalance"></span></p>
-<canvas id="qr"></canvas>
+<!-- DASHBOARDS -->
 
-<h3>Activités récentes</h3>
-<div id="activityList"></div>
+<div id="menu3" class="menu3" onclick="toggleMenu()">☰</div>
 
-<button onclick="logout()">Déconnexion</button>
-<button onclick="backSite()">Retour site</button>
+<div id="menuPanel" class="menuPanel">
+<p onclick="logout()">Déconnexion</p>
+</div>
+
+<div id="clientDash" class="dashboard">
+<div class="finCard">
+<h3 id="cName"></h3>
+<p>Solde: $<span id="cBalance"></span></p>
+<canvas id="cQR"></canvas>
+</div>
+
+<h3>Historique réel</h3>
+<div id="clientHistory"></div>
+</div>
+
+<div id="agentDash" class="dashboard">
+<h2>Dashboard Agent</h2>
+<p>Gestion cash in/out clients</p>
+</div>
+
+<div id="adminDash" class="dashboard">
+<h2>Dashboard Admin</h2>
+<div id="adminUsers"></div>
 </div>
 
 <script>
@@ -278,89 +249,78 @@ projectId:"gotrustpay-e6524"
 
 const auth=firebase.auth();
 const db=firebase.firestore();
-let currentUser=null;
 
-// MODALS
-function openLogin(){loginModal.style.display="flex";}
-function closeLogin(){loginModal.style.display="none";}
-function showRegister(){closeLogin();registerModal.style.display="flex";}
-function closeRegister(){registerModal.style.display="none";}
+function openLogin(){loginModal.style.display="flex"}
+function closeLogin(){loginModal.style.display="none"}
+function showRegister(){closeLogin();registerModal.style.display="flex"}
 
-// REGISTER
 async function register(){
-const cred=await auth.createUserWithEmailAndPassword(rEmail.value,rPass.value);
-
+const cred=await auth.createUserWithEmailAndPassword(rEmail.value,rPass.value)
 await db.collection("users").doc(cred.user.uid).set({
-name:rName.value,
-email:rEmail.value,
-role:rRole.value,
-balance:50
-});
-
-alert("Compte créé");
-closeRegister();
+name:rName.value,email:rEmail.value,
+role:rRole.value,balance:50
+})
+registerModal.style.display="none"
 }
 
-// LOGIN
 async function login(){
-const cred=await auth.signInWithEmailAndPassword(lEmail.value,lPass.value);
-loadUser(cred.user.uid);
-closeLogin();
+const cred=await auth.signInWithEmailAndPassword(lEmail.value,lPass.value)
+loadUser(cred.user.uid)
+closeLogin()
 }
 
 async function loadUser(uid){
-const snap=await db.collection("users").doc(uid).get();
-currentUser=snap.data();
 
-dName.innerText=currentUser.name;
-dBalance.innerText=currentUser.balance;
-dRole.innerText=currentUser.role;
+document.querySelectorAll("section").forEach(s=>s.style.display="none")
 
-QRCode.toCanvas(qr,uid);
+const snap=await db.collection("users").doc(uid).get()
+let u=snap.data()
 
-document.querySelectorAll("section").forEach(s=>s.style.display="none");
-dashboard.style.display="block";
-
-loadActivity();
+if(u.role==="client"){
+clientDash.style.display="block"
+cName.innerText=u.name
+cBalance.innerText=u.balance
+QRCode.toCanvas(cQR,uid)
+loadHistory(uid)
 }
 
-// ACTIVITÉ
-function loadActivity(){
+if(u.role==="agent"){agentDash.style.display="block"}
+if(u.role==="admin"){loadAdmin()}
 
-const names=["Ali","Fatou","Jean","Eric","Nadine","Prince"];
-
-setInterval(()=>{
-
-let n=names[Math.floor(Math.random()*names.length)];
-let amt=(Math.random()*200).toFixed(2);
-
-let p=document.createElement("p");
-p.innerText=`${n} a transféré $${amt}`;
-activityList.prepend(p);
-
-if(activityList.children.length>6){
-activityList.removeChild(activityList.lastChild);
 }
 
-},3000);
+async function loadHistory(uid){
+let h=await db.collection("transactions")
+.where("user","==",uid).get()
+
+clientHistory.innerHTML=""
+h.forEach(doc=>{
+clientHistory.innerHTML+=`<p>${doc.data().type} - ${doc.data().amount}$</p>`
+})
 }
 
-// LOGOUT
+async function loadAdmin(){
+adminDash.style.display="block"
+let users=await db.collection("users").get()
+adminUsers.innerHTML=""
+users.forEach(d=>{
+adminUsers.innerHTML+=`<p>${d.data().name} - ${d.data().role}</p>`
+})
+}
+
+function toggleMenu(){
+menuPanel.style.display=
+menuPanel.style.display==="block"?"none":"block"
+}
+
 function logout(){
-auth.signOut();
-dashboard.style.display="none";
-document.querySelectorAll("section").forEach(s=>s.style.display="block");
-}
-
-// RETOUR SITE
-function backSite(){
-dashboard.style.display="none";
-document.querySelectorAll("section").forEach(s=>s.style.display="block");
+auth.signOut()
+location.reload()
 }
 
 auth.onAuthStateChanged(user=>{
-if(user){loadUser(user.uid);}
-});
+if(user){loadUser(user.uid)}
+})
 
 </script>
 
