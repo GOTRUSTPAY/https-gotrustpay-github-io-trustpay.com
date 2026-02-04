@@ -248,48 +248,106 @@ setInterval(()=>{if(auth.currentUser && u.role==='client'){loadClientHistory(aut
 
 // Client History
 function loadClientHistory(uid){
-db.collection("transactions").where("user","==",uid).orderBy("timestamp","desc").get().then(snap=>{
+db.collection("transactions")
+.where("uid","==",uid)
+.orderBy("date","desc")
+.get()
+.then(snap=>{
 clientHistory.innerHTML='';
-snap.forEach(doc=>{clientHistory.innerHTML+=`<p>${doc.data().type} - $${doc.data().amount}</p>`;});
+snap.forEach(doc=>{
+let t=doc.data();
+clientHistory.innerHTML+=`
+<p>${t.type} - $${t.amount}</p>
+`;
+});
 });
 }
 
 // Recent Activities
 function loadRecentActivities(){
-db.collection("transactions").orderBy("timestamp","desc").limit(5).get().then(snap=>{
+db.collection("transactions")
+.orderBy("date","desc")
+.limit(5)
+.get()
+.then(snap=>{
 recentActivities.innerHTML='';
-snap.forEach(doc=>{recentActivities.innerHTML+=`<p>${doc.data().user} - ${doc.data().type} - $${doc.data().amount}</p>`;});
+snap.forEach(doc=>{
+let t=doc.data();
+recentActivities.innerHTML+=`
+<p>${t.uid} - ${t.type} - $${t.amount}</p>
+`;
+});
 });
 }
 
 // Agent Transactions
 function loadAgentTransactions(){
-db.collection("transactions").orderBy("timestamp","desc").get().then(snap=>{
+db.collection("transactions")
+.orderBy("date","desc")
+.get()
+.then(snap=>{
 agentTransactions.innerHTML='';
-snap.forEach(doc=>{agentTransactions.innerHTML+=`<p>${doc.data().user} - ${doc.data().type} - $${doc.data().amount}</p>`;});
+snap.forEach(doc=>{
+let t=doc.data();
+agentTransactions.innerHTML+=`
+<p>${t.uid} - ${t.type} - $${t.amount}</p>
+`;
+});
 });
 }
 
 // Admin
-function loadAdminUsers(){db.collection("users").get().then(snap=>{adminUsers.innerHTML='';snap.forEach(doc=>{adminUsers.innerHTML+=`<p>${doc.data().name} - ${doc.data().role} - Solde: $${doc.data().balance}</p>`;});});}
-function loadAdminStats(){db.collection("transactions").get().then(snap=>{let total=snap.docs.reduce((acc,d)=>acc+d.data().amount,0);adminStats.innerHTML=`<h3>Total Transactions: $${total}</h3><p>Nombre de transactions: ${snap.docs.length}</p>`;});}async function cashIn(){
-let amount=parseFloat(cashInAmount.value);
-let uid=auth.currentUser.uid;
-let ref=db.collection("users").doc(uid);
+function loadAdminUsers(){
+    db.collection("users").get().then(snap=>{
+        adminUsers.innerHTML='';
+        snap.forEach(doc=>{
+            adminUsers.innerHTML+=`<p>${doc.data().name} - ${doc.data().role} - Solde: $${doc.data().balance}</p>`;
+        });
+    });
+}
 
-await db.runTransaction(async(t)=>{
-let doc=await t.get(ref);
-let newBal=doc.data().balance + amount;
+function loadAdminStats(){
+    db.collection("transactions").get().then(snap=>{
+        let total=snap.docs.reduce((acc,d)=>acc+d.data().amount,0);
+        adminStats.innerHTML=`<h3>Total Transactions: $${total}</h3><p>Nombre de transactions: ${snap.docs.length}</p>`;
+    });
+}
 
-t.update(ref,{balance:newBal});
+function loadAdminUsers(){
+    db.collection("users").get().then(snap=>{
+        adminUsers.innerHTML='';
+        snap.forEach(doc=>{
+            adminUsers.innerHTML+=`<p>${doc.data().name} - ${doc.data().role} - Solde: $${doc.data().balance}</p>`;
+        });
+    });
+}
 
-db.collection("transactions").add({
-user:uid,
-type:"Cash In",
-amount:amount,
-timestamp:Date.now()
-});
-});
+function loadAdminStats(){
+    db.collection("transactions").get().then(snap=>{
+        let total=snap.docs.reduce((acc,d)=>acc+d.data().amount,0);
+        adminStats.innerHTML=`<h3>Total Transactions: $${total}</h3><p>Nombre de transactions: ${snap.docs.length}</p>`;
+    });
+}
+
+async function cashIn(){
+    let amount=parseFloat(cashInAmount.value);
+    let uid=auth.currentUser.uid;
+    let ref=db.collection("users").doc(uid);
+
+    await db.runTransaction(async(t)=>{
+        let doc=await t.get(ref);
+        let newBal=doc.data().balance + amount;
+
+        t.update(ref,{balance:newBal});
+
+        // Ajouter transaction dans Firestore
+        db.collection("transactions").add({
+            uid: uid,
+            type: "Cash In",
+            amount: amount,
+            date: new Date()
+        });
+    });
 }
 
 async function cashOut(){
