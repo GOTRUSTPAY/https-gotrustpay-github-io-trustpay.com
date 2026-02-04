@@ -154,6 +154,27 @@ header{position:fixed;top:0;width:100%;display:flex;justify-content:space-betwee
 <h3 id="cName"></h3>
 <p>Solde: $<span id="cBalance"></span></p>
 <canvas id="cQR"></canvas>
+</div><div class="grid">
+
+<div class="finCard">
+<h3>💰 Cash In (Dépôt)</h3>
+<input id="cashInAmount" placeholder="Montant">
+<button onclick="cashIn()">Valider dépôt</button>
+</div>
+
+<div class="finCard">
+<h3>💸 Cash Out (Retrait)</h3>
+<input id="cashOutAmount" placeholder="Montant">
+<button onclick="cashOut()">Valider retrait</button>
+</div>
+
+<div class="finCard">
+<h3>📲 Paiement</h3>
+<input id="payUser" placeholder="ID destinataire">
+<input id="payAmount" placeholder="Montant">
+<button onclick="sendPayment()">Envoyer</button>
+</div>
+
 </div>
 <h3>Historique Récent</h3>
 <div id="clientHistory"></div>
@@ -251,7 +272,92 @@ snap.forEach(doc=>{agentTransactions.innerHTML+=`<p>${doc.data().user} - ${doc.d
 
 // Admin
 function loadAdminUsers(){db.collection("users").get().then(snap=>{adminUsers.innerHTML='';snap.forEach(doc=>{adminUsers.innerHTML+=`<p>${doc.data().name} - ${doc.data().role} - Solde: $${doc.data().balance}</p>`;});});}
-function loadAdminStats(){db.collection("transactions").get().then(snap=>{let total=snap.docs.reduce((acc,d)=>acc+d.data().amount,0);adminStats.innerHTML=`<h3>Total Transactions: $${total}</h3><p>Nombre de transactions: ${snap.docs.length}</p>`;});}
+function loadAdminStats(){db.collection("transactions").get().then(snap=>{let total=snap.docs.reduce((acc,d)=>acc+d.data().amount,0);adminStats.innerHTML=`<h3>Total Transactions: $${total}</h3><p>Nombre de transactions: ${snap.docs.length}</p>`;});}async function cashIn(){
+let amount=parseFloat(cashInAmount.value);
+let uid=auth.currentUser.uid;
+let ref=db.collection("users").doc(uid);
+
+await db.runTransaction(async(t)=>{
+let doc=await t.get(ref);
+let newBal=doc.data().balance + amount;
+
+t.update(ref,{balance:newBal});
+
+db.collection("transactions").add({
+user:uid,
+type:"Cash In",
+amount:amount,
+timestamp:Date.now()
+});
+});
+}
+
+async function cashOut(){
+let amount=parseFloat(cashOutAmount.value);
+let uid=auth.currentUser.uid;
+let ref=db.collection("users").doc(uid);
+
+await db.runTransaction(async(t)=>{
+let doc=await t.get(ref);
+
+if(doc.data().balance < amount){
+alert("Solde insuffisant");
+return;
+}
+
+let newBal=doc.data().balance - amount;
+
+t.update(ref,{balance:newBal});
+
+db.collection("transactions").add({
+user:uid,
+type:"Cash Out",
+amount:amount,
+timestamp:Date.now()
+});
+});
+}
+
+async function sendPayment(){
+let amount=parseFloat(payAmount.value);
+let receiver=payUser.value;
+let sender=auth.currentUser.uid;
+
+let sRef=db.collection("users").doc(sender);
+let rRef=db.collection("users").doc(receiver);
+
+await db.runTransaction(async(t)=>{
+let sDoc=await t.get(sRef);
+let rDoc=await t.get(rRef);
+
+if(!rDoc.exists){
+alert("Utilisateur introuvable");
+return;
+}
+
+if(sDoc.data().balance < amount){
+alert("Solde insuffisant");
+return;
+}
+
+t.update(sRef,{balance:sDoc.data().balance - amount});
+t.update(rRef,{balance:rDoc.data().balance + amount});
+
+db.collection("transactions").add({
+user:sender,
+type:"Paiement envoyé",
+amount:amount,
+timestamp:Date.now()
+});
+
+db.collection("transactions").add({
+user:receiver,
+type:"Paiement reçu",
+amount:amount,
+timestamp:Date.now()
+});
+});
+}
 
 // Logout
 function logout(){auth.signOut().then(()=>returnHome());}
