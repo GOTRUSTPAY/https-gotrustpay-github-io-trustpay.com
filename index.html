@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>GOPAY AFRICA - Dashboard Pro</title>
+<title>GOPAY AFRICA - Pro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -13,14 +13,15 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css">
 
 <style>
+/* ===== BODY ===== */
 body{margin:0;font-family:Roboto;background:#f5f5f5;color:#011a27;scroll-behavior:smooth;}
 header{position:fixed;top:0;left:0;width:100%;background:#fff;display:flex;justify-content:space-between;align-items:center;padding:12px 20px;box-shadow:0 2px 10px rgba(0,0,0,0.1);z-index:100;}
 .logo{font-size:24px;font-weight:700;color:#0072ff;padding:6px 12px;border-radius:8px;background:#e6f7ff;}
-.menu{display:flex;gap:12px;}
+.menu{display:flex;gap:12px;flex-wrap:wrap;}
 .menu a{text-decoration:none;color:#0072ff;font-weight:600;padding:6px 12px;border-radius:8px;transition:0.3s;}
 .menu a:hover{background:#0072ff;color:#fff;}
 section{padding:100px 20px 60px;margin-top:60px;}
-.hero{background:url('https://images.unsplash.com/photo-1611928372271-c7e0d2f9a3a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxMTc3M3wwfDF8c2VhfHxjYXNoJTIwb3V0JTIwbW9iaWxlfGVufDB8fHx8MTY5NTQ2NzE0NA&ixlib=rb-4.0.3&q=80&w=1200') center/cover no-repeat;color:#fff;text-align:center;padding:180px 20px;}
+.hero{background:url('https://images.unsplash.com/photo-1611928372271-c7e0d2f9a3a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg') center/cover no-repeat;color:#fff;text-align:center;padding:180px 20px;}
 .hero h1{font-size:48px;margin-bottom:20px;text-shadow:2px 2px 8px rgba(0,0,0,0.5);}
 .hero p{font-size:20px;margin-bottom:30px;text-shadow:1px 1px 6px rgba(0,0,0,0.5);}
 .btn-cta{background:#0072ff;color:#fff;padding:14px 28px;border:none;border-radius:12px;font-size:18px;font-weight:700;cursor:pointer;transition:0.3s;}
@@ -30,6 +31,7 @@ section{padding:100px 20px 60px;margin-top:60px;}
 .card i{font-size:36px;color:#0072ff;margin-bottom:10px;}
 .card h3{margin:10px 0;}
 .card p{font-size:14px;opacity:0.8;}
+.card img{width:100%;border-radius:12px;margin-top:10px;}
 footer{background:#011a27;color:#fff;padding:40px 20px;text-align:center;}
 footer a{color:#0072ff;text-decoration:none;}
 footer a:hover{text-decoration:underline;}
@@ -58,39 +60,44 @@ canvas{background:#fff;border-radius:12px;}
 </nav>
 </header>
 
+<!-- ===== PAGE D'ACCUEIL ===== -->
 <section id="home" class="hero">
 <h1>Votre Néobanque Africaine</h1>
 <p>Transactions rapides, sécurisées et multi-devises pour tous</p>
-<button class="btn-cta" onclick="scrollToContact()">Nous contacter</button>
+<button class="btn-cta" onclick="show('login')">Se connecter</button>
 </section>
 
+<!-- ===== POURQUOI NOUS REJOINDRE ===== -->
 <section id="why">
 <h2 style="text-align:center;">Pourquoi nous rejoindre <i class='bx bx-badge-check'></i></h2>
 <div class="card-section">
-<div class="card"><i class='bx bx-rocket'></i><h3>Innovation</h3><p>Services financiers digitaux et modernes.</p></div>
-<div class="card"><i class='bx bx-shield'></i><h3>Sécurité</h3><p>Protection maximale des transactions.</p></div>
-<div class="card"><i class='bx bx-group'></i><h3>Support</h3><p>Support dédié 24/7.</p></div>
+<div class="card"><i class='bx bx-rocket'></i><h3>Innovation</h3><p>Services financiers digitaux et modernes.</p><img src="https://images.unsplash.com/photo-1603052875445-94e0ff324a61?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
+<div class="card"><i class='bx bx-shield'></i><h3>Sécurité</h3><p>Protection maximale des transactions.</p><img src="https://images.unsplash.com/photo-1581091870626-5d3b7ff60937?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
+<div class="card"><i class='bx bx-group'></i><h3>Support</h3><p>Support dédié 24/7.</p><img src="https://images.unsplash.com/photo-1521791136064-7986c2920216?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
 </div>
 </section>
 
+<!-- ===== NOS SUCCÈS ===== -->
 <section id="success">
 <h2 style="text-align:center;">Nos succès <i class='bx bx-bar-chart-alt-2'></i></h2>
 <div class="card-section">
-<div class="card"><h3>+10 000 Clients</h3><p>En moins de 2 ans, GoPay Africa s'impose sur le marché.</p></div>
-<div class="card"><h3>+5 000 Transactions/jour</h3><p>Transactions instantanées sécurisées.</p></div>
-<div class="card"><h3>Multi-devises</h3><p>USD, CDF et autres devises africaines.</p></div>
+<div class="card"><h3>+10 000 Clients</h3><p>En moins de 2 ans, GoPay Africa s'impose sur le marché.</p><img src="https://images.unsplash.com/photo-1573164574390-9a2ed0c4cbbf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
+<div class="card"><h3>+5 000 Transactions/jour</h3><p>Transactions instantanées sécurisées.</p><img src="https://images.unsplash.com/photo-1600195077073-f5f0f1f6f147?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
+<div class="card"><h3>Multi-devises</h3><p>USD, CDF et autres devises africaines.</p><img src="https://images.unsplash.com/photo-1554224154-22dec7ec8818?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
 </div>
 </section>
 
+<!-- ===== NOS VALEURS ===== -->
 <section id="values">
 <h2 style="text-align:center;">Nos valeurs <i class='bx bx-heart'></i></h2>
 <div class="card-section">
-<div class="card"><i class='bx bx-user-check'></i><h3>Fiabilité</h3><p>Services fiables et constants.</p></div>
-<div class="card"><i class='bx bx-brain'></i><h3>Innovation</h3><p>Nous innovons chaque jour pour mieux vous servir.</p></div>
-<div class="card"><i class='bx bx-globe'></i><h3>Pan-Africain</h3><p>Présence sur plusieurs pays africains.</p></div>
+<div class="card"><i class='bx bx-user-check'></i><h3>Fiabilité</h3><p>Services fiables et constants.</p><img src="https://images.unsplash.com/photo-1559526324-593bc073d938?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
+<div class="card"><i class='bx bx-brain'></i><h3>Innovation</h3><p>Nous innovons chaque jour pour mieux vous servir.</p><img src="https://images.unsplash.com/photo-1581091215362-1f10f7b9b5d3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
+<div class="card"><i class='bx bx-globe'></i><h3>Pan-Africain</h3><p>Présence sur plusieurs pays africains.</p><img src="https://images.unsplash.com/photo-1599058917217-8de15f0f22ed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
 </div>
 </section>
 
+<!-- ===== MISSION & STATS ===== -->
 <section id="mission">
 <h2 style="text-align:center;">Mission & Statistiques <i class='bx bx-line-chart'></i></h2>
 <div class="card-section">
@@ -99,22 +106,24 @@ canvas{background:#fff;border-radius:12px;}
 </div>
 </section>
 
+<!-- ===== PARTENAIRES ===== -->
 <section id="partners">
 <h2 style="text-align:center;">Nos partenaires <i class='bx bx-handshake'></i></h2>
 <div class="card-section">
-<div class="card"><img src="https://via.placeholder.com/200x120?text=Partenaire1" style="width:100%;border-radius:12px;"></div>
-<div class="card"><img src="https://via.placeholder.com/200x120?text=Partenaire2" style="width:100%;border-radius:12px;"></div>
-<div class="card"><img src="https://via.placeholder.com/200x120?text=Partenaire3" style="width:100%;border-radius:12px;"></div>
+<div class="card"><img src="https://images.unsplash.com/photo-1581091870626-5d3b7ff60937?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
+<div class="card"><img src="https://images.unsplash.com/photo-1554224154-22dec7ec8818?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
+<div class="card"><img src="https://images.unsplash.com/photo-1600195077073-f5f0f1f6f147?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
 </div>
 </section>
 
+<!-- ===== CONTACT ===== -->
 <section id="contact" class="panel">
 <h2>Contactez-nous</h2>
 <p>Email: <a href="mailto:gopapay.info@gopay.com">gopapay.info@gopay.com</a></p>
 <p>Téléphone: +243 123 456 789</p>
 </section>
 
-<!-- LOGIN / REGISTER / DASHBOARD / ADMIN -->
+<!-- ===== LOGIN / REGISTER / DASHBOARD / ADMIN ===== -->
 <div id="login" class="panel hidden">
 <h3>Connexion</h3>
 <input id="lEmail" placeholder="Email"><br><br>
@@ -173,6 +182,7 @@ canvas{background:#fff;border-radius:12px;}
 </footer>
 
 <script>
+// Firebase initialization
 firebase.initializeApp({
 apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
 authDomain:"gotrustpay-e6524.firebaseapp.com",
@@ -203,9 +213,86 @@ function saveTransaction(type,amt){db.collection("transactions").add({user:curre
 function loadFakeHistory(){const names=["Ali","John","Fatou","David","Eric","Nadine","Prince"];history.innerHTML="";for(let i=0;i<6;i++){let n=names[Math.floor(Math.random()*names.length)];let amt=(Math.random()*200).toFixed(2);history.innerHTML+=`<p>${n} a transféré $${amt}</p>`;}}
 
 // ADMIN
-async function openAdmin(){show('admin');let users=await db.collection("users").get();totalClients.innerText=users.docs.filter(u=>u.data().role==='client').length;totalAgents.innerText=users.docs.filter(u=>u.data().role==='agent').length;totalTransactions.innerText=await db.collection('transactions').get().then(s=>s.size);usersTable.innerHTML="<tr><th>Nom</th><th>Email</th><th>Role</th><th>Solde</th><th>Comm</th></tr>";users.docs.forEach(doc=>{let u=doc.data();usersTable.innerHTML+=`<tr><td>${u.name}</td><td>${u.email}</td><td>${u.role}</td><td>${u.balance.toFixed(2)}</td><td>${(u.totalCommission||0).toFixed(2)}</td></tr>`;});drawAdminChart();}
-function drawAdminChart(){const ctx=document.getElementById('adminChart').getContext('2d');new Chart(ctx,{type:'bar',data:{labels:['Clients','Agents','Transactions'],datasets:[{label:'Total',data:[parseInt(totalClients.innerText),parseInt(totalAgents.innerText),parseInt(totalTransactions.innerText)],backgroundColor:['#0072ff','#00c6ff','#14b8a6']}]},options:{responsive:true,plugins:{legend:{display:false}}}});}
-</script>
+async function openAdmin(){show('admin');let users=await db.collection("users").get();totalClients.innerText=users.docs.filter(u=>u.data().role==='client').length;totalAgents.innerText=users.docs.filter(u=>u.data().role==='agent').length;totalTransactions.innerText=await db.collection('transactions').get().then(s=>s.size);usersTable.innerHTML="<tr><th>Nom</th><th>Email</th><th>Role</th><th>Solde</th></tr>";users.docs.forEach(doc=>{let u=doc.data();usersTable.innerHTML+=`<tr><td>${u.name}</td><td>${u.email}</td><td>${u.role}</td><td>$${u.balance.toFixed(2)}</td></tr>`;});}
 
+// STATISTIQUES CHART
+const ctx = document.getElementById('txnChart').getContext('2d');
+const txnChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil'],
+        datasets: [{
+            label: 'Transactions (en milliers)',
+            data: [5, 8, 6, 10, 12, 15, 20],
+            backgroundColor: '#0072ff'
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {display: true},
+            title: {display: true, text: 'Statistiques des transactions'}
+        }
+    }
+});
+
+// ADMIN CHART
+const adminCtx = document.getElementById('adminChart').getContext('2d');
+const adminChart = new Chart(adminCtx, {
+    type: 'pie',
+    data: {
+        labels: ['Clients', 'Agents', 'Admins'],
+        datasets: [{
+            label: 'Répartition des utilisateurs',
+            data: [totalClients.innerText, totalAgents.innerText, 1], // Admin fixe 1 pour l'exemple
+            backgroundColor: ['#0072ff','#00c853','#ff6d00']
+        }]
+    },
+    options: {responsive:true}
+});
+
+// UTILS & AVATAR
+function generateAvatar(name){return `https://ui-avatars.com/api/?name=${name}&background=0D8ABC&color=fff`;}
+function generateCard(){return {cardNumber:"5314 "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000),biometricCode:Math.floor(100000 + Math.random()*900000)};}
+
+// NOTIFICATIONS
+function notifyUser(msg){alert("Notification GoPay : "+msg);}
+
+// SESSION MULTI-APPAREIL
+async function loadUserDataMulti(uid){
+    const snap = await db.collection("users").doc(uid).get();
+    currentUser = snap.data();
+    if(currentUser.sessionToken && currentUser.sessionToken!==uid){
+        alert("Session active sur un autre appareil");
+        logout();
+    } else {
+        await db.collection("users").doc(uid).update({sessionToken: uid});
+        loadDashboard();
+    }
+}
+
+// LOGOUT
+function logout(){auth.signOut();show('home');}
+
+// CURRENCY CONVERSION (exemple)
+const exchangeRates={USD:1,CDF:2800};
+function convertCurrency(amount,from,to){return (amount/exchangeRates[from])*exchangeRates[to];}
+
+// FAKE HISTORIQUE POUR DASHBOARD
+function loadFakeHistory(){
+    const names=["Ali","John","Fatou","David","Eric","Nadine","Prince"];
+    history.innerHTML="";
+    for(let i=0;i<6;i++){
+        let n = names[Math.floor(Math.random()*names.length)];
+        let amt = (Math.random()*200).toFixed(2);
+        history.innerHTML+=`<p>${n} a transféré $${amt}</p>`;
+    }
+}
+
+// ON AUTH CHANGE
+auth.onAuthStateChanged(user=>{
+    if(user){db.collection("users").doc(user.uid).get().then(s=>{loadUserDataMulti(s.id);});}
+});
+</script>
 </body>
 </html>
