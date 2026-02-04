@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -157,7 +156,209 @@ projectId:"gotrustpay-e6524",
 const auth=firebase.auth();
 const db=firebase.firestore();
 let currentUser=null;
+const ADMIN_EMAIL = "gotrustpayinfo@gmail.com";
 
+let currentUser = null;
+
+
+/* ===== NAVIGATION ===== */
+function show(panel){
+
+document.querySelectorAll(".panel")
+.forEach(p=>p.classList.add("hidden"));
+
+document.getElementById(panel).classList.remove("hidden");
+
+}
+
+
+/* ===== INSCRIPTION ===== */
+function register(){
+
+const email = regEmail.value;
+const password = regPassword.value;
+const role = regRole.value;
+
+auth.createUserWithEmailAndPassword(email,password)
+.then(async(userCredential)=>{
+
+const uid = userCredential.user.uid;
+
+await db.collection("users").doc(uid).set({
+
+email: email,
+role: role,
+balance: 0,
+approved: role==="agent"?false:true,
+sessionToken: null,
+createdAt: new Date()
+
+});
+
+alert("Compte créé");
+
+})
+.catch(e=>alert(e.message));
+
+}
+
+
+/* ===== LOGIN ===== */
+function login(){
+
+auth.signInWithEmailAndPassword(
+logEmail.value,
+logPassword.value
+).catch(e=>alert(e.message));
+
+}
+
+
+/* ===== LOGOUT ===== */
+function logout(){
+auth.signOut();
+show("home");
+}
+
+
+/* ===== SESSION + ROLE ===== */
+auth.onAuthStateChanged(async user=>{
+
+if(!user){
+show("home");
+return;
+}
+
+const uid = user.uid;
+
+/* ADMIN sécurisé */
+if(user.email === ADMIN_EMAIL){
+
+document.getElementById("adminBtn").classList.remove("hidden");
+show("adminDashboard");
+loadAdminUsers();
+return;
+}
+
+/* Charger utilisateur */
+const snap = await db.collection("users").doc(uid).get();
+
+if(!snap.exists) return;
+
+currentUser = snap.data();
+
+/* Protection session multi appareil */
+if(currentUser.sessionToken &&
+currentUser.sessionToken !== uid){
+
+alert("Session ouverte ailleurs");
+logout();
+return;
+
+}
+
+await db.collection("users").doc(uid).update({
+sessionToken: uid
+});
+
+
+/* Redirection rôle */
+if(currentUser.role === "agent"){
+
+if(!currentUser.approved){
+alert("Agent en attente validation admin");
+logout();
+return;
+}
+
+show("agentDashboard");
+
+}
+
+else{
+
+show("clientDashboard");
+loadClient();
+
+}
+
+});
+
+
+/* ===== CLIENT ===== */
+function loadClient(){
+
+clientBalance.innerText =
+"Solde : "+currentUser.balance+" USD";
+
+}
+
+
+/* ===== AGENT DEPOT ===== */
+async function agentDeposit(){
+
+const clientID = agentClientID.value;
+const amount = Number(agentAmount.value);
+
+const ref = db.collection("users").doc(clientID);
+
+await db.runTransaction(async t=>{
+
+const doc = await t.get(ref);
+
+if(!doc.exists) return;
+
+const newBalance = doc.data().balance + amount;
+
+t.update(ref,{balance:newBalance});
+
+});
+
+alert("Dépôt réussi");
+
+}
+
+
+/* ===== ADMIN ===== */
+async function loadAdminUsers(){
+
+adminUsers.innerHTML="Chargement...";
+
+const snap = await db.collection("users").get();
+
+let html="";
+
+snap.forEach(doc=>{
+
+const u = doc.data();
+
+html += `
+<div style="border:1px solid #ccc;margin:5px;padding:5px">
+${u.email} | ${u.role}
+
+${u.role==="agent" && !u.approved ?
+`<button onclick="approveAgent('${doc.id}')">Valider Agent</button>`:""}
+
+</div>
+`;
+
+});
+
+adminUsers.innerHTML = html;
+
+}
+
+
+async function approveAgent(uid){
+
+await db.collection("users").doc(uid).update({
+approved:true
+});
+
+alert("Agent validé");
+loadAdminUsers();
+
+}
 /* ===== MENU ===== */
 function toggleMenu(){menu.style.display = menu.style.display==="block"?"none":"block";}
 function show(id){
