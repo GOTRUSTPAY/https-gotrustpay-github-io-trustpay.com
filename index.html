@@ -219,10 +219,21 @@ function closeRegister(){registerModal.style.display="none";}
 function returnHome(){clientDash.style.display='none';agentDash.style.display='none';adminDash.style.display='none';document.querySelector('.hero').style.display='flex';document.querySelectorAll('.section').forEach(s=>s.style.display='block');}
 
 // Register
-async function register(){
-const cred=await auth.createUserWithEmailAndPassword(rEmail.value,rPass.value);
-await db.collection("users").doc(cred.user.uid).set({name:rName.value,email:rEmail.value,role:rRole.value,balance:50});
-registerModal.style.display="none";
+async function register() {
+  const cred = await auth.createUserWithEmailAndPassword(rEmail.value, rPass.value);
+
+  // Générer un ID client unique si c'est un client
+  let newClientId = rRole.value === "client" ? 'CL' + Math.floor(100000 + Math.random() * 900000) : null;
+
+  await db.collection("users").doc(cred.user.uid).set({
+    name: rName.value,
+    email: rEmail.value,
+    role: rRole.value,
+    balance: 50,
+    clientId: newClientId  // null si ce n'est pas un client
+  });
+
+  registerModal.style.display = "none";
 }
 
 // Login
@@ -239,7 +250,9 @@ document.querySelectorAll('.section').forEach(s=>s.style.display='none');
 
 db.collection("users").doc(uid).get().then(doc=>{
 let u=doc.data();
-if(u.role==="client"){clientDash.style.display='block';agentDash.style.display='none';adminDash.style.display='none';cName.innerText=u.name;cBalance.innerText=u.balance;QRCode.toCanvas(cQR,uid);loadClientHistory(uid);loadRecentActivities();}
+if(u.role==="client"){clientDash.style.display='block';agentDash.style.display='none';adminDash.style.display='none';cName.innerText = `${u.name} (${u.clientId})`;  // affiche le nom + ID client
+cBalance.innerText = u.balance;
+QRCode.toCanvas(cQR, u.clientId);              // QR code basé sur l'ID clientloadClientHistory(uid);loadRecentActivities();}
 if(u.role==="agent"){agentDash.style.display='block';clientDash.style.display='none';adminDash.style.display='none';loadAgentTransactions();}
 if(u.role==="admin"){adminDash.style.display='block';clientDash.style.display='none';agentDash.style.display='none';loadAdminUsers();loadAdminStats();}
 setInterval(()=>{if(auth.currentUser && u.role==='client'){loadClientHistory(auth.currentUser.uid);loadRecentActivities();}},3000);
