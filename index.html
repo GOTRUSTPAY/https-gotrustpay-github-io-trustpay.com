@@ -149,47 +149,11 @@ header{position:fixed;top:0;width:100%;display:flex;justify-content:space-betwee
 
 <!-- DASHBOARDS -->
 <div id="clientDash" class="dashboard">
-  <!-- Bouton Retour -->
-  <button class="buttonReturn" onclick="returnHome()">← Retour</button>
-
-  <!-- Carte utilisateur avec solde et QR -->
-  <div class="finCard">
-    <h3 id="cName"></h3>
-    <p>Solde: $<span id="cBalance"></span></p>
-    <canvas id="cQR"></canvas>
-  </div>
-
-  <!-- Actions financières -->
-  <div class="grid">
-    <!-- Cash In -->
-    <div class="finCard">
-      <h3>Cash In</h3>
-      <input type="number" id="cashInAmount" placeholder="Montant à déposer">
-      <button onclick="cashIn()">Déposer</button>
-    </div>
-
-    <!-- Cash Out -->
-    <div class="finCard">
-      <h3>Cash Out</h3>
-      <input type="number" id="cashOutAmount" placeholder="Montant à retirer">
-      <button onclick="cashOut()">Retirer</button>
-    </div>
-  </div>
-</div>
-
+<button class="buttonReturn" onclick="returnHome()">← Retour</button>
 <div class="finCard">
-<h3>💸 Cash Out (Retrait)</h3>
-<input id="cashOutAmount" placeholder="Montant">
-<button onclick="cashOut()">Valider retrait</button>
-</div>
-
-<div class="finCard">
-<h3>📲 Paiement</h3>
-<input id="payUser" placeholder="ID destinataire">
-<input id="payAmount" placeholder="Montant">
-<button onclick="sendPayment()">Envoyer</button>
-</div>
-
+<h3 id="cName"></h3>
+<p>Solde: $<span id="cBalance"></span></p>
+<canvas id="cQR"></canvas>
 </div>
 <h3>Historique Récent</h3>
 <div id="clientHistory"></div>
@@ -234,21 +198,10 @@ function closeRegister(){registerModal.style.display="none";}
 function returnHome(){clientDash.style.display='none';agentDash.style.display='none';adminDash.style.display='none';document.querySelector('.hero').style.display='flex';document.querySelectorAll('.section').forEach(s=>s.style.display='block');}
 
 // Register
-async function register() {
-  const cred = await auth.createUserWithEmailAndPassword(rEmail.value, rPass.value);
-
-  // Générer un ID client unique si c'est un client
-  let newClientId = rRole.value === "client" ? 'CL' + Math.floor(100000 + Math.random() * 900000) : null;
-
-  await db.collection("users").doc(cred.user.uid).set({
-    name: rName.value,
-    email: rEmail.value,
-    role: rRole.value,
-    balance: 50,
-    clientId: newClientId  // null si ce n'est pas un client
-  });
-
-  registerModal.style.display = "none";
+async function register(){
+const cred=await auth.createUserWithEmailAndPassword(rEmail.value,rPass.value);
+await db.collection("users").doc(cred.user.uid).set({name:rName.value,email:rEmail.value,role:rRole.value,balance:50});
+registerModal.style.display="none";
 }
 
 // Login
@@ -265,9 +218,7 @@ document.querySelectorAll('.section').forEach(s=>s.style.display='none');
 
 db.collection("users").doc(uid).get().then(doc=>{
 let u=doc.data();
-if(u.role==="client"){clientDash.style.display='block';agentDash.style.display='none';adminDash.style.display='none';cName.innerText = `${u.name} (${u.clientId})`;  // affiche le nom + ID client
-cBalance.innerText = u.balance;
-QRCode.toCanvas(cQR, u.clientId);              // QR code basé sur l'ID clientloadClientHistory(uid);loadRecentActivities();}
+if(u.role==="client"){clientDash.style.display='block';agentDash.style.display='none';adminDash.style.display='none';cName.innerText=u.name;cBalance.innerText=u.balance;QRCode.toCanvas(cQR,uid);loadClientHistory(uid);loadRecentActivities();}
 if(u.role==="agent"){agentDash.style.display='block';clientDash.style.display='none';adminDash.style.display='none';loadAgentTransactions();}
 if(u.role==="admin"){adminDash.style.display='block';clientDash.style.display='none';agentDash.style.display='none';loadAdminUsers();loadAdminStats();}
 setInterval(()=>{if(auth.currentUser && u.role==='client'){loadClientHistory(auth.currentUser.uid);loadRecentActivities();}},3000);
@@ -276,205 +227,31 @@ setInterval(()=>{if(auth.currentUser && u.role==='client'){loadClientHistory(aut
 
 // Client History
 function loadClientHistory(uid){
-db.collection("transactions")
-.where("uid","==",uid)
-.orderBy("date","desc")
-.get()
-.then(snap=>{
+db.collection("transactions").where("user","==",uid).orderBy("timestamp","desc").get().then(snap=>{
 clientHistory.innerHTML='';
-snap.forEach(doc=>{
-let t=doc.data();
-clientHistory.innerHTML+=`
-<p>${t.type} - $${t.amount}</p>
-`;
-});
+snap.forEach(doc=>{clientHistory.innerHTML+=`<p>${doc.data().type} - $${doc.data().amount}</p>`;});
 });
 }
 
 // Recent Activities
 function loadRecentActivities(){
-db.collection("transactions")
-.orderBy("date","desc")
-.limit(5)
-.get()
-.then(snap=>{
+db.collection("transactions").orderBy("timestamp","desc").limit(5).get().then(snap=>{
 recentActivities.innerHTML='';
-snap.forEach(doc=>{
-let t=doc.data();
-recentActivities.innerHTML+=`
-<p>${t.uid} - ${t.type} - $${t.amount}</p>
-`;
-});
+snap.forEach(doc=>{recentActivities.innerHTML+=`<p>${doc.data().user} - ${doc.data().type} - $${doc.data().amount}</p>`;});
 });
 }
 
 // Agent Transactions
 function loadAgentTransactions(){
-db.collection("transactions")
-.orderBy("date","desc")
-.get()
-.then(snap=>{
+db.collection("transactions").orderBy("timestamp","desc").get().then(snap=>{
 agentTransactions.innerHTML='';
-snap.forEach(doc=>{
-let t=doc.data();
-agentTransactions.innerHTML+=`
-<p>${t.uid} - ${t.type} - $${t.amount}</p>
-`;
-});
+snap.forEach(doc=>{agentTransactions.innerHTML+=`<p>${doc.data().user} - ${doc.data().type} - $${doc.data().amount}</p>`;});
 });
 }
 
 // Admin
-function loadAdminUsers(){
-    db.collection("users").get().then(snap=>{
-        adminUsers.innerHTML='';
-        snap.forEach(doc=>{
-            adminUsers.innerHTML+=`<p>${doc.data().name} - ${doc.data().role} - Solde: $${doc.data().balance}</p>`;
-        });
-    });
-}
-
-function loadAdminStats(){
-    db.collection("transactions").get().then(snap=>{
-        let total=snap.docs.reduce((acc,d)=>acc+d.data().amount,0);
-        adminStats.innerHTML=`<h3>Total Transactions: $${total}</h3><p>Nombre de transactions: ${snap.docs.length}</p>`;
-    });
-}
-
-function loadAdminUsers(){
-    db.collection("users").get().then(snap=>{
-        adminUsers.innerHTML='';
-        snap.forEach(doc=>{
-            adminUsers.innerHTML+=`<p>${doc.data().name} - ${doc.data().role} - Solde: $${doc.data().balance}</p>`;
-        });
-    });
-}
-
-function loadAdminStats(){
-    db.collection("transactions").get().then(snap=>{
-        let total=snap.docs.reduce((acc,d)=>acc+d.data().amount,0);
-        adminStats.innerHTML=`<h3>Total Transactions: $${total}</h3><p>Nombre de transactions: ${snap.docs.length}</p>`;
-    });
-}
-
-// --- Dépôt Cash In ---
-async function cashIn(){
-    let amount = parseFloat(cashInAmount.value);
-    if(isNaN(amount) || amount <= 0){
-        alert("Veuillez saisir un montant valide");
-        return;
-    }
-
-    let uid = auth.currentUser.uid;
-    let ref = db.collection("users").doc(uid);
-
-    await db.runTransaction(async (t) => {
-        let doc = await t.get(ref);
-        let newBal = doc.data().balance + amount;
-
-        t.update(ref, { balance: newBal });
-
-        // Ajouter transaction dans Firestore
-        db.collection("transactions").add({
-            uid: uid,
-            type: "Cash In",
-            amount: amount,
-            date: new Date()
-        });
-    });
-
-    alert(`Vous avez déposé $${amount}`);
-    cashInAmount.value = "";
-}
-
-// --- Retrait Cash Out ---
-async function cashOut(){
-    let amount = parseFloat(cashOutAmount.value);
-    if(isNaN(amount) || amount <= 0){
-        alert("Veuillez saisir un montant valide");
-        return;
-    }
-
-    let uid = auth.currentUser.uid;
-    let ref = db.collection("users").doc(uid);
-
-    await db.runTransaction(async (t) => {
-        let doc = await t.get(ref);
-
-        if(doc.data().balance < amount){
-            alert("Solde insuffisant");
-            return;
-        }
-
-        let newBal = doc.data().balance - amount;
-        t.update(ref, { balance: newBal });
-
-        db.collection("transactions").add({
-            uid: uid,
-            type: "Cash Out",
-            amount: amount,
-            date: new Date()
-        });
-    });
-
-    alert(`Vous avez retiré $${amount}`);
-    cashOutAmount.value = "";
-}
-
-// --- Paiement à un autre utilisateur ---
-async function sendPayment(){
-    let amount = parseFloat(payAmount.value);
-    let receiver = payUser.value.trim();
-    let sender = auth.currentUser.uid;
-
-    if(!receiver){
-        alert("Veuillez saisir l'ID du destinataire");
-        return;
-    }
-    if(isNaN(amount) || amount <= 0){
-        alert("Veuillez saisir un montant valide");
-        return;
-    }
-
-    let sRef = db.collection("users").doc(sender);
-    let rRef = db.collection("users").doc(receiver);
-
-    await db.runTransaction(async (t) => {
-        let sDoc = await t.get(sRef);
-        let rDoc = await t.get(rRef);
-
-        if(!rDoc.exists){
-            alert("Utilisateur introuvable");
-            return;
-        }
-
-        if(sDoc.data().balance < amount){
-            alert("Solde insuffisant");
-            return;
-        }
-
-        t.update(sRef, { balance: sDoc.data().balance - amount });
-        t.update(rRef, { balance: rDoc.data().balance + amount });
-
-        db.collection("transactions").add({
-            uid: sender,
-            type: "Paiement envoyé",
-            amount: amount,
-            date: new Date()
-        });
-
-        db.collection("transactions").add({
-            uid: receiver,
-            type: "Paiement reçu",
-            amount: amount,
-            date: new Date()
-        });
-    });
-
-    alert(`Paiement de $${amount} envoyé à ${receiver}`);
-    payAmount.value = "";
-    payUser.value = "";
-}
+function loadAdminUsers(){db.collection("users").get().then(snap=>{adminUsers.innerHTML='';snap.forEach(doc=>{adminUsers.innerHTML+=`<p>${doc.data().name} - ${doc.data().role} - Solde: $${doc.data().balance}</p>`;});});}
+function loadAdminStats(){db.collection("transactions").get().then(snap=>{let total=snap.docs.reduce((acc,d)=>acc+d.data().amount,0);adminStats.innerHTML=`<h3>Total Transactions: $${total}</h3><p>Nombre de transactions: ${snap.docs.length}</p>`;});}
 
 // Logout
 function logout(){auth.signOut().then(()=>returnHome());}
