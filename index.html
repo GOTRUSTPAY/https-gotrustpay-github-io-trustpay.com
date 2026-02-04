@@ -2,13 +2,14 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>GOPAY AFRICA</title>
+<title>GOPAY AFRICA - Dashboard Pro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css">
 
 <style>
@@ -38,9 +39,9 @@ footer a:hover{text-decoration:underline;}
 .action{background:#0072ff;color:#fff;padding:12px;border-radius:12px;text-align:center;font-weight:700;cursor:pointer;transition:0.3s;}
 .action:hover{background:#005bb5;transform:translateY(-2px);}
 .card-dashboard{background:#e0f2ff;padding:20px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1);text-align:center;margin-bottom:20px;}
+canvas{background:#fff;border-radius:12px;}
 </style>
 </head>
-
 <body>
 
 <header>
@@ -66,9 +67,9 @@ footer a:hover{text-decoration:underline;}
 <section id="why">
 <h2 style="text-align:center;">Pourquoi nous rejoindre <i class='bx bx-badge-check'></i></h2>
 <div class="card-section">
-<div class="card"><i class='bx bx-rocket'></i><h3>Innovation</h3><p>Services financiers innovants et digitaux.</p></div>
-<div class="card"><i class='bx bx-shield'></i><h3>Sécurité</h3><p>Protection maximale de vos transactions.</p></div>
-<div class="card"><i class='bx bx-group'></i><h3>Support</h3><p>Support client dédié 24/7.</p></div>
+<div class="card"><i class='bx bx-rocket'></i><h3>Innovation</h3><p>Services financiers digitaux et modernes.</p></div>
+<div class="card"><i class='bx bx-shield'></i><h3>Sécurité</h3><p>Protection maximale des transactions.</p></div>
+<div class="card"><i class='bx bx-group'></i><h3>Support</h3><p>Support dédié 24/7.</p></div>
 </div>
 </section>
 
@@ -84,7 +85,7 @@ footer a:hover{text-decoration:underline;}
 <section id="values">
 <h2 style="text-align:center;">Nos valeurs <i class='bx bx-heart'></i></h2>
 <div class="card-section">
-<div class="card"><i class='bx bx-user-check'></i><h3>Fiabilité</h3><p>Nos services sont fiables et constants.</p></div>
+<div class="card"><i class='bx bx-user-check'></i><h3>Fiabilité</h3><p>Services fiables et constants.</p></div>
 <div class="card"><i class='bx bx-brain'></i><h3>Innovation</h3><p>Nous innovons chaque jour pour mieux vous servir.</p></div>
 <div class="card"><i class='bx bx-globe'></i><h3>Pan-Africain</h3><p>Présence sur plusieurs pays africains.</p></div>
 </div>
@@ -94,7 +95,7 @@ footer a:hover{text-decoration:underline;}
 <h2 style="text-align:center;">Mission & Statistiques <i class='bx bx-line-chart'></i></h2>
 <div class="card-section">
 <div class="card"><h3>Mission</h3><p>Offrir des services financiers digitaux accessibles à tous.</p></div>
-<div class="card"><h3>Statistiques</h3><p>+10k clients actifs et +5000 transactions/jour.</p></div>
+<div class="card"><h3>Statistiques</h3><canvas id="txnChart" width="400" height="200"></canvas></div>
 </div>
 </section>
 
@@ -113,20 +114,97 @@ footer a:hover{text-decoration:underline;}
 <p>Téléphone: +243 123 456 789</p>
 </section>
 
-<!-- LOGIN, REGISTER, DASHBOARD, ADMIN panels restent identiques à la version précédente -->
+<!-- LOGIN / REGISTER / DASHBOARD / ADMIN -->
+<div id="login" class="panel hidden">
+<h3>Connexion</h3>
+<input id="lEmail" placeholder="Email"><br><br>
+<input id="lPass" type="password" placeholder="Mot de passe"><br><br>
+<div class="actions">
+<div class="action" onclick="login()">Connexion</div>
+<div class="action" onclick="show('register')">Créer compte</div>
+</div>
+</div>
+
+<div id="register" class="panel hidden">
+<h3>Créer compte</h3>
+<input id="rName" placeholder="Nom"><br><br>
+<input id="rEmail" placeholder="Email"><br><br>
+<input id="rPass" type="password" placeholder="Mot de passe"><br><br>
+<select id="rRole">
+<option value="client">Client</option>
+<option value="agent">Agent</option>
+<option value="admin">Admin</option>
+</select>
+<div class="actions">
+<div class="action" onclick="register()">Créer</div>
+</div>
+</div>
+
+<div id="dash" class="panel hidden">
+<h3>Dashboard Utilisateur</h3>
+<div class="card-dashboard">
+<h3 id="cardName"></h3>
+<p>ID: <span id="cardId"></span></p>
+<p>Solde: $<span id="balance"></span></p>
+<canvas id="qr"></canvas>
+</div>
+<div class="actions">
+<div class="action" onclick="cashin()">Cash-in</div>
+<div class="action" onclick="cashout()">Cash-out</div>
+<div class="action" onclick="pay()">Paiement</div>
+<div class="action" onclick="logout()">Déconnexion</div>
+</div>
+<h4>Activités Récentes</h4>
+<div id="history"></div>
+</div>
+
+<div id="admin" class="panel hidden">
+<h3>Admin Dashboard</h3>
+<p>Total Clients: <span id="totalClients">0</span></p>
+<p>Total Agents: <span id="totalAgents">0</span></p>
+<p>Total Transactions: <span id="totalTransactions">0</span></p>
+<canvas id="adminChart" width="400" height="200"></canvas>
+<table id="usersTable"></table>
+<div class="action" onclick="show('dash')">Retour</div>
+</div>
+
+<footer>
+<h4>© 2026 GoPay Africa Digital Finance Ltd</h4>
+</footer>
 
 <script>
-// Firebase initialisation
 firebase.initializeApp({
 apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
 authDomain:"gotrustpay-e6524.firebaseapp.com",
 projectId:"gotrustpay-e6524",
 });
-const auth=firebase.auth();const db=firebase.firestore();
+const auth=firebase.auth(); const db=firebase.firestore();
 let currentUser=null;
 
-// SCROLL VERS CONTACT
+// NAVIGATION
+function show(id){document.querySelectorAll(".panel").forEach(p=>p.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");}
 function scrollToContact(){document.getElementById('contact').scrollIntoView({behavior:'smooth'});}
+
+// REGISTER / LOGIN
+async function register(){const cred=await auth.createUserWithEmailAndPassword(rEmail.value,rPass.value);let gid="GP"+Math.random().toString(36).substring(2,7).toUpperCase();await db.collection("users").doc(cred.user.uid).set({name:rName.value,email:rEmail.value,role:rRole.value,gid,balance:50,sessionToken:null,totalCommission:0});loginAuto();}
+async function login(){const cred=await auth.signInWithEmailAndPassword(lEmail.value,lPass.value);loadUserData(cred.user.uid);}
+async function loginAuto(){loadUserData(auth.currentUser.uid);}
+async function loadUserData(uid){const snap=await db.collection("users").doc(uid).get();currentUser=snap.data();if(currentUser.sessionToken && currentUser.sessionToken!==uid){alert("Session active ailleurs");logout();return;}await db.collection("users").doc(uid).update({sessionToken:uid});loadDashboard();}
+function logout(){auth.signOut();show('home');}
+
+// DASHBOARD CLIENT
+function loadDashboard(){cardName.innerText=currentUser.name; cardId.innerText=currentUser.gid; balance.innerText=currentUser.balance.toFixed(2); QRCode.toCanvas(qr,currentUser.gid);loadFakeHistory(); if(currentUser.role==='admin'){setTimeout(()=>openAdmin(),500);} show('dash');}
+
+// CASH-IN / CASH-OUT / PAYMENT
+async function cashin(){let amt=parseFloat(prompt("Montant"));if(!amt)return;await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(amt)});currentUser.balance+=amt;loadDashboard();}
+async function cashout(){let amt=parseFloat(prompt("Montant"));if(!amt)return;await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});currentUser.balance-=amt;saveTransaction('cashout',amt);loadDashboard();}
+async function pay(){let amt=parseFloat(prompt("Montant"));let dest=prompt("ID destinataire");let snap=await db.collection("users").where("gid","==",dest).get();if(snap.empty){alert("Utilisateur introuvable");return;}let doc=snap.docs[0];await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});await db.collection("users").doc(doc.id).update({balance:firebase.firestore.FieldValue.increment(amt)});saveTransaction('payment',amt);currentUser.balance-=amt;loadDashboard();}
+function saveTransaction(type,amt){db.collection("transactions").add({user:currentUser.gid,type,amount:amt,date:new Date()});}
+function loadFakeHistory(){const names=["Ali","John","Fatou","David","Eric","Nadine","Prince"];history.innerHTML="";for(let i=0;i<6;i++){let n=names[Math.floor(Math.random()*names.length)];let amt=(Math.random()*200).toFixed(2);history.innerHTML+=`<p>${n} a transféré $${amt}</p>`;}}
+
+// ADMIN
+async function openAdmin(){show('admin');let users=await db.collection("users").get();totalClients.innerText=users.docs.filter(u=>u.data().role==='client').length;totalAgents.innerText=users.docs.filter(u=>u.data().role==='agent').length;totalTransactions.innerText=await db.collection('transactions').get().then(s=>s.size);usersTable.innerHTML="<tr><th>Nom</th><th>Email</th><th>Role</th><th>Solde</th><th>Comm</th></tr>";users.docs.forEach(doc=>{let u=doc.data();usersTable.innerHTML+=`<tr><td>${u.name}</td><td>${u.email}</td><td>${u.role}</td><td>${u.balance.toFixed(2)}</td><td>${(u.totalCommission||0).toFixed(2)}</td></tr>`;});drawAdminChart();}
+function drawAdminChart(){const ctx=document.getElementById('adminChart').getContext('2d');new Chart(ctx,{type:'bar',data:{labels:['Clients','Agents','Transactions'],datasets:[{label:'Total',data:[parseInt(totalClients.innerText),parseInt(totalAgents.innerText),parseInt(totalTransactions.innerText)],backgroundColor:['#0072ff','#00c6ff','#14b8a6']}]},options:{responsive:true,plugins:{legend:{display:false}}}});}
 </script>
 
 </body>
