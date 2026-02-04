@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -34,6 +35,11 @@ font-weight:bold;
 color:#5eead4;
 }
 
+.menu{
+cursor:pointer;
+font-size:26px;
+}
+
 .panel{
 background:#043837;
 margin:20px;
@@ -63,6 +69,16 @@ cursor:pointer;
 background:linear-gradient(135deg,#1d4ed8,#0ea5e9);
 border-radius:20px;
 padding:20px;
+box-shadow:0 8px 25px rgba(0,0,0,0.5);
+}
+
+.card h3{margin:0;}
+.card small{opacity:.8;}
+
+#history p{
+font-size:14px;
+border-bottom:1px solid rgba(255,255,255,0.1);
+padding:6px 0;
 }
 </style>
 </head>
@@ -71,10 +87,28 @@ padding:20px;
 
 <header>
 <div class="logo">GOPAY AFRICA</div>
+<div class="menu" onclick="toggleMenu()">☰</div>
 </header>
 
+<div class="menu" id="menu">
+<a onclick="show('home')">Accueil</a>
+<a onclick="show('login')">Connexion</a>
+<a id="adminBtn" class="hidden" onclick="openAdmin()">Admin Panel</a>
+<a onclick="logout()">Déconnexion</a>
+</div>
+
+<!-- HOME -->
+<div id="home" class="panel">
+<h2>Banque Digitale Africaine</h2>
+<p>GoPay Africa est une néobanque panafricaine offrant des solutions financières digitales sécurisées.</p>
+<h4>FAQ</h4><p>Transactions instantanées • KYC sécurisé • Multi-devises</p>
+<h4>Confidentialité</h4><p>Vos données sont protégées via chiffrement bancaire.</p>
+<h4>Contact</h4><p>@gopapay.info</p>
+<h4>Mentions légales</h4><p>GoPay Africa Digital Finance Ltd © 2026</p>
+</div>
+
 <!-- LOGIN -->
-<div id="login" class="panel">
+<div id="login" class="panel hidden">
 <h3>Connexion</h3>
 <input id="lEmail" placeholder="Email"><br><br>
 <input id="lPass" type="password" placeholder="Mot de passe"><br><br>
@@ -103,6 +137,14 @@ padding:20px;
 
 </div>
 
+<!-- ADMIN -->
+<div id="admin" class="panel hidden">
+<h3>Admin Dashboard</h3>
+<p>Total Users : <span id="totalUsers"></span></p>
+<table id="usersTable"></table>
+<div class="action" onclick="show('dash')">Retour</div>
+</div>
+
 <script>
 
 /* ===== FIREBASE ===== */
@@ -116,6 +158,14 @@ const auth=firebase.auth();
 const db=firebase.firestore();
 let currentUser=null;
 
+/* ===== MENU ===== */
+function toggleMenu(){menu.style.display = menu.style.display==="block"?"none":"block";}
+function show(id){
+document.querySelectorAll(".panel").forEach(p=>p.classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
+menu.style.display="none";
+}
+
 /* ===== LOGIN ===== */
 async function login(){
 const cred=await auth.signInWithEmailAndPassword(lEmail.value,lPass.value);
@@ -124,166 +174,91 @@ loadUserData(cred.user.uid);
 
 /* ===== SESSION MULTI-APPAREIL ===== */
 async function loadUserData(uid){
-
 const snap=await db.collection("users").doc(uid).get();
 currentUser=snap.data();
-
-if(currentUser.sessionToken && currentUser.sessionToken!==uid){
-alert("Session active sur un autre appareil");
-logout();
-}
-else{
-await db.collection("users").doc(uid).update({sessionToken:uid});
-loadUser(currentUser);
-}
+if(currentUser.sessionToken && currentUser.sessionToken!==uid){alert("Session active sur un autre appareil");logout();}
+else{await db.collection("users").doc(uid).update({sessionToken:uid}); loadUser(currentUser);}
 }
 
-/* ===== LOAD USER ===== */
+/* ===== LOAD USER DASHBOARD ===== */
 function loadUser(user){
-
 cardName.innerText=user.name;
 cardId.innerText=user.gid;
 balance.innerText=user.balance.toFixed(2);
-
 QRCode.toCanvas(qr,user.gid);
-
 document.getElementById("login").classList.add("hidden");
 document.getElementById("dash").classList.remove("hidden");
-
 loadHistory();
+if(user.role==="admin"){adminBtn.style.display="block";} else{adminBtn.style.display="none";}
 }
 
 /* ===== NOTIFICATION ===== */
-function notifyUser(msg){
-alert("Notification GoPay : "+msg);
-}
+function notifyUser(msg){alert("Notification GoPay : "+msg);}
 
 /* ===== TRANSACTION LOG ===== */
-function saveTransaction(userId,type,amount){
-db.collection("transactions").add({
-userId,
-type,
-amount,
-date:new Date()
-});
-}
+function saveTransaction(userId,type,amount){db.collection("transactions").add({userId,type,amount,date:new Date()});}
 
 /* ===== KYC ===== */
-function submitKYC(userId,docURL){
-db.collection("kyc").doc(userId).set({
-document:docURL,
-status:"pending"
-});
-notifyUser("KYC envoyé");
-}
+function submitKYC(userId,docURL){db.collection("kyc").doc(userId).set({document:docURL,status:"pending"}); notifyUser("KYC soumis");}
+function openKYC(){let doc=prompt("Lien document KYC"); submitKYC(currentUser.gid,doc);}
 
-function openKYC(){
-let doc=prompt("Lien document KYC");
-submitKYC(currentUser.gid,doc);
-}
-
-/* ===== HISTORIQUE CLIENT ===== */
+/* ===== HISTORIQUE ===== */
 async function loadHistory(){
-
-history.innerHTML="";
-
-const snap=await db.collection("transactions")
-.where("userId","==",currentUser.gid)
-.get();
-
-snap.forEach(t=>{
-let d=t.data();
-history.innerHTML+=`<p>${d.type} : $${d.amount}</p>`;
-});
-}
-
-/* ===== AVATAR ===== */
-function generateAvatar(name){
-return `https://ui-avatars.com/api/?name=${name}&background=0D8ABC&color=fff`;
-}
-
-/* ===== CARTE BIOMETRIQUE ===== */
-function generateCard(){
-return{
-cardNumber:"5314 "+Math.floor(1000+Math.random()*9000)+" "+
-Math.floor(1000+Math.random()*9000)+" "+
-Math.floor(1000+Math.random()*9000),
-biometricCode:Math.floor(100000 + Math.random()*900000)
-};
-}
-
-/* ===== MULTI DEVISE ===== */
-const exchangeRates={USD:1,CDF:2800};
-
-function convertCurrency(amount,from,to){
-return (amount/exchangeRates[from])*exchangeRates[to];
+const snap=await db.collection("transactions").where("userId","==",currentUser.gid).get();
+history.innerHTML="<h4>Dernières transactions:</h4>";
+snap.forEach(t=>{let d=t.data(); history.innerHTML+=`<p>${d.type} : $${d.amount}</p>`;});
 }
 
 /* ===== CASH IN ===== */
 async function cashin(){
-let amt=parseFloat(prompt("Montant"));
-await db.collection("users").doc(auth.currentUser.uid)
-.update({balance:firebase.firestore.FieldValue.increment(amt)});
-saveTransaction(currentUser.gid,"cashin",amt);
-notifyUser("Cash-in réussi");
+let amt=parseFloat(prompt("Montant")); if(!amt) return;
+await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(amt)});
+currentUser.balance+=amt; saveTransaction(currentUser.gid,"cashin",amt); notifyUser("Cash-in réussi"); loadUser(currentUser);
 }
 
 /* ===== CASH OUT ===== */
 async function cashout(){
-let amt=parseFloat(prompt("Montant"));
-await db.collection("users").doc(auth.currentUser.uid)
-.update({balance:firebase.firestore.FieldValue.increment(-amt)});
-saveTransaction(currentUser.gid,"cashout",amt);
-notifyUser("Cash-out effectué");
+let amt=parseFloat(prompt("Montant")); if(!amt) return;
+await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});
+currentUser.balance-=amt; saveTransaction(currentUser.gid,"cashout",amt); notifyUser("Cash-out effectué"); loadUser(currentUser);
 }
 
 /* ===== PAYMENT ===== */
 async function pay(){
-
 let amt=parseFloat(prompt("Montant"));
 let dest=prompt("ID destinataire");
-
-let snap=await db.collection("users")
-.where("gid","==",dest).get();
-
-if(snap.empty){
-alert("Utilisateur introuvable");
-return;
-}
-
+let snap=await db.collection("users").where("gid","==",dest).get();
+if(snap.empty){alert("Utilisateur introuvable"); return;}
 let doc=snap.docs[0];
-
-await db.collection("users").doc(auth.currentUser.uid)
-.update({balance:firebase.firestore.FieldValue.increment(-amt)});
-
-await db.collection("users").doc(doc.id)
-.update({balance:firebase.firestore.FieldValue.increment(amt)});
-
-saveTransaction(currentUser.gid,"payment",amt);
-notifyUser("Paiement envoyé");
+await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});
+await db.collection("users").doc(doc.id).update({balance:firebase.firestore.FieldValue.increment(amt)});
+currentUser.balance-=amt; saveTransaction(currentUser.gid,"payment",amt); notifyUser("Paiement envoyé"); loadUser(currentUser);
 }
 
-/* ===== AUTH WATCH ===== */
-auth.onAuthStateChanged(user=>{
-if(user){
-db.collection("users").doc(user.uid)
-.get()
-.then(s=>loadUser(s.data()));
+/* ===== ADMIN ===== */
+async function openAdmin(){
+show("admin");
+let users=await db.collection("users").get();
+totalUsers.innerText=users.size;
+usersTable.innerHTML="<tr><th>Nom</th><th>Email</th><th>Role</th></tr>";
+users.forEach(doc=>{let u=doc.data();
+usersTable.innerHTML+=`<tr><td>${u.name}</td><td>${u.email}</td><td>${u.role}</td></tr>`;});
 }
-});
 
 /* ===== LOGOUT ===== */
-function logout(){
-auth.signOut();
-document.body.style.background="#061e1c";
-location.reload();
-}
+function logout(){auth.signOut(); show("home"); location.reload();}
 
 /* ===== API AGENT SIMULE ===== */
-function agentDeposit(agentID,clientID,amount){
-notifyUser("Agent "+agentID+" a crédité "+amount);
-}
+function agentDeposit(agentID,clientID,amount){notifyUser("Agent "+agentID+" a crédité "+amount);}
 
+/* ===== AVATAR + CARTE + MULTI DEVISE ===== */
+function generateAvatar(name){return `https://ui-avatars.com/api/?name=${name}&background=0D8ABC&color=fff`;}
+function generateCard(){return {cardNumber:"5314 "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000), biometricCode:Math.floor(100000+Math.random()*900000)};}
+const exchangeRates={USD:1,CDF:2800};
+function convertCurrency(amount,from,to){return(amount/exchangeRates[from])*exchangeRates[to];}
+
+/* ===== AUTH WATCHER ===== */
+auth.onAuthStateChanged(user=>{if(user){db.collection("users").doc(user.uid).get().then(s=>loadUser(s.data()));}});
 </script>
 </body>
 </html>
