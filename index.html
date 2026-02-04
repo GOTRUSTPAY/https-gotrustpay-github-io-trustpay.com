@@ -14,27 +14,28 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
 <style>
-body{margin:0;font-family:Roboto;background:#0a0f20;scroll-behavior:smooth;color:white;}
+body{margin:0;font-family:Roboto;background:#eef5f2;scroll-behavior:smooth;}
 header{position:fixed;top:0;width:100%;background:#0d1b2a;display:flex;justify-content:space-between;padding:12px 20px;z-index:1000;}
-.logo{color:white;font-weight:700;background:#2e7d32;padding:6px 14px;border-radius:8px;font-size:1.4em;}
-.menu3{position:fixed;top:12px;right:20px;background:#0d1b2a;color:white;padding:12px;border-radius:10px;cursor:pointer;z-index:1001;font-weight:700;font-size:1.3em;}
-.menuPanel{position:fixed;top:50px;right:20px;background:rgba(255,255,255,0.95);border-radius:14px;box-shadow:0 5px 20px rgba(0,0,0,0.3);display:none;padding:15px;width:240px;z-index:1002;color:#000;}
-.menuPanel p{cursor:pointer;padding:10px;margin:0;border-bottom:1px solid #ddd;}
-.menuPanel p:hover{background:#e0f2f1;}
-section{padding:120px 20px;}
-.hero{height:95vh;display:flex;flex-direction:column;justify-content:center;align-items:center;background:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),url('https://images.unsplash.com/photo-1502117859338-7d9f7e7aa0f5?fit=crop&w=1950&q=80');background-size:cover;text-align:center;}
-.hero h1{font-size:3em;margin-bottom:10px;}
-.hero p{font-size:1.5em;margin-bottom:30px;}
-.hero button{background:#2e7d32;color:white;padding:16px 40px;border:none;border-radius:12px;cursor:pointer;font-size:20px;box-shadow:0 6px 20px rgba(0,0,0,0.4);}
+.logo{color:white;font-weight:700;background:#2e7d32;padding:6px 14px;border-radius:8px;}
+.menu a{color:white;margin:0 8px;text-decoration:none;cursor:pointer;}
+.menu a:hover{color:#4caf50;}
+section{padding:110px 20px;}
+.hero{height:90vh;color:white;display:flex;flex-direction:column;justify-content:center;align-items:center;background:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)),url("https://images.unsplash.com/photo-1556740749-887f6717d7e4");background-size:cover;}
+.hero button{background:#2e7d32;color:white;padding:14px 30px;border:none;border-radius:10px;cursor:pointer;font-size:18px;}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;}
-.card{background:rgba(0,0,0,0.6);padding:20px;border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,0.5);text-align:center;}
-.card img{width:100%;border-radius:10px;margin-bottom:10px;}
-.iconTitle{display:flex;align-items:center;gap:10px;font-weight:700;font-size:22px;margin-bottom:10px;color:#4caf50;}
-.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);display:none;justify-content:center;align-items:center;z-index:2000;}
-.modal-box{background:white;padding:30px;border-radius:14px;width:340px;color:black;}
-.modal input,select{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:1px solid #ccc;}
+.card{background:white;padding:20px;border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,0.15);}
+.card img{width:100%;border-radius:10px;margin-top:10px;}
+.iconTitle{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:none;justify-content:center;align-items:center;z-index:2000;}
+.modal-box{background:white;padding:30px;border-radius:14px;width:320px;}
+.modal input,select{width:100%;padding:10px;margin:8px 0;}
 .dashboard{display:none;padding:100px 20px;}
 .finCard{background:linear-gradient(45deg,#0d1b2a,#2e7d32);color:white;border-radius:18px;padding:20px;margin-bottom:20px;}
+.menu3{position:fixed;top:10px;right:20px;background:#0d1b2a;color:white;padding:12px;border-radius:10px;cursor:pointer;z-index:1001;}
+.menuPanel{position:fixed;top:50px;right:20px;background:white;border-radius:14px;box-shadow:0 5px 20px rgba(0,0,0,0.2);display:none;padding:15px;width:220px;z-index:1002;}
+.menuPanel p{cursor:pointer;padding:8px;margin:0;border-bottom:1px solid #ddd;}
+.menuPanel p:hover{background:#f1f1f1;}
+.backBtn{background:#2e7d32;color:white;padding:10px 16px;border:none;border-radius:6px;cursor:pointer;margin-bottom:15px;}
 </style>
 </head>
 
@@ -42,9 +43,12 @@ section{padding:120px 20px;}
 
 <header>
 <div class="logo">GoPay Africa</div>
-<div class="menu3" onclick="toggleMenu3()">☰ Menu</div>
+<div class="menu">
+<a onclick="toggleMenu3()">Menu ☰</a>
+</div>
 </header>
 
+<div id="menu3" class="menu3" onclick="toggleMenu3()">☰</div>
 <div id="menuPanel" class="menuPanel">
 <p onclick="scrollToSection('why')">Pourquoi nous rejoindre</p>
 <p onclick="scrollToSection('success')">Succès</p>
@@ -56,7 +60,7 @@ section{padding:120px 20px;}
 <p onclick="openLogin()">Connexion</p>
 </div>
 
-<section class="hero">
+<section class="hero" id="home">
 <h1>Néobanque Africaine</h1>
 <p>Paiements rapides et sécurisés</p>
 <button onclick="openLogin()">Se connecter</button>
@@ -65,7 +69,7 @@ section{padding:120px 20px;}
 <section id="why">
 <div class="iconTitle"><i class='bx bx-bulb'></i> Innovation</div>
 <div class="grid">
-<div class="card"><img src="https://images.unsplash.com/photo-1581091215368-7f5d682f2ec5"><p>Innovation digitale</p></div>
+<div class="card"><img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c"><p>Innovation digitale</p></div>
 <div class="card"><img src="https://images.unsplash.com/photo-1605902711622-cfb43c4437b5"><p>Sécurité financière</p></div>
 <div class="card"><img src="https://images.unsplash.com/photo-1573164574390-9a2ed0c4cbbf"><p>Support 24/7</p></div>
 </div>
@@ -74,28 +78,28 @@ section{padding:120px 20px;}
 <section id="success">
 <div class="iconTitle"><i class='bx bx-trophy'></i> Succès</div>
 <div class="grid">
-<div class="card"><img src="https://images.unsplash.com/photo-1521791136064-7986c2920216"><p>Clients satisfaits</p></div>
-<div class="card"><img src="https://images.unsplash.com/photo-1581092338230-58c786aa39e7"><p>Paiements rapides</p></div>
-<div class="card"><img src="https://images.unsplash.com/photo-1605792657661-b0ec2f0e1366"><p>Transactions sécurisées</p></div>
+<div class="card"><img src="https://images.unsplash.com/photo-1554224155-1696413565d3"><p>Clients satisfaits</p></div>
+<div class="card"><img src="https://images.unsplash.com/photo-1521791136064-7986c2920216"><p>Transactions réussies</p></div>
+<div class="card"><img src="https://images.unsplash.com/photo-1556745757-8d76bdb6984b"><p>Paiements mobiles</p></div>
 </div>
 </section>
 
 <section id="values">
 <div class="iconTitle"><i class='bx bx-diamond'></i> Valeurs</div>
 <div class="grid">
-<div class="card"><img src="https://images.unsplash.com/photo-1607746882042-944635dfe10e"><p>Fiabilité</p></div>
-<div class="card"><img src="https://images.unsplash.com/photo-1592503259359-d6aa2e1c0d1e"><p>Inclusion financière</p></div>
-<div class="card"><img src="https://images.unsplash.com/photo-1556742400-7f8cf0b7d7d2"><p>Innovation</p></div>
+<div class="card">Fiabilité</div>
+<div class="card">Innovation</div>
+<div class="card">Inclusion financière</div>
 </div>
 </section>
 
 <section id="mission">
 <div class="iconTitle"><i class='bx bx-target-lock'></i> Mission</div>
-<p>Offrir des services financiers accessibles à toute l’Afrique</p>
+<p>Offrir services financiers accessibles à toute l’Afrique</p>
 <div class="grid">
-<div class="card"><p>1M+ utilisateurs</p></div>
-<div class="card"><p>500k transactions/mois</p></div>
-<div class="card"><p>98% satisfaction</p></div>
+<div class="card">1M+ utilisateurs</div>
+<div class="card">500k transactions/mois</div>
+<div class="card">98% satisfaction</div>
 </div>
 </section>
 
@@ -149,6 +153,7 @@ section{padding:120px 20px;}
 
 <!-- DASHBOARDS -->
 <div id="clientDash" class="dashboard">
+<button class="backBtn" onclick="goHome()">← Retour</button>
 <div class="finCard">
 <h3 id="cName"></h3>
 <p>Solde: $<span id="cBalance"></span></p>
@@ -161,12 +166,14 @@ section{padding:120px 20px;}
 </div>
 
 <div id="agentDash" class="dashboard">
+<button class="backBtn" onclick="goHome()">← Retour</button>
 <h2>Dashboard Agent</h2>
 <p>Gestion cash-in / cash-out clients</p>
 <div id="agentTransactions"></div>
 </div>
 
 <div id="adminDash" class="dashboard">
+<button class="backBtn" onclick="goHome()">← Retour</button>
 <h2>Dashboard Admin</h2>
 <div id="adminUsers"></div>
 <div id="adminStats"></div>
@@ -192,12 +199,19 @@ function closeLogin(){loginModal.style.display="none";}
 function showRegister(){closeLogin();registerModal.style.display="flex";}
 function closeRegister(){registerModal.style.display="none";}
 
+// Return Home
+function goHome(){
+clientDash.style.display="none";
+agentDash.style.display="none";
+adminDash.style.display="none";
+document.getElementById('home').style.display="flex";
+document.querySelectorAll("section").forEach(s=>{if(s.id!=='home') s.style.display="block";});
+}
+
 // Register
 async function register(){
 const cred=await auth.createUserWithEmailAndPassword(rEmail.value,rPass.value);
-await db.collection("users").doc(cred.user.uid).set({
-name:rName.value,email:rEmail.value,role:rRole.value,balance:50
-});
+await db.collection("users").doc(cred.user.uid).set({name:rName.value,email:rEmail.value,role:rRole.value,balance:50});
 registerModal.style.display="none";
 }
 
@@ -210,18 +224,19 @@ closeLogin();
 
 // Load dashboards
 function loadDashboards(uid){
-document.querySelectorAll("section").forEach(s=>s.style.display="none");
+document.getElementById('home').style.display="none";
+document.querySelectorAll("section").forEach(s=>s.style.display="block");
 db.collection("users").doc(uid).get().then(doc=>{
 let u=doc.data();
 if(u.role==="client"){
 clientDash.style.display="block";agentDash.style.display="none";adminDash.style.display="none";
 cName.innerText=u.name;cBalance.innerText=u.balance;
 QRCode.toCanvas(cQR,uid);
-loadClientHistory(uid);loadRecentActivities(uid);
+loadClientHistory(uid);loadRecentActivities();
 }
 if(u.role==="agent"){agentDash.style.display="block";clientDash.style.display="none";adminDash.style.display="none";loadAgentTransactions();}
 if(u.role==="admin"){adminDash.style.display="block";clientDash.style.display="none";agentDash.style.display="none";loadAdminUsers();loadAdminStats();}
-setInterval(()=>{if(auth.currentUser) loadClientHistory(auth.currentUser.uid);if(auth.currentUser) loadRecentActivities(auth.currentUser.uid);},3000);
+setInterval(()=>{if(auth.currentUser){loadClientHistory(auth.currentUser.uid);loadRecentActivities();}},3000);
 });
 }
 
@@ -234,7 +249,7 @@ snap.forEach(doc=>{clientHistory.innerHTML+=`<p>${doc.data().type} - $${doc.data
 }
 
 // Recent Activities
-function loadRecentActivities(uid){
+function loadRecentActivities(){
 db.collection("transactions").orderBy("timestamp","desc").limit(5).get().then(snap=>{
 recentActivities.innerHTML='';
 snap.forEach(doc=>{recentActivities.innerHTML+=`<p>${doc.data().user} - ${doc.data().type} - $${doc.data().amount}</p>`;});
@@ -254,7 +269,7 @@ function loadAdminUsers(){db.collection("users").get().then(snap=>{adminUsers.in
 function loadAdminStats(){db.collection("transactions").get().then(snap=>{let total=snap.docs.reduce((acc,d)=>acc+d.data().amount,0);adminStats.innerHTML=`<h3>Total Transactions: $${total}</h3><p>Nombre de transactions: ${snap.docs.length}</p>`;});}
 
 // Logout
-function logout(){auth.signOut().then(()=>location.reload());}
+function logout(){auth.signOut().then(()=>goHome());}
 
 // Auto load if user logged
 auth.onAuthStateChanged(user=>{if(user) loadDashboards(user.uid);});
