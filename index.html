@@ -18,6 +18,7 @@ margin:0;
 font-family:Roboto;
 background:#061e1c;
 color:white;
+overflow-y:auto;
 }
 
 header{
@@ -32,11 +33,6 @@ align-items:center;
 font-size:22px;
 font-weight:bold;
 color:#5eead4;
-}
-
-.menu{
-cursor:pointer;
-font-size:26px;
 }
 
 .panel{
@@ -70,15 +66,6 @@ border-radius:20px;
 padding:20px;
 box-shadow:0 8px 25px rgba(0,0,0,0.5);
 }
-
-.card h3{margin:0;}
-.card small{opacity:.8;}
-
-#history p{
-font-size:14px;
-border-bottom:1px solid rgba(255,255,255,0.1);
-padding:6px 0;
-}
 </style>
 </head>
 
@@ -86,32 +73,64 @@ padding:6px 0;
 
 <header>
 <div class="logo">GOPAY AFRICA</div>
-<div class="menu" onclick="toggleMenu()">☰</div>
 </header>
-
-<div class="menu" id="menu">
-<a onclick="show('home')">Accueil</a>
-<a onclick="show('login')">Connexion</a>
-<a id="adminBtn" class="hidden" onclick="openAdmin()">Admin Panel</a>
-<a onclick="logout()">Déconnexion</a>
-</div>
 
 <!-- HOME -->
 <div id="home" class="panel">
 <h2>Banque Digitale Africaine</h2>
-<p>GoPay Africa est une néobanque panafricaine offrant des solutions financières digitales sécurisées.</p>
-<h4>FAQ</h4><p>Transactions instantanées • KYC sécurisé • Multi-devises</p>
-<h4>Confidentialité</h4><p>Vos données sont protégées via chiffrement bancaire.</p>
-<h4>Contact</h4><p>@gopapay.info</p>
-<h4>Mentions légales</h4><p>GoPay Africa Digital Finance Ltd © 2026</p>
+
+<h4>FAQ</h4>
+<p>Transactions instantanées • KYC sécurisé • Multi-devises</p>
+
+<h4>Confidentialité</h4>
+<p>Vos données sont protégées via chiffrement bancaire.</p>
+
+<h4>Contact</h4>
+<p>@gopapay.info</p>
+
+<h4>Mentions légales</h4>
+<p>GoPay Africa Digital Finance Ltd © 2026</p>
+
+<div class="actions">
+<div class="action" onclick="show('login')">Connexion</div>
+</div>
 </div>
 
 <!-- LOGIN -->
 <div id="login" class="panel hidden">
+
 <h3>Connexion</h3>
+
 <input id="lEmail" placeholder="Email"><br><br>
 <input id="lPass" type="password" placeholder="Mot de passe"><br><br>
+
+<div class="actions">
 <div class="action" onclick="login()">Connexion</div>
+<div class="action" onclick="show('register')">Créer compte</div>
+</div>
+
+</div>
+
+<!-- REGISTER -->
+<div id="register" class="panel hidden">
+
+<h3>Créer Compte</h3>
+
+<input id="rName" placeholder="Nom"><br><br>
+<input id="rEmail" placeholder="Email"><br><br>
+<input id="rPass" type="password" placeholder="Mot de passe"><br><br>
+
+<select id="rRole" onchange="checkAgent()">
+<option value="client">Client</option>
+<option value="agent">Agent</option>
+</select><br><br>
+
+<input id="agentCode" placeholder="Code Agent" class="hidden"><br><br>
+
+<div class="actions">
+<div class="action" onclick="register()">Créer</div>
+</div>
+
 </div>
 
 <!-- DASHBOARD -->
@@ -119,20 +138,14 @@ padding:6px 0;
 
 <div class="card">
 <h3 id="cardName"></h3>
-<small>ID : <span id="cardId"></span></small>
+<p>ID : <span id="cardId"></span></p>
 <h2>$ <span id="balance"></span></h2>
 <canvas id="qr"></canvas>
 </div>
 
 <div class="actions">
-<div class="action" onclick="cashin()">Cash-in</div>
-<div class="action" onclick="cashout()">Cash-out</div>
-<div class="action" onclick="pay()">Paiement</div>
-<div class="action" onclick="openKYC()">KYC</div>
 <div class="action" onclick="logout()">Déconnexion</div>
 </div>
-
-<div id="history"></div>
 
 </div>
 
@@ -141,12 +154,10 @@ padding:6px 0;
 <h3>Admin Dashboard</h3>
 <p>Total Users : <span id="totalUsers"></span></p>
 <table id="usersTable"></table>
-<div class="action" onclick="show('dash')">Retour</div>
 </div>
 
 <script>
 
-/* ===== FIREBASE ===== */
 firebase.initializeApp({
 apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
 authDomain:"gotrustpay-e6524.firebaseapp.com",
@@ -155,311 +166,111 @@ projectId:"gotrustpay-e6524",
 
 const auth=firebase.auth();
 const db=firebase.firestore();
+
+const SECRET_AGENT_CODE="GOPAY2026";
+
 let currentUser=null;
-const ADMIN_EMAIL = "gotrustpayinfo@gmail.com";
 
-let currentUser = null;
-
-
-/* ===== NAVIGATION ===== */
-function show(panel){
-
-document.querySelectorAll(".panel")
-.forEach(p=>p.classList.add("hidden"));
-
-document.getElementById(panel).classList.remove("hidden");
-
+/* NAVIGATION */
+function show(id){
+document.querySelectorAll(".panel").forEach(p=>p.classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
 }
 
+/* AGENT CODE */
+function checkAgent(){
+agentCode.classList.toggle("hidden", rRole.value !== "agent");
+}
 
-/* ===== INSCRIPTION ===== */
-function register(){
+/* REGISTER */
+async function register(){
 
-const email = regEmail.value;
-const password = regPassword.value;
-const role = regRole.value;
+let role=rRole.value;
 
-auth.createUserWithEmailAndPassword(email,password)
-.then(async(userCredential)=>{
+if(role==="agent"){
+if(agentCode.value!==SECRET_AGENT_CODE){
+alert("Code agent incorrect");
+return;
+}
+}
 
-const uid = userCredential.user.uid;
+const cred=await auth.createUserWithEmailAndPassword(rEmail.value,rPass.value);
 
-await db.collection("users").doc(uid).set({
+const gid="GP"+Math.random().toString(36).substring(2,7).toUpperCase();
 
-email: email,
-role: role,
-balance: 0,
-approved: role==="agent"?false:true,
-sessionToken: null,
-createdAt: new Date()
-
+await db.collection("users").doc(cred.user.uid).set({
+name:rName.value,
+email:rEmail.value,
+role,
+gid,
+balance:50
 });
 
-alert("Compte créé");
+loginAuto();
+}
 
-})
-.catch(e=>alert(e.message));
+/* LOGIN */
+async function login(){
+
+const cred=await auth.signInWithEmailAndPassword(lEmail.value,lPass.value);
+loadUser(cred.user.uid);
 
 }
 
+/* AUTO LOGIN */
+function loginAuto(){
+loadUser(auth.currentUser.uid);
+}
 
-/* ===== LOGIN ===== */
-function login(){
+/* LOAD USER */
+async function loadUser(uid){
 
-auth.signInWithEmailAndPassword(
-logEmail.value,
-logPassword.value
-).catch(e=>alert(e.message));
+const snap=await db.collection("users").doc(uid).get();
+currentUser=snap.data();
+
+cardName.innerText=currentUser.name;
+cardId.innerText=currentUser.gid;
+balance.innerText=currentUser.balance.toFixed(2);
+
+QRCode.toCanvas(qr,currentUser.gid);
+
+if(currentUser.role==="admin"){
+openAdmin();
+}else{
+show("dash");
+}
 
 }
 
+/* ADMIN PANEL */
+async function openAdmin(){
 
-/* ===== LOGOUT ===== */
+show("admin");
+
+let users=await db.collection("users").get();
+
+totalUsers.innerText=users.size;
+
+usersTable.innerHTML="<tr><th>Nom</th><th>Email</th><th>Role</th></tr>";
+
+users.forEach(doc=>{
+let u=doc.data();
+usersTable.innerHTML+=`
+<tr>
+<td>${u.name}</td>
+<td>${u.email}</td>
+<td>${u.role}</td>
+</tr>`;
+});
+
+}
+
+/* LOGOUT */
 function logout(){
 auth.signOut();
 show("home");
 }
 
-
-/* ===== SESSION + ROLE ===== */
-auth.onAuthStateChanged(async user=>{
-
-if(!user){
-show("home");
-return;
-}
-
-const uid = user.uid;
-
-/* ADMIN sécurisé */
-if(user.email === ADMIN_EMAIL){
-
-document.getElementById("adminBtn").classList.remove("hidden");
-show("adminDashboard");
-loadAdminUsers();
-return;
-}
-
-/* Charger utilisateur */
-const snap = await db.collection("users").doc(uid).get();
-
-if(!snap.exists) return;
-
-currentUser = snap.data();
-
-/* Protection session multi appareil */
-if(currentUser.sessionToken &&
-currentUser.sessionToken !== uid){
-
-alert("Session ouverte ailleurs");
-logout();
-return;
-
-}
-
-await db.collection("users").doc(uid).update({
-sessionToken: uid
-});
-
-
-/* Redirection rôle */
-if(currentUser.role === "agent"){
-
-if(!currentUser.approved){
-alert("Agent en attente validation admin");
-logout();
-return;
-}
-
-show("agentDashboard");
-
-}
-
-else{
-
-show("clientDashboard");
-loadClient();
-
-}
-
-});
-
-
-/* ===== CLIENT ===== */
-function loadClient(){
-
-clientBalance.innerText =
-"Solde : "+currentUser.balance+" USD";
-
-}
-
-
-/* ===== AGENT DEPOT ===== */
-async function agentDeposit(){
-
-const clientID = agentClientID.value;
-const amount = Number(agentAmount.value);
-
-const ref = db.collection("users").doc(clientID);
-
-await db.runTransaction(async t=>{
-
-const doc = await t.get(ref);
-
-if(!doc.exists) return;
-
-const newBalance = doc.data().balance + amount;
-
-t.update(ref,{balance:newBalance});
-
-});
-
-alert("Dépôt réussi");
-
-}
-
-
-/* ===== ADMIN ===== */
-async function loadAdminUsers(){
-
-adminUsers.innerHTML="Chargement...";
-
-const snap = await db.collection("users").get();
-
-let html="";
-
-snap.forEach(doc=>{
-
-const u = doc.data();
-
-html += `
-<div style="border:1px solid #ccc;margin:5px;padding:5px">
-${u.email} | ${u.role}
-
-${u.role==="agent" && !u.approved ?
-`<button onclick="approveAgent('${doc.id}')">Valider Agent</button>`:""}
-
-</div>
-`;
-
-});
-
-adminUsers.innerHTML = html;
-
-}
-
-
-async function approveAgent(uid){
-
-await db.collection("users").doc(uid).update({
-approved:true
-});
-
-alert("Agent validé");
-loadAdminUsers();
-
-}
-/* ===== MENU ===== */
-function toggleMenu(){menu.style.display = menu.style.display==="block"?"none":"block";}
-function show(id){
-document.querySelectorAll(".panel").forEach(p=>p.classList.add("hidden"));
-document.getElementById(id).classList.remove("hidden");
-menu.style.display="none";
-}
-
-/* ===== LOGIN ===== */
-async function login(){
-const cred=await auth.signInWithEmailAndPassword(lEmail.value,lPass.value);
-loadUserData(cred.user.uid);
-}
-
-/* ===== SESSION MULTI-APPAREIL ===== */
-async function loadUserData(uid){
-const snap=await db.collection("users").doc(uid).get();
-currentUser=snap.data();
-if(currentUser.sessionToken && currentUser.sessionToken!==uid){alert("Session active sur un autre appareil");logout();}
-else{await db.collection("users").doc(uid).update({sessionToken:uid}); loadUser(currentUser);}
-}
-
-/* ===== LOAD USER DASHBOARD ===== */
-function loadUser(user){
-cardName.innerText=user.name;
-cardId.innerText=user.gid;
-balance.innerText=user.balance.toFixed(2);
-QRCode.toCanvas(qr,user.gid);
-document.getElementById("login").classList.add("hidden");
-document.getElementById("dash").classList.remove("hidden");
-loadHistory();
-if(user.role==="admin"){adminBtn.style.display="block";} else{adminBtn.style.display="none";}
-}
-
-/* ===== NOTIFICATION ===== */
-function notifyUser(msg){alert("Notification GoPay : "+msg);}
-
-/* ===== TRANSACTION LOG ===== */
-function saveTransaction(userId,type,amount){db.collection("transactions").add({userId,type,amount,date:new Date()});}
-
-/* ===== KYC ===== */
-function submitKYC(userId,docURL){db.collection("kyc").doc(userId).set({document:docURL,status:"pending"}); notifyUser("KYC soumis");}
-function openKYC(){let doc=prompt("Lien document KYC"); submitKYC(currentUser.gid,doc);}
-
-/* ===== HISTORIQUE ===== */
-async function loadHistory(){
-const snap=await db.collection("transactions").where("userId","==",currentUser.gid).get();
-history.innerHTML="<h4>Dernières transactions:</h4>";
-snap.forEach(t=>{let d=t.data(); history.innerHTML+=`<p>${d.type} : $${d.amount}</p>`;});
-}
-
-/* ===== CASH IN ===== */
-async function cashin(){
-let amt=parseFloat(prompt("Montant")); if(!amt) return;
-await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(amt)});
-currentUser.balance+=amt; saveTransaction(currentUser.gid,"cashin",amt); notifyUser("Cash-in réussi"); loadUser(currentUser);
-}
-
-/* ===== CASH OUT ===== */
-async function cashout(){
-let amt=parseFloat(prompt("Montant")); if(!amt) return;
-await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});
-currentUser.balance-=amt; saveTransaction(currentUser.gid,"cashout",amt); notifyUser("Cash-out effectué"); loadUser(currentUser);
-}
-
-/* ===== PAYMENT ===== */
-async function pay(){
-let amt=parseFloat(prompt("Montant"));
-let dest=prompt("ID destinataire");
-let snap=await db.collection("users").where("gid","==",dest).get();
-if(snap.empty){alert("Utilisateur introuvable"); return;}
-let doc=snap.docs[0];
-await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});
-await db.collection("users").doc(doc.id).update({balance:firebase.firestore.FieldValue.increment(amt)});
-currentUser.balance-=amt; saveTransaction(currentUser.gid,"payment",amt); notifyUser("Paiement envoyé"); loadUser(currentUser);
-}
-
-/* ===== ADMIN ===== */
-async function openAdmin(){
-show("admin");
-let users=await db.collection("users").get();
-totalUsers.innerText=users.size;
-usersTable.innerHTML="<tr><th>Nom</th><th>Email</th><th>Role</th></tr>";
-users.forEach(doc=>{let u=doc.data();
-usersTable.innerHTML+=`<tr><td>${u.name}</td><td>${u.email}</td><td>${u.role}</td></tr>`;});
-}
-
-/* ===== LOGOUT ===== */
-function logout(){auth.signOut(); show("home"); location.reload();}
-
-/* ===== API AGENT SIMULE ===== */
-function agentDeposit(agentID,clientID,amount){notifyUser("Agent "+agentID+" a crédité "+amount);}
-
-/* ===== AVATAR + CARTE + MULTI DEVISE ===== */
-function generateAvatar(name){return `https://ui-avatars.com/api/?name=${name}&background=0D8ABC&color=fff`;}
-function generateCard(){return {cardNumber:"5314 "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000), biometricCode:Math.floor(100000+Math.random()*900000)};}
-const exchangeRates={USD:1,CDF:2800};
-function convertCurrency(amount,from,to){return(amount/exchangeRates[from])*exchangeRates[to];}
-
-/* ===== AUTH WATCHER ===== */
-auth.onAuthStateChanged(user=>{if(user){db.collection("users").doc(user.uid).get().then(s=>loadUser(s.data()));}});
 </script>
 </body>
 </html>
