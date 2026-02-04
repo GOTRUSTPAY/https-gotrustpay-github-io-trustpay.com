@@ -2,275 +2,244 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>GOPAY AFRICA</title>
+<title>GoPay Africa</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
 <style>
+
 body{
 margin:0;
-font-family:Roboto;
-background:#061e1c;
+font-family:Poppins;
+background:#041c1a;
 color:white;
-overflow-y:auto;
+scroll-behavior:smooth;
 }
 
-header{
-background:#012b28;
-padding:12px 20px;
+section{
+padding:80px 20px;
+}
+
+h1,h2,h3{
+margin-bottom:20px;
+}
+
+.hero{
+height:100vh;
+background:url("https://images.unsplash.com/photo-1581091870627-3c1c1b6c7e09?auto=format&fit=crop&w=1600&q=80") center/cover;
 display:flex;
-justify-content:space-between;
+flex-direction:column;
+justify-content:center;
 align-items:center;
+text-align:center;
 }
 
-.logo{
-font-size:22px;
-font-weight:bold;
+.hero h1{
+font-size:42px;
 color:#5eead4;
 }
 
-.panel{
-background:#043837;
-margin:20px;
-padding:20px;
-border-radius:18px;
+.hero p{
+max-width:600px;
 }
 
-.hidden{display:none;}
-
-.actions{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
-gap:10px;
-margin-top:20px;
-}
-
-.action{
+.btn{
 background:#14b8a6;
-padding:12px;
-border-radius:12px;
-text-align:center;
-font-weight:bold;
+padding:12px 25px;
+border-radius:10px;
+margin-top:20px;
 cursor:pointer;
+font-weight:bold;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:25px;
+margin-top:40px;
 }
 
 .card{
-background:linear-gradient(135deg,#1d4ed8,#0ea5e9);
-border-radius:20px;
+background:#062f2c;
 padding:20px;
-box-shadow:0 8px 25px rgba(0,0,0,0.5);
+border-radius:15px;
 }
+
+.stats{
+font-size:32px;
+color:#5eead4;
+font-weight:bold;
+}
+
+.image-banner{
+width:100%;
+border-radius:20px;
+margin-top:30px;
+}
+
+footer{
+background:#021716;
+padding:40px;
+text-align:center;
+}
+
 </style>
 </head>
 
 <body>
 
-<header>
-<div class="logo">GOPAY AFRICA</div>
-</header>
+<!-- HERO -->
+<section class="hero">
+<h1>GoPay Africa</h1>
+<p>La finance digitale pour toute l’Afrique</p>
+<div class="btn">Rejoindre GoPay</div>
+</section>
 
-<!-- HOME -->
-<div id="home" class="panel">
-<h2>Banque Digitale Africaine</h2>
+<!-- POURQUOI NOUS -->
+<section>
+<h2>Pourquoi rejoindre GoPay Africa</h2>
 
-<h4>FAQ</h4>
-<p>Transactions instantanées • KYC sécurisé • Multi-devises</p>
-
-<h4>Confidentialité</h4>
-<p>Vos données sont protégées via chiffrement bancaire.</p>
-
-<h4>Contact</h4>
-<p>@gopapay.info</p>
-
-<h4>Mentions légales</h4>
-<p>GoPay Africa Digital Finance Ltd © 2026</p>
-
-<div class="actions">
-<div class="action" onclick="show('login')">Connexion</div>
-</div>
-</div>
-
-<!-- LOGIN -->
-<div id="login" class="panel hidden">
-
-<h3>Connexion</h3>
-
-<input id="lEmail" placeholder="Email"><br><br>
-<input id="lPass" type="password" placeholder="Mot de passe"><br><br>
-
-<div class="actions">
-<div class="action" onclick="login()">Connexion</div>
-<div class="action" onclick="show('register')">Créer compte</div>
-</div>
-
-</div>
-
-<!-- REGISTER -->
-<div id="register" class="panel hidden">
-
-<h3>Créer Compte</h3>
-
-<input id="rName" placeholder="Nom"><br><br>
-<input id="rEmail" placeholder="Email"><br><br>
-<input id="rPass" type="password" placeholder="Mot de passe"><br><br>
-
-<select id="rRole" onchange="checkAgent()">
-<option value="client">Client</option>
-<option value="agent">Agent</option>
-</select><br><br>
-
-<input id="agentCode" placeholder="Code Agent" class="hidden"><br><br>
-
-<div class="actions">
-<div class="action" onclick="register()">Créer</div>
-</div>
-
-</div>
-
-<!-- DASHBOARD -->
-<div id="dash" class="panel hidden">
+<div class="grid">
 
 <div class="card">
-<h3 id="cardName"></h3>
-<p>ID : <span id="cardId"></span></p>
-<h2>$ <span id="balance"></span></h2>
-<canvas id="qr"></canvas>
+<h3>Sécurité Bancaire</h3>
+<p>Protection avancée et authentification multi-facteurs.</p>
 </div>
 
-<div class="actions">
-<div class="action" onclick="logout()">Déconnexion</div>
+<div class="card">
+<h3>Transactions Instantanées</h3>
+<p>Paiements rapides partout en Afrique.</p>
+</div>
+
+<div class="card">
+<h3>Accessibilité</h3>
+<p>Services financiers pour tous.</p>
 </div>
 
 </div>
 
-<!-- ADMIN -->
-<div id="admin" class="panel hidden">
-<h3>Admin Dashboard</h3>
-<p>Total Users : <span id="totalUsers"></span></p>
-<table id="usersTable"></table>
+<img class="image-banner" src="https://images.unsplash.com/photo-1579621970795-87facc2f976d">
+</section>
+
+<!-- MISSIONS -->
+<section>
+<h2>Nos Missions</h2>
+
+<div class="grid">
+<div class="card">
+Digitaliser les paiements africains.
 </div>
 
-<script>
+<div class="card">
+Faciliter l'inclusion financière.
+</div>
 
-firebase.initializeApp({
-apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
-authDomain:"gotrustpay-e6524.firebaseapp.com",
-projectId:"gotrustpay-e6524",
-});
+<div class="card">
+Soutenir les PME locales.
+</div>
+</div>
 
-const auth=firebase.auth();
-const db=firebase.firestore();
+</section>
 
-const SECRET_AGENT_CODE="GOPAY2026";
+<!-- VALEURS -->
+<section>
+<h2>Nos Valeurs</h2>
 
-let currentUser=null;
+<div class="grid">
 
-/* NAVIGATION */
-function show(id){
-document.querySelectorAll(".panel").forEach(p=>p.classList.add("hidden"));
-document.getElementById(id).classList.remove("hidden");
-}
+<div class="card">Transparence</div>
+<div class="card">Innovation</div>
+<div class="card">Impact Social</div>
+<div class="card">Confiance</div>
 
-/* AGENT CODE */
-function checkAgent(){
-agentCode.classList.toggle("hidden", rRole.value !== "agent");
-}
+</div>
+</section>
 
-/* REGISTER */
-async function register(){
+<!-- STATISTIQUES -->
+<section>
+<h2>Nos Performances</h2>
 
-let role=rRole.value;
+<div class="grid">
 
-if(role==="agent"){
-if(agentCode.value!==SECRET_AGENT_CODE){
-alert("Code agent incorrect");
-return;
-}
-}
+<div class="card">
+<div class="stats">150K+</div>
+Utilisateurs actifs
+</div>
 
-const cred=await auth.createUserWithEmailAndPassword(rEmail.value,rPass.value);
+<div class="card">
+<div class="stats">$12M+</div>
+Transactions mensuelles
+</div>
 
-const gid="GP"+Math.random().toString(36).substring(2,7).toUpperCase();
+<div class="card">
+<div class="stats">1200+</div>
+Agents terrain
+</div>
 
-await db.collection("users").doc(cred.user.uid).set({
-name:rName.value,
-email:rEmail.value,
-role,
-gid,
-balance:50
-});
+</div>
+</section>
 
-loginAuto();
-}
+<!-- PARTENAIRES -->
+<section>
+<h2>Nos Partenaires</h2>
 
-/* LOGIN */
-async function login(){
+<div class="grid">
+<div class="card">Banques Locales</div>
+<div class="card">Mobile Money</div>
+<div class="card">Institutions Financières</div>
+</div>
 
-const cred=await auth.signInWithEmailAndPassword(lEmail.value,lPass.value);
-loadUser(cred.user.uid);
+<img class="image-banner" src="https://images.unsplash.com/photo-1521791136064-7986c2920216">
+</section>
 
-}
+<!-- MARKETING -->
+<section>
+<h2>Opportunités GoPay</h2>
 
-/* AUTO LOGIN */
-function loginAuto(){
-loadUser(auth.currentUser.uid);
-}
+<div class="grid">
 
-/* LOAD USER */
-async function loadUser(uid){
+<div class="card">
+<h3>Devenir Agent</h3>
+<p>Rejoignez notre réseau et générez des revenus.</p>
+</div>
 
-const snap=await db.collection("users").doc(uid).get();
-currentUser=snap.data();
+<div class="card">
+<h3>Investisseurs</h3>
+<p>Participez à la révolution fintech africaine.</p>
+</div>
 
-cardName.innerText=currentUser.name;
-cardId.innerText=currentUser.gid;
-balance.innerText=currentUser.balance.toFixed(2);
+<div class="card">
+<h3>Carrières</h3>
+<p>Travaillez avec une startup innovante.</p>
+</div>
 
-QRCode.toCanvas(qr,currentUser.gid);
+</div>
+</section>
 
-if(currentUser.role==="admin"){
-openAdmin();
-}else{
-show("dash");
-}
+<!-- GOMA -->
+<section>
+<h2>Notre Hub : Goma</h2>
 
-}
+<p>GoPay Africa est fier de construire l'avenir financier depuis Goma vers toute l’Afrique.</p>
 
-/* ADMIN PANEL */
-async function openAdmin(){
+<img class="image-banner" src="https://images.unsplash.com/photo-1601758003122-58e2b66f00e9">
+</section>
 
-show("admin");
+<!-- CONTACT -->
+<section>
+<h2>Contact & Support</h2>
 
-let users=await db.collection("users").get();
+<p>Email : support@gopay.africa</p>
+<p>WhatsApp : +243 XXX XXX XXX</p>
+<p>Ville : Goma, RDC</p>
 
-totalUsers.innerText=users.size;
+</section>
 
-usersTable.innerHTML="<tr><th>Nom</th><th>Email</th><th>Role</th></tr>";
+<footer>
+<p>© 2026 GoPay Africa</p>
+<p>Simple. Rapide. Sécurisé. Made for Africa.</p>
+</footer>
 
-users.forEach(doc=>{
-let u=doc.data();
-usersTable.innerHTML+=`
-<tr>
-<td>${u.name}</td>
-<td>${u.email}</td>
-<td>${u.role}</td>
-</tr>`;
-});
-
-}
-
-/* LOGOUT */
-function logout(){
-auth.signOut();
-show("home");
-}
-
-</script>
 </body>
 </html>
