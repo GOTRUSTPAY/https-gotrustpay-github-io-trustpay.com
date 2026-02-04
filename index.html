@@ -149,14 +149,17 @@ header{position:fixed;top:0;width:100%;display:flex;justify-content:space-betwee
 
 <!-- DASHBOARDS -->
 <div id="clientDash" class="dashboard">
+  <!-- Bouton Retour -->
   <button class="buttonReturn" onclick="returnHome()">← Retour</button>
 
+  <!-- Carte utilisateur avec solde et QR -->
   <div class="finCard">
     <h3 id="cName"></h3>
     <p>Solde: $<span id="cBalance"></span></p>
     <canvas id="cQR"></canvas>
   </div>
 
+  <!-- Actions financières -->
   <div class="grid">
     <!-- Cash In -->
     <div class="finCard">
