@@ -227,17 +227,35 @@ setInterval(()=>{if(auth.currentUser && u.role==='client'){loadClientHistory(aut
 
 // Client History
 function loadClientHistory(uid){
-db.collection("transactions").where("user","==",uid).orderBy("timestamp","desc").get().then(snap=>{
+db.collection("transactions")
+.where("uid","==",uid)
+.orderBy("date","desc")
+.get()
+.then(snap=>{
 clientHistory.innerHTML='';
-snap.forEach(doc=>{clientHistory.innerHTML+=`<p>${doc.data().type} - $${doc.data().amount}</p>`;});
+snap.forEach(doc=>{
+let t=doc.data();
+clientHistory.innerHTML+=`
+<p>${t.type} - $${t.amount}</p>
+`;
+});
 });
 }
 
 // Recent Activities
 function loadRecentActivities(){
-db.collection("transactions").orderBy("timestamp","desc").limit(5).get().then(snap=>{
+db.collection("transactions")
+.orderBy("date","desc")
+.limit(5)
+.get()
+.then(snap=>{
 recentActivities.innerHTML='';
-snap.forEach(doc=>{recentActivities.innerHTML+=`<p>${doc.data().user} - ${doc.data().type} - $${doc.data().amount}</p>`;});
+snap.forEach(doc=>{
+let t=doc.data();
+recentActivities.innerHTML+=`
+<p>${t.uid} - ${t.type} - $${t.amount}</p>
+`;
+});
 });
 }
 
