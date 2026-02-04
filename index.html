@@ -2,128 +2,279 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>GOPAY AFRICA - Pro</title>
+<title>GOPAY AFRICA</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css">
 
 <style>
-/* ===== BODY ===== */
-body{margin:0;font-family:Roboto;background:#f5f5f5;color:#011a27;scroll-behavior:smooth;}
-header{position:fixed;top:0;left:0;width:100%;background:#fff;display:flex;justify-content:space-between;align-items:center;padding:12px 20px;box-shadow:0 2px 10px rgba(0,0,0,0.1);z-index:100;}
-.logo{font-size:24px;font-weight:700;color:#0072ff;padding:6px 12px;border-radius:8px;background:#e6f7ff;}
-.menu{display:flex;gap:12px;flex-wrap:wrap;}
-.menu a{text-decoration:none;color:#0072ff;font-weight:600;padding:6px 12px;border-radius:8px;transition:0.3s;}
-.menu a:hover{background:#0072ff;color:#fff;}
-section{padding:100px 20px 60px;margin-top:60px;}
-.hero{background:url('https://images.unsplash.com/photo-1611928372271-c7e0d2f9a3a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg') center/cover no-repeat;color:#fff;text-align:center;padding:180px 20px;}
-.hero h1{font-size:48px;margin-bottom:20px;text-shadow:2px 2px 8px rgba(0,0,0,0.5);}
-.hero p{font-size:20px;margin-bottom:30px;text-shadow:1px 1px 6px rgba(0,0,0,0.5);}
-.btn-cta{background:#0072ff;color:#fff;padding:14px 28px;border:none;border-radius:12px;font-size:18px;font-weight:700;cursor:pointer;transition:0.3s;}
-.btn-cta:hover{background:#005bb5;}
-.card-section{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-top:40px;}
-.card{background:#fff;padding:20px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1);text-align:center;}
-.card i{font-size:36px;color:#0072ff;margin-bottom:10px;}
-.card h3{margin:10px 0;}
-.card p{font-size:14px;opacity:0.8;}
-.card img{width:100%;border-radius:12px;margin-top:10px;}
-footer{background:#011a27;color:#fff;padding:40px 20px;text-align:center;}
-footer a{color:#0072ff;text-decoration:none;}
-footer a:hover{text-decoration:underline;}
-.panel{background:#fff;padding:20px;border-radius:16px;margin:20px 0;box-shadow:0 4px 20px rgba(0,0,0,0.05);}
+body{
+  margin:0;
+  font-family:Roboto;
+  background:#f5f9fc;
+  color:#0a2e2b;
+  scroll-behavior:smooth;
+}
+
+/* HEADER */
+header{
+  background:linear-gradient(90deg,#0ab4a1,#0072ff);
+  padding:16px 24px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  color:white;
+  position:sticky;
+  top:0;
+  z-index:10;
+  box-shadow:0 4px 10px rgba(0,0,0,0.15);
+}
+
+.logo{
+  font-size:24px;
+  font-weight:700;
+}
+
+.menu a{
+  color:white;
+  margin-left:20px;
+  font-weight:500;
+  cursor:pointer;
+  text-decoration:none;
+}
+
+.menu a:hover{
+  text-decoration:underline;
+}
+
+/* HERO */
+.hero{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:#e0f7f5;
+  padding:60px 24px;
+  border-radius:20px;
+  margin:20px;
+  gap:20px;
+}
+
+.hero img{
+  width:45%;
+  border-radius:20px;
+  box-shadow:0 8px 25px rgba(0,0,0,0.2);
+}
+
+.hero-text{
+  width:50%;
+}
+
+.hero-text h1{
+  font-size:36px;
+  color:#0072ff;
+  margin-bottom:16px;
+}
+
+.hero-text p{
+  font-size:18px;
+  margin-bottom:24px;
+}
+
+.btn-cta{
+  background:#0ab4a1;
+  color:white;
+  padding:14px 24px;
+  font-weight:700;
+  border-radius:12px;
+  cursor:pointer;
+  margin-right:12px;
+  text-decoration:none;
+}
+
+.btn-cta:hover{
+  background:#007a72;
+  transform:translateY(-2px);
+  transition:0.3s;
+}
+
+/* PANELS */
+.panel{
+  background:white;
+  margin:20px;
+  padding:20px;
+  border-radius:18px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.1);
+}
+
 .hidden{display:none;}
-.actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:20px;}
-.action{background:#0072ff;color:#fff;padding:12px;border-radius:12px;text-align:center;font-weight:700;cursor:pointer;transition:0.3s;}
-.action:hover{background:#005bb5;transform:translateY(-2px);}
-.card-dashboard{background:#e0f2ff;padding:20px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1);text-align:center;margin-bottom:20px;}
-canvas{background:#fff;border-radius:12px;}
+
+/* ACTION BUTTONS */
+.actions{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:12px;
+  margin-top:20px;
+}
+
+.action{
+  background:#0072ff;
+  padding:12px;
+  border-radius:12px;
+  text-align:center;
+  font-weight:700;
+  cursor:pointer;
+  color:white;
+}
+
+.action:hover{
+  background:#0059b3;
+}
+
+/* CARD DASHBOARD */
+.card{
+  background:linear-gradient(135deg,#0ab4a1,#0072ff);
+  border-radius:20px;
+  padding:20px;
+  box-shadow:0 8px 25px rgba(0,0,0,0.3);
+  text-align:center;
+}
+
+.card h3, .card small{
+  margin:0;
+  color:white;
+}
+
+#history p{
+  font-size:14px;
+  border-bottom:1px solid rgba(0,0,0,0.1);
+  padding:6px 0;
+}
+
+/* FOOTER */
+footer{
+  background:#0a2e2b;
+  color:white;
+  padding:20px;
+  text-align:center;
+  margin-top:20px;
+  border-radius:12px;
+}
+
+footer h4{
+  margin-bottom:6px;
+  color:#0ab4a1;
+}
+
+/* IMAGES FULL */
+.full-img{
+  width:100%;
+  border-radius:20px;
+  margin:20px 0;
+}
+
+/* SMALL CARDS FOR VALUES */
+.card-small{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  background:#e0f7f5;
+  padding:12px;
+  border-radius:12px;
+  width:150px;
+  margin:12px;
+}
+.card-small img{
+  width:48px;
+  height:48px;
+  margin-bottom:8px;
+}
+.card-small p{
+  font-size:14px;
+  margin:0;
+}
 </style>
 </head>
+
 <body>
 
 <header>
 <div class="logo">GOPAY AFRICA</div>
-<nav class="menu">
-<a href="#home">Accueil</a>
-<a href="#why">Pourquoi nous rejoindre</a>
-<a href="#success">Nos succès</a>
-<a href="#values">Nos valeurs</a>
-<a href="#mission">Mission & Stats</a>
-<a href="#partners">Partenaires</a>
-<a onclick="scrollToContact()">Nous contacter</a>
-<a onclick="show('login')">Se connecter</a>
-</nav>
+<div class="menu">
+<a onclick="show('home')">Accueil</a>
+<a onclick="show('marketing')">Pourquoi nous rejoindre</a>
+<a onclick="show('success')">Nos succès</a>
+<a onclick="show('values')">Valeurs & Mission</a>
+<a onclick="show('partners')">Partenaires</a>
+<a onclick="show('login')">Connexion</a>
+</div>
 </header>
 
-<!-- ===== PAGE D'ACCUEIL ===== -->
-<section id="home" class="hero">
-<h1>Votre Néobanque Africaine</h1>
-<p>Transactions rapides, sécurisées et multi-devises pour tous</p>
-<button class="btn-cta" onclick="show('login')">Se connecter</button>
-</section>
-
-<!-- ===== POURQUOI NOUS REJOINDRE ===== -->
-<section id="why">
-<h2 style="text-align:center;">Pourquoi nous rejoindre <i class='bx bx-badge-check'></i></h2>
-<div class="card-section">
-<div class="card"><i class='bx bx-rocket'></i><h3>Innovation</h3><p>Services financiers digitaux et modernes.</p><img src="https://images.unsplash.com/photo-1603052875445-94e0ff324a61?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
-<div class="card"><i class='bx bx-shield'></i><h3>Sécurité</h3><p>Protection maximale des transactions.</p><img src="https://images.unsplash.com/photo-1581091870626-5d3b7ff60937?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
-<div class="card"><i class='bx bx-group'></i><h3>Support</h3><p>Support dédié 24/7.</p><img src="https://images.unsplash.com/photo-1521791136064-7986c2920216?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
+<!-- HERO -->
+<div class="hero">
+<div class="hero-text">
+<h1>GoPay Africa</h1>
+<p>Banque digitale panafricaine sécurisée. Transactions instantanées, cash-in/out, KYC fiable.</p>
+<a class="btn-cta" onclick="show('contact')">Nous contacter</a>
+<a class="btn-cta" onclick="show('login')">Se connecter</a>
 </div>
-</section>
-
-<!-- ===== NOS SUCCÈS ===== -->
-<section id="success">
-<h2 style="text-align:center;">Nos succès <i class='bx bx-bar-chart-alt-2'></i></h2>
-<div class="card-section">
-<div class="card"><h3>+10 000 Clients</h3><p>En moins de 2 ans, GoPay Africa s'impose sur le marché.</p><img src="https://images.unsplash.com/photo-1573164574390-9a2ed0c4cbbf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
-<div class="card"><h3>+5 000 Transactions/jour</h3><p>Transactions instantanées sécurisées.</p><img src="https://images.unsplash.com/photo-1600195077073-f5f0f1f6f147?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
-<div class="card"><h3>Multi-devises</h3><p>USD, CDF et autres devises africaines.</p><img src="https://images.unsplash.com/photo-1554224154-22dec7ec8818?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
+<img src="https://images.unsplash.com/photo-1581091215369-c9d3c3c0198c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080" alt="Cash out mobile">
 </div>
-</section>
 
-<!-- ===== NOS VALEURS ===== -->
-<section id="values">
-<h2 style="text-align:center;">Nos valeurs <i class='bx bx-heart'></i></h2>
-<div class="card-section">
-<div class="card"><i class='bx bx-user-check'></i><h3>Fiabilité</h3><p>Services fiables et constants.</p><img src="https://images.unsplash.com/photo-1559526324-593bc073d938?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
-<div class="card"><i class='bx bx-brain'></i><h3>Innovation</h3><p>Nous innovons chaque jour pour mieux vous servir.</p><img src="https://images.unsplash.com/photo-1581091215362-1f10f7b9b5d3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
-<div class="card"><i class='bx bx-globe'></i><h3>Pan-Africain</h3><p>Présence sur plusieurs pays africains.</p><img src="https://images.unsplash.com/photo-1599058917217-8de15f0f22ed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
+<!-- HOME -->
+<div id="home" class="panel">
+<h2>Bienvenue sur GoPay Africa</h2>
+<p>Paiements • Wallet • Agents • KYC sécurisé</p>
+<img src="https://images.unsplash.com/photo-1603725638951-95bb3ff84f14?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080" class="full-img" alt="Finance Africa">
 </div>
-</section>
 
-<!-- ===== MISSION & STATS ===== -->
-<section id="mission">
-<h2 style="text-align:center;">Mission & Statistiques <i class='bx bx-line-chart'></i></h2>
-<div class="card-section">
-<div class="card"><h3>Mission</h3><p>Offrir des services financiers digitaux accessibles à tous.</p></div>
-<div class="card"><h3>Statistiques</h3><canvas id="txnChart" width="400" height="200"></canvas></div>
+<!-- MARKETING -->
+<div id="marketing" class="panel hidden">
+<h2>Pourquoi nous rejoindre</h2>
+<img src="https://images.unsplash.com/photo-1605902711622-cfb43c4431f6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080" class="full-img" alt="Innovation">
+<p>Rejoignez GoPay Africa et bénéficiez de solutions financières sécurisées, rapides et accessibles partout en Afrique. Innovation, transparence et support client 24/7.</p>
 </div>
-</section>
 
-<!-- ===== PARTENAIRES ===== -->
-<section id="partners">
-<h2 style="text-align:center;">Nos partenaires <i class='bx bx-handshake'></i></h2>
-<div class="card-section">
-<div class="card"><img src="https://images.unsplash.com/photo-1581091870626-5d3b7ff60937?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
-<div class="card"><img src="https://images.unsplash.com/photo-1554224154-22dec7ec8818?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
-<div class="card"><img src="https://images.unsplash.com/photo-1600195077073-f5f0f1f6f147?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
+<!-- SUCCÈS -->
+<div id="success" class="panel hidden">
+<h2>Nos succès & statistiques</h2>
+<img src="https://images.unsplash.com/photo-1573164574398-3d8cb409d0a3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080" class="full-img" alt="Succès Clients">
+<canvas id="successChart" style="width:100%;max-width:600px;margin:20px 0;"></canvas>
 </div>
-</section>
 
-<!-- ===== CONTACT ===== -->
-<section id="contact" class="panel">
-<h2>Contactez-nous</h2>
-<p>Email: <a href="mailto:gopapay.info@gopay.com">gopapay.info@gopay.com</a></p>
-<p>Téléphone: +243 123 456 789</p>
-</section>
+<!-- VALEURS -->
+<div id="values" class="panel hidden">
+<h2>Nos valeurs & mission</h2>
+<div style="display:flex;flex-wrap:wrap;">
+<div class="card-small">
+<img src="https://img.icons8.com/color/48/000000/innovation.png"/>
+<p>Innovation</p>
+</div>
+<div class="card-small">
+<img src="https://img.icons8.com/color/48/000000/lock-2.png"/>
+<p>Sécurité</p>
+</div>
+<div class="card-small">
+<img src="https://img.icons8.com/color/48/000000/visible.png"/>
+<p>Transparence</p>
+</div>
+</div>
+</div>
 
-<!-- ===== LOGIN / REGISTER / DASHBOARD / ADMIN ===== -->
+<!-- PARTENAIRES -->
+<div id="partners" class="panel hidden">
+<h2>Partenaires & villes desservies</h2>
+<img src="https://images.unsplash.com/photo-1603725638951-95bb3ff84f14?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080" class="full-img" alt="Partenaires">
+<p>Partenaires stratégiques dans toute l’Afrique, y compris Goma, Kinshasa et Nairobi.</p>
+</div>
+
+<!-- LOGIN -->
 <div id="login" class="panel hidden">
 <h3>Connexion</h3>
 <input id="lEmail" placeholder="Email"><br><br>
@@ -134,27 +285,27 @@ canvas{background:#fff;border-radius:12px;}
 </div>
 </div>
 
+<!-- REGISTER -->
 <div id="register" class="panel hidden">
-<h3>Créer compte</h3>
+<h3>Créer Compte</h3>
 <input id="rName" placeholder="Nom"><br><br>
 <input id="rEmail" placeholder="Email"><br><br>
 <input id="rPass" type="password" placeholder="Mot de passe"><br><br>
 <select id="rRole">
 <option value="client">Client</option>
 <option value="agent">Agent</option>
-<option value="admin">Admin</option>
-</select>
+</select><br><br>
 <div class="actions">
 <div class="action" onclick="register()">Créer</div>
 </div>
 </div>
 
+<!-- DASHBOARD CLIENT/AGENT -->
 <div id="dash" class="panel hidden">
-<h3>Dashboard Utilisateur</h3>
-<div class="card-dashboard">
+<div class="card">
 <h3 id="cardName"></h3>
-<p>ID: <span id="cardId"></span></p>
-<p>Solde: $<span id="balance"></span></p>
+<small>ID : <span id="cardId"></span></small>
+<h2>$ <span id="balance"></span></h2>
 <canvas id="qr"></canvas>
 </div>
 <div class="actions">
@@ -163,136 +314,67 @@ canvas{background:#fff;border-radius:12px;}
 <div class="action" onclick="pay()">Paiement</div>
 <div class="action" onclick="logout()">Déconnexion</div>
 </div>
-<h4>Activités Récentes</h4>
+<h4>Activités récentes</h4>
 <div id="history"></div>
 </div>
 
+<!-- ADMIN -->
 <div id="admin" class="panel hidden">
 <h3>Admin Dashboard</h3>
-<p>Total Clients: <span id="totalClients">0</span></p>
-<p>Total Agents: <span id="totalAgents">0</span></p>
-<p>Total Transactions: <span id="totalTransactions">0</span></p>
-<canvas id="adminChart" width="400" height="200"></canvas>
+<p>Total Clients : <span id="totalClients">0</span></p>
+<p>Total Agents : <span id="totalAgents">0</span></p>
+<p>Total Transactions : <span id="totalTransactions">0</span></p>
 <table id="usersTable"></table>
-<div class="action" onclick="show('dash')">Retour</div>
+<div class="action" onclick="show('dash')">⬅ Retour</div>
 </div>
 
 <footer>
-<h4>© 2026 GoPay Africa Digital Finance Ltd</h4>
+<h4>Qui sommes-nous</h4>
+<p>GoPay Africa est une néobanque panafricaine offrant des solutions financières digitales sécurisées.</p>
+<h4>FAQ</h4><p>Transactions instantanées • KYC sécurisé • Multi-devises</p>
+<h4>Confidentialité</h4><p>Vos données sont protégées via chiffrement bancaire.</p>
+<h4>Contact</h4><p>@gopapay.info</p>
+<h4>Mentions légales</h4><p>GoPay Africa Digital Finance Ltd © 2026</p>
 </footer>
 
 <script>
-// Firebase initialization
-firebase.initializeApp({
-apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
-authDomain:"gotrustpay-e6524.firebaseapp.com",
-projectId:"gotrustpay-e6524",
-});
-const auth=firebase.auth(); const db=firebase.firestore();
-let currentUser=null;
+// Firebase setup
+firebase.initializeApp({apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",authDomain:"gotrustpay-e6524.firebaseapp.com",projectId:"gotrustpay-e6524"});
+const auth=firebase.auth();const db=firebase.firestore();let currentUser=null;
 
-// NAVIGATION
+// Navigation
 function show(id){document.querySelectorAll(".panel").forEach(p=>p.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");}
-function scrollToContact(){document.getElementById('contact').scrollIntoView({behavior:'smooth'});}
 
-// REGISTER / LOGIN
-async function register(){const cred=await auth.createUserWithEmailAndPassword(rEmail.value,rPass.value);let gid="GP"+Math.random().toString(36).substring(2,7).toUpperCase();await db.collection("users").doc(cred.user.uid).set({name:rName.value,email:rEmail.value,role:rRole.value,gid,balance:50,sessionToken:null,totalCommission:0});loginAuto();}
+// Register
+async function register(){const cred=await auth.createUserWithEmailAndPassword(rEmail.value,rPass.value);const gid="GP"+Math.random().toString(36).substring(2,7).toUpperCase();await db.collection("users").doc(cred.user.uid).set({name:rName.value,email:rEmail.value,role:rRole.value,gid,balance:50,session:null});loginAuto();}
+
+// Login
 async function login(){const cred=await auth.signInWithEmailAndPassword(lEmail.value,lPass.value);loadUserData(cred.user.uid);}
 async function loginAuto(){loadUserData(auth.currentUser.uid);}
-async function loadUserData(uid){const snap=await db.collection("users").doc(uid).get();currentUser=snap.data();if(currentUser.sessionToken && currentUser.sessionToken!==uid){alert("Session active ailleurs");logout();return;}await db.collection("users").doc(uid).update({sessionToken:uid});loadDashboard();}
-function logout(){auth.signOut();show('home');}
 
-// DASHBOARD CLIENT
-function loadDashboard(){cardName.innerText=currentUser.name; cardId.innerText=currentUser.gid; balance.innerText=currentUser.balance.toFixed(2); QRCode.toCanvas(qr,currentUser.gid);loadFakeHistory(); if(currentUser.role==='admin'){setTimeout(()=>openAdmin(),500);} show('dash');}
+// Load Dashboard
+async function loadUserData(uid){const snap=await db.collection("users").doc(uid).get();currentUser=snap.data();if(currentUser.session && currentUser.session!==uid){alert("Session active ailleurs");logout();return;}await db.collection("users").doc(uid).update({session:uid});loadDashboard();}
 
-// CASH-IN / CASH-OUT / PAYMENT
+function loadDashboard(){cardName.innerText=currentUser.name;cardId.innerText=currentUser.gid;balance.innerText=currentUser.balance.toFixed(2);QRCode.toCanvas(qr,currentUser.gid);loadFakeHistory();if(currentUser.role==="admin"){setTimeout(()=>openAdmin(),500);}show("dash");}
+
+// Cash-in/out/pay
 async function cashin(){let amt=parseFloat(prompt("Montant"));if(!amt)return;await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(amt)});currentUser.balance+=amt;loadDashboard();}
-async function cashout(){let amt=parseFloat(prompt("Montant"));if(!amt)return;await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});currentUser.balance-=amt;saveTransaction('cashout',amt);loadDashboard();}
-async function pay(){let amt=parseFloat(prompt("Montant"));let dest=prompt("ID destinataire");let snap=await db.collection("users").where("gid","==",dest).get();if(snap.empty){alert("Utilisateur introuvable");return;}let doc=snap.docs[0];await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});await db.collection("users").doc(doc.id).update({balance:firebase.firestore.FieldValue.increment(amt)});saveTransaction('payment',amt);currentUser.balance-=amt;loadDashboard();}
-function saveTransaction(type,amt){db.collection("transactions").add({user:currentUser.gid,type,amount:amt,date:new Date()});}
+async function cashout(){let amt=parseFloat(prompt("Montant"));if(!amt)return;await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});currentUser.balance-=amt;saveTransaction("cashout",amt);loadDashboard();}
+async function pay(){let amt=parseFloat(prompt("Montant"));let dest=prompt("ID destinataire");let snap=await db.collection("users").where("gid","==",dest).get();if(snap.empty){alert("Utilisateur introuvable");return;}let doc=snap.docs[0];await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});await db.collection("users").doc(doc.id).update({balance:firebase.firestore.FieldValue.increment(amt)});saveTransaction("payment",amt);currentUser.balance-=amt;loadDashboard();}
+function saveTransaction(type,amount){db.collection("transactions").add({user:currentUser.gid,type,amount,date:new Date()});}
+
+// Fake history
 function loadFakeHistory(){const names=["Ali","John","Fatou","David","Eric","Nadine","Prince"];history.innerHTML="";for(let i=0;i<6;i++){let n=names[Math.floor(Math.random()*names.length)];let amt=(Math.random()*200).toFixed(2);history.innerHTML+=`<p>${n} a transféré $${amt}</p>`;}}
 
-// ADMIN
+// Admin
 async function openAdmin(){show('admin');let users=await db.collection("users").get();totalClients.innerText=users.docs.filter(u=>u.data().role==='client').length;totalAgents.innerText=users.docs.filter(u=>u.data().role==='agent').length;totalTransactions.innerText=await db.collection('transactions').get().then(s=>s.size);usersTable.innerHTML="<tr><th>Nom</th><th>Email</th><th>Role</th><th>Solde</th></tr>";users.docs.forEach(doc=>{let u=doc.data();usersTable.innerHTML+=`<tr><td>${u.name}</td><td>${u.email}</td><td>${u.role}</td><td>$${u.balance.toFixed(2)}</td></tr>`;});}
 
-// STATISTIQUES CHART
-const ctx = document.getElementById('txnChart').getContext('2d');
-const txnChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil'],
-        datasets: [{
-            label: 'Transactions (en milliers)',
-            data: [5, 8, 6, 10, 12, 15, 20],
-            backgroundColor: '#0072ff'
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {display: true},
-            title: {display: true, text: 'Statistiques des transactions'}
-        }
-    }
-});
+// Fake chart
+const ctx = document.getElementById('successChart')?.getContext('2d');
+if(ctx){new Chart(ctx,{type:'line',data:{labels:['Jan','Fév','Mar','Avr','Mai','Juin','Juil'],datasets:[{label:'Clients actifs',data:[500,800,950,1200,1500,2000,2500],borderColor:'#0072ff',backgroundColor:'rgba(0,114,255,0.2)',fill:true,tension:0.3}]},options:{responsive:true,plugins:{legend:{display:true},title:{display:true,text:'Évolution clients actifs'}}}});}
 
-// ADMIN CHART
-const adminCtx = document.getElementById('adminChart').getContext('2d');
-const adminChart = new Chart(adminCtx, {
-    type: 'pie',
-    data: {
-        labels: ['Clients', 'Agents', 'Admins'],
-        datasets: [{
-            label: 'Répartition des utilisateurs',
-            data: [totalClients.innerText, totalAgents.innerText, 1], // Admin fixe 1 pour l'exemple
-            backgroundColor: ['#0072ff','#00c853','#ff6d00']
-        }]
-    },
-    options: {responsive:true}
-});
-
-// UTILS & AVATAR
-function generateAvatar(name){return `https://ui-avatars.com/api/?name=${name}&background=0D8ABC&color=fff`;}
-function generateCard(){return {cardNumber:"5314 "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000),biometricCode:Math.floor(100000 + Math.random()*900000)};}
-
-// NOTIFICATIONS
-function notifyUser(msg){alert("Notification GoPay : "+msg);}
-
-// SESSION MULTI-APPAREIL
-async function loadUserDataMulti(uid){
-    const snap = await db.collection("users").doc(uid).get();
-    currentUser = snap.data();
-    if(currentUser.sessionToken && currentUser.sessionToken!==uid){
-        alert("Session active sur un autre appareil");
-        logout();
-    } else {
-        await db.collection("users").doc(uid).update({sessionToken: uid});
-        loadDashboard();
-    }
-}
-
-// LOGOUT
+// Logout
 function logout(){auth.signOut();show('home');}
-
-// CURRENCY CONVERSION (exemple)
-const exchangeRates={USD:1,CDF:2800};
-function convertCurrency(amount,from,to){return (amount/exchangeRates[from])*exchangeRates[to];}
-
-// FAKE HISTORIQUE POUR DASHBOARD
-function loadFakeHistory(){
-    const names=["Ali","John","Fatou","David","Eric","Nadine","Prince"];
-    history.innerHTML="";
-    for(let i=0;i<6;i++){
-        let n = names[Math.floor(Math.random()*names.length)];
-        let amt = (Math.random()*200).toFixed(2);
-        history.innerHTML+=`<p>${n} a transféré $${amt}</p>`;
-    }
-}
-
-// ON AUTH CHANGE
-auth.onAuthStateChanged(user=>{
-    if(user){db.collection("users").doc(user.uid).get().then(s=>{loadUserDataMulti(s.id);});}
-});
 </script>
 </body>
 </html>
