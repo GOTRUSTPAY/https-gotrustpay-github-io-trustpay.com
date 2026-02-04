@@ -354,16 +354,22 @@ function loadAdminStats(){
     });
 }
 
+// --- Dépôt Cash In ---
 async function cashIn(){
-    let amount=parseFloat(cashInAmount.value);
-    let uid=auth.currentUser.uid;
-    let ref=db.collection("users").doc(uid);
+    let amount = parseFloat(cashInAmount.value);
+    if(isNaN(amount) || amount <= 0){
+        alert("Veuillez saisir un montant valide");
+        return;
+    }
 
-    await db.runTransaction(async(t)=>{
-        let doc=await t.get(ref);
-        let newBal=doc.data().balance + amount;
+    let uid = auth.currentUser.uid;
+    let ref = db.collection("users").doc(uid);
 
-        t.update(ref,{balance:newBal});
+    await db.runTransaction(async (t) => {
+        let doc = await t.get(ref);
+        let newBal = doc.data().balance + amount;
+
+        t.update(ref, { balance: newBal });
 
         // Ajouter transaction dans Firestore
         db.collection("transactions").add({
@@ -373,73 +379,98 @@ async function cashIn(){
             date: new Date()
         });
     });
+
+    alert(`Vous avez déposé $${amount}`);
+    cashInAmount.value = "";
 }
 
+// --- Retrait Cash Out ---
 async function cashOut(){
-let amount=parseFloat(cashOutAmount.value);
-let uid=auth.currentUser.uid;
-let ref=db.collection("users").doc(uid);
+    let amount = parseFloat(cashOutAmount.value);
+    if(isNaN(amount) || amount <= 0){
+        alert("Veuillez saisir un montant valide");
+        return;
+    }
 
-await db.runTransaction(async(t)=>{
-let doc=await t.get(ref);
+    let uid = auth.currentUser.uid;
+    let ref = db.collection("users").doc(uid);
 
-if(doc.data().balance < amount){
-alert("Solde insuffisant");
-return;
+    await db.runTransaction(async (t) => {
+        let doc = await t.get(ref);
+
+        if(doc.data().balance < amount){
+            alert("Solde insuffisant");
+            return;
+        }
+
+        let newBal = doc.data().balance - amount;
+        t.update(ref, { balance: newBal });
+
+        db.collection("transactions").add({
+            uid: uid,
+            type: "Cash Out",
+            amount: amount,
+            date: new Date()
+        });
+    });
+
+    alert(`Vous avez retiré $${amount}`);
+    cashOutAmount.value = "";
 }
 
-let newBal=doc.data().balance - amount;
-
-t.update(ref,{balance:newBal});
-
-db.collection("transactions").add({
-user:uid,
-type:"Cash Out",
-amount:amount,
-timestamp:Date.now()
-});
-});
-}
-
+// --- Paiement à un autre utilisateur ---
 async function sendPayment(){
-let amount=parseFloat(payAmount.value);
-let receiver=payUser.value;
-let sender=auth.currentUser.uid;
+    let amount = parseFloat(payAmount.value);
+    let receiver = payUser.value.trim();
+    let sender = auth.currentUser.uid;
 
-let sRef=db.collection("users").doc(sender);
-let rRef=db.collection("users").doc(receiver);
+    if(!receiver){
+        alert("Veuillez saisir l'ID du destinataire");
+        return;
+    }
+    if(isNaN(amount) || amount <= 0){
+        alert("Veuillez saisir un montant valide");
+        return;
+    }
 
-await db.runTransaction(async(t)=>{
-let sDoc=await t.get(sRef);
-let rDoc=await t.get(rRef);
+    let sRef = db.collection("users").doc(sender);
+    let rRef = db.collection("users").doc(receiver);
 
-if(!rDoc.exists){
-alert("Utilisateur introuvable");
-return;
-}
+    await db.runTransaction(async (t) => {
+        let sDoc = await t.get(sRef);
+        let rDoc = await t.get(rRef);
 
-if(sDoc.data().balance < amount){
-alert("Solde insuffisant");
-return;
-}
+        if(!rDoc.exists){
+            alert("Utilisateur introuvable");
+            return;
+        }
 
-t.update(sRef,{balance:sDoc.data().balance - amount});
-t.update(rRef,{balance:rDoc.data().balance + amount});
+        if(sDoc.data().balance < amount){
+            alert("Solde insuffisant");
+            return;
+        }
 
-db.collection("transactions").add({
-user:sender,
-type:"Paiement envoyé",
-amount:amount,
-timestamp:Date.now()
-});
+        t.update(sRef, { balance: sDoc.data().balance - amount });
+        t.update(rRef, { balance: rDoc.data().balance + amount });
 
-db.collection("transactions").add({
-user:receiver,
-type:"Paiement reçu",
-amount:amount,
-timestamp:Date.now()
-});
-});
+        db.collection("transactions").add({
+            uid: sender,
+            type: "Paiement envoyé",
+            amount: amount,
+            date: new Date()
+        });
+
+        db.collection("transactions").add({
+            uid: receiver,
+            type: "Paiement reçu",
+            amount: amount,
+            date: new Date()
+        });
+    });
+
+    alert(`Paiement de $${amount} envoyé à ${receiver}`);
+    payAmount.value = "";
+    payUser.value = "";
 }
 
 // Logout
