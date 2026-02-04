@@ -149,17 +149,29 @@ header{position:fixed;top:0;width:100%;display:flex;justify-content:space-betwee
 
 <!-- DASHBOARDS -->
 <div id="clientDash" class="dashboard">
-<button class="buttonReturn" onclick="returnHome()">← Retour</button>
-<div class="finCard">
-<h3 id="cName"></h3>
-<p>Solde: $<span id="cBalance"></span></p>
-<canvas id="cQR"></canvas>
-</div><div class="grid">
+  <button class="buttonReturn" onclick="returnHome()">← Retour</button>
 
-<div class="finCard">
-<h3>💰 Cash In (Dépôt)</h3>
-<input id="cashInAmount" placeholder="Montant">
-<button onclick="cashIn()">Valider dépôt</button>
+  <div class="finCard">
+    <h3 id="cName"></h3>
+    <p>Solde: $<span id="cBalance"></span></p>
+    <canvas id="cQR"></canvas>
+  </div>
+
+  <div class="grid">
+    <!-- Cash In -->
+    <div class="finCard">
+      <h3>Cash In</h3>
+      <input type="number" id="cashInAmount" placeholder="Montant à déposer">
+      <button onclick="cashIn()">Déposer</button>
+    </div>
+
+    <!-- Cash Out -->
+    <div class="finCard">
+      <h3>Cash Out</h3>
+      <input type="number" id="cashOutAmount" placeholder="Montant à retirer">
+      <button onclick="cashOut()">Retirer</button>
+    </div>
+  </div>
 </div>
 
 <div class="finCard">
