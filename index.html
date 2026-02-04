@@ -13,37 +13,41 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css">
 
 <style>
-/* ===== BODY ===== */
 body{margin:0;font-family:Roboto;background:#fff8f0;color:#011a27;scroll-behavior:smooth;}
-header{position:fixed;top:0;left:0;width:100%;background:#ff6f00;display:flex;justify-content:space-between;align-items:center;padding:12px 20px;box-shadow:0 2px 12px rgba(0,0,0,0.15);z-index:100;}
+header{position:fixed;top:0;left:0;width:100%;background:#ff6f00;display:flex;justify-content:space-between;align-items:center;padding:12px 20px;box-shadow:0 2px 12px rgba(0,0,0,0.2);z-index:100;}
 .logo{font-size:24px;font-weight:700;color:#fff;padding:6px 12px;border-radius:8px;background:#ff9100;}
 .menu{display:flex;gap:12px;flex-wrap:wrap;}
 .menu a{text-decoration:none;color:#fff;font-weight:600;padding:6px 12px;border-radius:8px;transition:0.3s;}
 .menu a:hover{background:#fff;color:#ff6f00;}
-section{padding:100px 20px 60px;margin-top:60px;}
+section{padding:100px 20px 60px;margin-top:60px;border-radius:12px;}
 .hero{background:url('https://images.unsplash.com/photo-1581091870626-5d3b7ff60937?crop=entropy&cs=tinysrgb&fit=max&fm=jpg') center/cover no-repeat;color:#fff;text-align:center;padding:180px 20px;border-radius:12px;box-shadow:inset 0 0 0 1000px rgba(0,0,0,0.2);}
-.hero h1{font-size:48px;margin-bottom:20px;text-shadow:2px 2px 8px rgba(0,0,0,0.5);}
+.hero h1{font-size:48px;margin-bottom:20px;text-shadow:2px 2px 10px rgba(0,0,0,0.6);}
 .hero p{font-size:20px;margin-bottom:30px;text-shadow:1px 1px 6px rgba(0,0,0,0.5);}
 .btn-cta{background:#ff9100;color:#fff;padding:14px 28px;border:none;border-radius:12px;font-size:18px;font-weight:700;cursor:pointer;transition:0.3s;}
 .btn-cta:hover{background:#ff6f00;}
 .card-section{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-top:40px;}
-.card{background:#fff3e0;padding:20px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1);text-align:center;transition:0.3s;}
-.card:hover{transform:translateY(-5px);box-shadow:0 6px 25px rgba(0,0,0,0.15);}
+.card{background:#fff3e0;padding:20px;border-radius:16px;box-shadow:0 4px 25px rgba(0,0,0,0.12);text-align:center;transition:0.3s;}
+.card:hover{transform:translateY(-8px);box-shadow:0 8px 30px rgba(0,0,0,0.2);}
 .card i{font-size:36px;color:#ff9100;margin-bottom:10px;}
 .card h3{margin:10px 0;}
 .card p{font-size:14px;opacity:0.9;}
-.card img{width:100%;border-radius:12px;margin-top:10px;}
+.card img{width:100%;border-radius:12px;margin-top:10px;transition:transform 0.3s;}
+.card img:hover{transform:scale(1.05);}
 footer{background:#ff6f00;color:#fff;padding:40px 20px;text-align:center;}
 footer a{color:#fff;text-decoration:none;}
 footer a:hover{text-decoration:underline;}
-.panel{background:#fff;padding:20px;border-radius:16px;margin:20px 0;box-shadow:0 4px 20px rgba(0,0,0,0.05);}
+.panel{background:#fff;padding:20px;border-radius:16px;margin:20px 0;box-shadow:0 4px 20px rgba(0,0,0,0.08);}
 .hidden{display:none;}
 .actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:20px;}
 .action{background:#ff9100;color:#fff;padding:12px;border-radius:12px;text-align:center;font-weight:700;cursor:pointer;transition:0.3s;}
 .action:hover{background:#ff6f00;transform:translateY(-2px);}
-.card-dashboard{background:#fff3e0;padding:20px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.1);text-align:center;margin-bottom:20px;}
+.card-dashboard{background:#fff3e0;padding:20px;border-radius:16px;box-shadow:0 4px 25px rgba(0,0,0,0.12);text-align:center;margin-bottom:20px;}
 canvas{background:#fff;border-radius:12px;}
 input, select{width:100%;padding:10px;margin-bottom:12px;border-radius:8px;border:1px solid #ccc;}
+
+/* Nouveau bouton Retour */
+.btn-back{background:#011a27;color:#fff;padding:10px 16px;border-radius:12px;font-weight:700;cursor:pointer;transition:0.3s;margin-bottom:12px;}
+.btn-back:hover{background:#333;}
 </style>
 </head>
 <body>
@@ -73,63 +77,17 @@ input, select{width:100%;padding:10px;margin-bottom:12px;border-radius:8px;borde
 <section id="why">
 <h2 style="text-align:center;">Pourquoi nous rejoindre <i class='bx bx-badge-check'></i></h2>
 <div class="card-section">
-<div class="card"><i class='bx bx-rocket'></i><h3>Innovation</h3><p>Services financiers digitaux et modernes.</p><img src="https://images.unsplash.com/photo-1603052875445-94e0ff324a61?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
-<div class="card"><i class='bx bx-shield'></i><h3>Sécurité</h3><p>Protection maximale des transactions.</p><img src="https://images.unsplash.com/photo-1581091870626-5d3b7ff60937?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
-<div class="card"><i class='bx bx-group'></i><h3>Support</h3><p>Support dédié 24/7.</p><img src="https://images.unsplash.com/photo-1521791136064-7986c2920216?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
+<div class="card"><i class='bx bx-rocket'></i><h3>Innovation</h3><p>Services financiers digitaux et modernes.</p></div>
+<div class="card"><i class='bx bx-shield'></i><h3>Sécurité</h3><p>Protection maximale des transactions.</p></div>
+<div class="card"><i class='bx bx-group'></i><h3>Support</h3><p>Support dédié 24/7.</p></div>
 </div>
 </section>
 
-<!-- ===== NOS SUCCÈS ===== -->
-<section id="success">
-<h2 style="text-align:center;">Nos succès <i class='bx bx-bar-chart-alt-2'></i></h2>
-<div class="card-section">
-<div class="card"><h3>+10 000 Clients</h3><p>En moins de 2 ans, GoPay Africa s'impose sur le marché.</p><img src="https://images.unsplash.com/photo-1573164574390-9a2ed0c4cbbf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
-<div class="card"><h3>+5 000 Transactions/jour</h3><p>Transactions instantanées sécurisées.</p><img src="https://images.unsplash.com/photo-1600195077073-f5f0f1f6f147?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
-<div class="card"><h3>Multi-devises</h3><p>USD, CDF et autres devises africaines.</p><img src="https://images.unsplash.com/photo-1554224154-22dec7ec8818?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
-</div>
-</section>
-
-<!-- ===== NOS VALEURS ===== -->
-<section id="values">
-<h2 style="text-align:center;">Nos valeurs <i class='bx bx-heart'></i></h2>
-<div class="card-section">
-<div class="card"><i class='bx bx-user-check'></i><h3>Fiabilité</h3><p>Services fiables et constants.</p><img src="https://images.unsplash.com/photo-1559526324-593bc073d938?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
-<div class="card"><i class='bx bx-brain'></i><h3>Innovation</h3><p>Nous innovons chaque jour pour mieux vous servir.</p><img src="https://images.unsplash.com/photo-1581091215362-1f10f7b9b5d3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
-<div class="card"><i class='bx bx-globe'></i><h3>Pan-Africain</h3><p>Présence sur plusieurs pays africains.</p><img src="https://images.unsplash.com/photo-1599058917217-8de15f0f22ed?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
-</div>
-</section>
-
-<!-- ===== MISSION & STATS ===== -->
-<section id="mission">
-<h2 style="text-align:center;">Mission & Statistiques <i class='bx bx-line-chart'></i></h2>
-<div class="card-section">
-<div class="card"><h3>Mission</h3><p>Offrir des services financiers digitaux accessibles à tous.</p></div>
-<div class="card"><h3>Statistiques</h3><canvas id="txnChart" width="400" height="200"></canvas></div>
-</div>
-</section>
-
-<!-- ===== PARTENAIRES ===== -->
-<section id="partners">
-<h2 style="text-align:center;">Nos partenaires <i class='bx bx-handshake'></i></h2>
-<div class="card-section">
-<div class="card"><img src="https://images.unsplash.com/photo-1581091870626-5d3b7ff60937?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
-<div class="card"><img src="https://images.unsplash.com/photo-1554224154-22dec7ec8818?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
-<div class="card"><img src="https://images.unsplash.com/photo-1600195077073-f5f0f1f6f147?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=400"></div>
-</div>
-</section>
-
-<!-- ===== CONTACT ===== -->
-<section id="contact" class="panel">
-<h2>Contactez-nous</h2>
-<p>Email: <a href="mailto:gopapay.info@gopay.com">gopapay.info@gopay.com</a></p>
-<p>Téléphone: +243 123 456 789</p>
-</section>
-
-<!-- ===== LOGIN / REGISTER / DASHBOARD / ADMIN ===== -->
+<!-- ===== LOGIN / REGISTER ===== -->
 <div id="login" class="panel hidden">
 <h3>Connexion</h3>
-<input id="lEmail" placeholder="Email"><br><br>
-<input id="lPass" type="password" placeholder="Mot de passe"><br><br>
+<input id="lEmail" placeholder="Email"><br>
+<input id="lPass" type="password" placeholder="Mot de passe"><br>
 <div class="actions">
 <div class="action" onclick="login()">Connexion</div>
 <div class="action" onclick="show('register')">Créer compte</div>
@@ -138,9 +96,9 @@ input, select{width:100%;padding:10px;margin-bottom:12px;border-radius:8px;borde
 
 <div id="register" class="panel hidden">
 <h3>Créer compte</h3>
-<input id="rName" placeholder="Nom"><br><br>
-<input id="rEmail" placeholder="Email"><br><br>
-<input id="rPass" type="password" placeholder="Mot de passe"><br><br>
+<input id="rName" placeholder="Nom"><br>
+<input id="rEmail" placeholder="Email"><br>
+<input id="rPass" type="password" placeholder="Mot de passe"><br>
 <select id="rRole">
 <option value="client">Client</option>
 <option value="agent">Agent</option>
@@ -148,10 +106,13 @@ input, select{width:100%;padding:10px;margin-bottom:12px;border-radius:8px;borde
 </select>
 <div class="actions">
 <div class="action" onclick="register()">Créer</div>
+<div class="btn-back" onclick="show('login')">Retour</div>
 </div>
 </div>
 
+<!-- ===== DASHBOARD CLIENT ===== -->
 <div id="dash" class="panel hidden">
+<div class="btn-back" onclick="show('home')">Retour au menu</div>
 <h3>Dashboard Utilisateur</h3>
 <div class="card-dashboard">
 <h3 id="cardName"></h3>
@@ -169,14 +130,15 @@ input, select{width:100%;padding:10px;margin-bottom:12px;border-radius:8px;borde
 <div id="history"></div>
 </div>
 
+<!-- ===== ADMIN ===== -->
 <div id="admin" class="panel hidden">
+<div class="btn-back" onclick="show('dash')">Retour</div>
 <h3>Admin Dashboard</h3>
 <p>Total Clients: <span id="totalClients">0</span></p>
 <p>Total Agents: <span id="totalAgents">0</span></p>
 <p>Total Transactions: <span id="totalTransactions">0</span></p>
 <canvas id="adminChart" width="400" height="200"></canvas>
 <table id="usersTable"></table>
-<div class="action" onclick="show('dash')">Retour</div>
 </div>
 
 <footer>
@@ -184,22 +146,87 @@ input, select{width:100%;padding:10px;margin-bottom:12px;border-radius:8px;borde
 </footer>
 
 <script>
-// == FIREBASE INITIALIZATION ==
+// ===== FIREBASE INITIALIZATION =====
 firebase.initializeApp({
 apiKey:"AIzaSyA-p_WgDeRhaGsP0zJYmd9aIw7GwuC6k6g",
 authDomain:"gotrustpay-e6524.firebaseapp.com",
 projectId:"gotrustpay-e6524",
 });
-const auth=firebase.auth(); 
+const auth=firebase.auth();
 const db=firebase.firestore();
 let currentUser=null;
 
-// == NAVIGATION ==
+// ===== NAVIGATION =====
 function show(id){document.querySelectorAll(".panel").forEach(p=>p.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");}
 function scrollToContact(){document.getElementById('contact').scrollIntoView({behavior:'smooth'});}
 
-// == LOGIN / REGISTER / DASHBOARD / ADMIN FUNCTIONS ==
-// Ici tu peux copier ton code Firebase complet pour register/login/dashboard/admin/transactions/QR etc.
+// ===== REGISTER / LOGIN =====
+async function register(){
+try{
+const cred=await auth.createUserWithEmailAndPassword(rEmail.value,rPass.value);
+let gid="GP"+Math.random().toString(36).substring(2,7).toUpperCase();
+await db.collection("users").doc(cred.user.uid).set({name:rName.value,email:rEmail.value,role:rRole.value,gid,balance:50,sessionToken:null,totalCommission:0});
+alert("Compte créé avec succès");
+show('login');
+}catch(e){alert(e.message);}
+}
+
+async function login(){
+try{
+const cred=await auth.signInWithEmailAndPassword(lEmail.value,lPass.value);
+const snap=await db.collection("users").doc(cred.user.uid).get();
+currentUser=snap.data();
+if(currentUser.sessionToken && currentUser.sessionToken!==cred.user.uid){alert("Session active ailleurs");logout();return;}
+await db.collection("users").doc(cred.user.uid).update({sessionToken:cred.user.uid});
+loadDashboard();
+}catch(e){alert(e.message);}
+}
+
+function logout(){
+auth.signOut();
+currentUser=null;
+show('home');
+}
+
+// ===== DASHBOARD =====
+async function loadDashboard(){
+cardName.innerText=currentUser.name;
+cardId.innerText=currentUser.gid;
+balance.innerText=currentUser.balance.toFixed(2);
+QRCode.toCanvas(qr,currentUser.gid);
+loadFakeHistory();
+if(currentUser.role==='admin'){setTimeout(()=>openAdmin(),500);}
+show('dash');
+}
+
+function loadFakeHistory(){
+const names=["Ali","John","Fatou","David","Eric","Nadine","Prince"];
+history.innerHTML="";
+for(let i=0;i<6;i++){
+let n=names[Math.floor(Math.random()*names.length)];
+let amt=(Math.random()*200).toFixed(2);
+history.innerHTML+=`<p>${n} a transféré $${amt}</p>`;
+}
+
+// CASHIN / CASHOUT / PAY
+async function cashin(){let amt=parseFloat(prompt("Montant"));if(!amt)return;await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(amt)});currentUser.balance+=amt;loadDashboard();}
+async function cashout(){let amt=parseFloat(prompt("Montant"));if(!amt)return;await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});currentUser.balance-=amt;loadDashboard();}
+async function pay(){let amt=parseFloat(prompt("Montant"));let dest=prompt("ID destinataire");let snap=await db.collection("users").where("gid","==",dest).get();if(snap.empty){alert("Utilisateur introuvable");return;}let doc=snap.docs[0];await db.collection("users").doc(auth.currentUser.uid).update({balance:firebase.firestore.FieldValue.increment(-amt)});await db.collection("users").doc(doc.id).update({balance:firebase.firestore.FieldValue.increment(amt)});currentUser.balance-=amt;loadDashboard();}
+
+// ADMIN
+async function openAdmin(){
+show('admin');
+let users=await db.collection("users").get();
+totalClients.innerText=users.docs.filter(u=>u.data().role==='client').length;
+totalAgents.innerText=users.docs.filter(u=>u.data().role==='agent').length;
+totalTransactions.innerText=await db.collection('transactions').get().then(s=>s.size);
+usersTable.innerHTML="<tr><th>Nom</th><th>Email</th><th>Role</th><th>Solde</th></tr>";
+users.docs.forEach(doc=>{let u=doc.data();usersTable.innerHTML+=`<tr><td>${u.name}</td><td>${u.email}</td><td>${u.role}</td><td>$${u.balance.toFixed(2)}</td></tr>`;});
+}
+
+// CHART
+const ctx = document.getElementById('txnChart')?.getContext('2d');
+if(ctx){new Chart(ctx,{type:'bar',data:{labels:['Jan','Fév','Mar','Avr','Mai','Juin','Juil'],datasets:[{label:'Transactions',data:[5,8,6,10,12,15,20],backgroundColor:'#ff9100'}]},options:{responsive:true}});}
 </script>
 </body>
 </html>
