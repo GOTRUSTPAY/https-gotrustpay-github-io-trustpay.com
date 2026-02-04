@@ -261,51 +261,149 @@ alert(`Paiement de ${amt} USD effectué vers ${recipient.name}\nCommission Agent
 loadUser(currentUser);
 }
 
-/* ===== HISTORIQUE, DOUBLE SIGNATURE, NOTIFICATIONS, LOG, KYC ===== */
-async function loadHistory(){history.innerHTML=`<p>Dernières transactions simulées...</p>`;}
-function verifyDoubleSignature(pin,otp){return pin.length===4 && otp.length===6;}
-function notifyUser(msg){alert("Notification GoPay : "+msg);}
-function saveTransaction(userId,type,amount){db.collection("transactions").add({userId,type,amount,date:new Date()});}
-function submitKYC(userId,docURL){db.collection("kyc").doc(userId).set({document:docURL,status:"pending"});}
-function generateAvatar(name){return `https://ui-avatars.com/api/?name=${name}&background=0D8ABC&color=fff`;}
-function generateCard(){return {cardNumber:"5314 "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000)+" "+Math.floor(1000+Math.random()*9000),biometricCode:Math.floor(100000 + Math.random()*900000)};}
+/* ===== HISTORIQUE CLIENT ===== */
+async function loadHistory(){
+  history.innerHTML=`<p>Dernières transactions simulées...</p>`;
+}
+
+/* ===== DOUBLE SIGNATURE ===== */
+function verifyDoubleSignature(pin,otp){
+  return pin.length===4 && otp.length===6;
+}
+
+/* ===== NOTIFICATIONS ===== */
+function notifyUser(msg){
+  alert("Notification GoPay : "+msg);
+}
+
+/* ===== TRANSACTION LOG ===== */
+function saveTransaction(userId,type,amount){
+  db.collection("transactions").add({
+    userId,
+    type,
+    amount,
+    date:new Date()
+  });
+}
+
+/* ===== KYC SIMPLIFIE ===== */
+function submitKYC(userId,docURL){
+  db.collection("kyc").doc(userId).set({
+    document:docURL,
+    status:"pending"
+  });
+}
+
+/* ===== AVATAR AUTOMATIQUE ===== */
+function generateAvatar(name){
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0D8ABC&color=fff`;
+}
+
+/* ===== CARTE BIOMETRIQUE ===== */
+function generateCard(){
+  return {
+    cardNumber:
+      "5314 " +
+      Math.floor(1000+Math.random()*9000)+" "+
+      Math.floor(1000+Math.random()*9000)+" "+
+      Math.floor(1000+Math.random()*9000),
+    biometricCode:
+      Math.floor(100000 + Math.random()*900000)
+  };
+}
+
+/* ===== MULTI DEVISE ===== */
 const exchangeRates={USD:1,CDF:2800};
-function convertCurrency(amount,from,to){return(amount/exchangeRates[from])*exchangeRates[to];}
-function assignRole(email){if(email.includes("admin"))return"admin";if(email.includes("agent"))return"agent";return"client";}
+
+function convertCurrency(amount,from,to){
+  return (amount/exchangeRates[from])*exchangeRates[to];
+}
+
+/* ===== ROLE UTILISATEUR ===== */
+function assignRole(email){
+  if(email.includes("admin")) return "admin";
+  if(email.includes("agent")) return "agent";
+  return "client";
+}
 
 /* ===== DASHBOARD ADMIN ===== */
 async function openAdmin(){
-show("admin");
-usersTable.innerHTML="<tr><th>Nom</th><th>Email</th><th>Solde</th><th>Role</th></tr>";
-const users=await db.collection("users").get();
-let totalClients=0,totalAgents=0;
-users.forEach(doc=>{
-const u=doc.data();
-usersTable.innerHTML+=`<tr><td>${u.name}</td><td>${u.email}</td><td>${u.balance}</td><td>${u.role}</td></tr>`;
-if(u.role==="client") totalClients++;
-if(u.role==="agent") totalAgents++;
-});
-document.getElementById("totalTransactions").innerText=await db.collection("transactions").get().then(s=>s.size);
-document.getElementById("totalClients").innerText=totalClients;
-document.getElementById("totalAgents").innerText=totalAgents;
+
+  show("admin");
+
+  usersTable.innerHTML =
+  "<tr><th>Nom</th><th>Email</th><th>Solde</th><th>Role</th></tr>";
+
+  const users=await db.collection("users").get();
+
+  let totalClients=0;
+  let totalAgents=0;
+
+  users.forEach(doc=>{
+    const u=doc.data();
+
+    usersTable.innerHTML += `
+      <tr>
+        <td>${u.name}</td>
+        <td>${u.email}</td>
+        <td>${u.balance || 0}</td>
+        <td>${u.role}</td>
+      </tr>
+    `;
+
+    if(u.role==="client") totalClients++;
+    if(u.role==="agent") totalAgents++;
+  });
+
+  document.getElementById("totalTransactions").innerText =
+    (await db.collection("transactions").get()).size;
+
+  document.getElementById("totalClients").innerText = totalClients;
+  document.getElementById("totalAgents").innerText = totalAgents;
 }
 
 /* ===== AUTH WATCH ===== */
-auth.onAuthStateChanged(user=>{if(user){db.collection("users").doc(user.uid).get().then(s=>{loadUser(s.data());});}});
+auth.onAuthStateChanged(user=>{
+  if(user){
+    loadUserData(user.uid);
+  }
+});
 
 /* ===== LOGOUT ===== */
-function logout(){auth.signOut();document.body.style.background="#061e1c";show("home");}
+function logout(){
+  auth.signOut();
+  show("home");
+}
 
 /* ===== SESSION MULTI-APPAREIL ===== */
 async function loadUserData(uid){
-const snap=await db.collection("users").doc(uid).get();
-currentUser=snap.data();
-if(currentUser.sessionToken && currentUser.sessionToken!==uid){alert("Session active sur un autre appareil");logout();}
-else{await db.collection("users").doc(uid).update({sessionToken:uid}); loadUser(currentUser);}
+
+  const snap = await db.collection("users").doc(uid).get();
+
+  if(!snap.exists) return;
+
+  currentUser = snap.data();
+
+  if(currentUser.sessionToken &&
+     currentUser.sessionToken!==uid){
+
+     alert("Session active sur un autre appareil");
+     logout();
+  }
+  else{
+
+     await db.collection("users").doc(uid).update({
+       sessionToken:uid
+     });
+
+     loadUser(currentUser);
+  }
 }
 
 /* ===== API AGENT SIMULE ===== */
-function agentDeposit(agentID,clientID,amount){notifyUser("Agent "+agentID+" a crédité "+amount);}
+function agentDeposit(agentID,clientID,amount){
+  notifyUser("Agent "+agentID+" a crédité "+amount);
+}
 </script>
 
 </body>
